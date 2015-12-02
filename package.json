@@ -1,0 +1,19 @@
+{
+  "name": "pi-blu",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "bluetooth-serial-port": "^1.2.3",
+    "gps": "^0.1.0",
+    "pi-temperature": "^1.0.0",
+    "rpi-gpio": "^0.7.0",
+    "rx": "^4.0.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
