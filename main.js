@@ -11,7 +11,7 @@ setInterval(function readTempAndEmit() {
 	});
 }, 5000);
 
-// GRS
+// GPS
 var GPS = require('gps')
 var gps = new GPS();
 gps.on('location', function(data) {
@@ -19,15 +19,28 @@ gps.on('location', function(data) {
 });
 
 // INPUT:
+/*
 var gpio = require('rpi-gpio');
 gpio.on('change', function(channel, value) {
     console.log('Channel ' + channel + ' value is now ' + value);
 });
 gpio.setup(16, gpio.DIR_IN, gpio.EDGE_RISING);
+*/
+
+
+var Gpio = require('onoff').Gpio;
+var reed = new Gpio(2, 'in', 'both');
+reed.watch(function (err, value) {
+    console.log(value);
+});
+
+process.on('SIGINT', function () {
+    reed.unexport();
+    process.exit();
+});
+
 
 /*
-
-
 // BT
 var btSerial = new (require('bluetooth-serial-port')).BluetoothSerialPort();
 

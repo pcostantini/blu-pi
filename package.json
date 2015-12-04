@@ -6,8 +6,8 @@
   "dependencies": {
     "bluetooth-serial-port": "^1.2.3",
     "gps": "^0.1.0",
+    "onoff": "^1.0.3",
     "pi-temperature": "^1.0.0",
-    "rpi-gpio": "^0.7.0",
     "rx": "^4.0.6"
   },
   "devDependencies": {},

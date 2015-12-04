@@ -2,11 +2,12 @@ import time
 import RPi.GPIO as io
 io.setmode(io.BCM)
  
-door_pin = 23
+door_pin = 2
  
-io.setup(door_pin, io.IN, pull_up_down=io.PUD_UP)  # activate input with PullUp
+# io.setup(door_pin, io.IN, pull_up_down=io.PUD_UP)  # activate input with PullUp
+io.setup(door_pin, io.IN)
  
 while True:
-    if io.input(door_pin):
-        print("DOOR ALARM!")
-    time.sleep(0.1)
+    if not io.input(door_pin):
+        print("pip!" + str(time.time()))
+    time.sleep(0.5)
