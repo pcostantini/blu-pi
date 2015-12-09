@@ -4,8 +4,9 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
-    "bluetooth-serial-port": "^1.2.3",
-    "gps": "^0.1.0",
+    "lodash": "^3.10.1",
+    "oled-font-5x7": "^1.0.0",
+    "oled-js-pi": "^1.0.5",
     "onoff": "^1.0.3",
     "pi-temperature": "^1.0.0",
     "rx": "^4.0.6"
