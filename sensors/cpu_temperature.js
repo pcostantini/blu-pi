@@ -1,31 +1,29 @@
+var Rx = require('rx');
+var temp = require("pi-temperature");
 
-function Temp() {
-	// TEMP
-	var temp = require("pi-temperature");
-	// var rx = ...
-	// var tempStream = rx...
-	setInterval(function readTempAndEmit() {
+function CpuTemperature() {
+  'use strict';
+  return Rx.Observable.create(function (observer) {
 
-	    var lastTemp;
-	    temp.measure(function(temp)
-	    {
-	    	if(lastTemp === temp) return;
-	    	lastTemp = temp;
+    var lastTemp;
+    function readAndEmit() {
+      temp.measure(function (value)
+      {
+        if(lastTemp === value)
+        {
+          return;
+        }
 
-	    	emitter.onChange(temp);
+        lastTemp = value;
+        observer.onNext({ name: 'CpuTemperature', value: value });
 
-	    	// tempStream.emit...
-	   });
-	}, 5000);
+      });
+    }
+    
+    setInterval(readAndEmit, 5000);
+    readAndEmit();
 
-	return {
-		name: 'CPU Temp',
-		emitter: emitter
-	};
-};
-
-var emitter = {
-	onChange: function() { }
+  });
 }
 
-module.exports = Temp;
+module.exports = CpuTemperature;

@@ -4,7 +4,30 @@ var font = require('oled-font-5x7');
 
 var oled = null;
 
-function OLED(title, main, status) {
+function displayState(state) {
+
+  // console.log(JSON.stringify(state, null, '\t'));
+
+  var title = [
+  state.time
+  ].join('');
+
+  var status = [
+  'TMP:',
+  Math.round(state.temp),
+  '* | CPU:',
+  Math.round(state.cpu * 1000) / 1000 
+  ].join('');
+
+  var main = {
+    display: "HELLO WORLD!"
+  }
+
+  display(title, main, status);
+
+}
+
+function display(title, main, status) {
   if(oled == null) {
     oled = new OLEDPI({
       width: 128,
@@ -26,6 +49,12 @@ function OLED(title, main, status) {
   oled.setCursor(0, 57);
   oled.writeString(font, 1, status, false, false, false);
 
+  if (typeof(main.display) === 'string') {
+    console.log()
+    oled.setCursor(0, 11);
+    oled.writeString(font, 2, main.display, false, true, false);    
+  }
+
   oled.drawLine(0, 9, 127, 9, true, false);
   oled.drawLine(0, 55, 127, 55, true, false);
 
@@ -36,12 +65,15 @@ function OLED(title, main, status) {
 process.on('exit', function() {
   if (oled != null) {
     console.log('CLEANUP:OLED');
-    oled.clearDisplay();
+    oled.clearDisplay(true);
     oled = null;
   }
 
-  process.exit();
+  // process.exit();
 });
 
 
-module.exports = OLED;
+module.exports = {
+  display: display,
+  displayState: displayState
+};

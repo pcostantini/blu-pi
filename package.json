@@ -5,11 +5,12 @@
   "main": "main.js",
   "dependencies": {
     "lodash": "^3.10.1",
+    "node-gpsd": "^0.2.4",
     "oled-font-5x7": "^1.0.0",
-    "oled-js-pi": "^1.0.5",
     "onoff": "^1.0.3",
     "pi-temperature": "^1.0.0",
-    "rx": "^4.0.6"
+    "rx": "^4.0.7",
+    "sqlite3": "^3.1.1"
   },
   "devDependencies": {},
   "scripts": {

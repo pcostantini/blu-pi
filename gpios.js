@@ -1,25 +1,30 @@
 var GPIO = require('onoff').Gpio;
+var Rx = require('rx');
 
+// TODO: convert to single stream
 function readAllPins(pins) {
-	if(!pins) return [0];
-	return pins.map(readPin);
+  if(!pins) return [0];
+  return pins.map(readPin);
 }
 
 function readPin(gpioPin) {
-	var reed = new GPIO(gpioPin, 'in', 'both');
+  return Rx.Observable.create(function (observer) {
+
+    var reed = new GPIO(gpioPin, 'in', 'both');
     reed.watch(function (err, value) {
         if(err) {
            throw err;
         }
 
-        console.log([gpioPin, ':', value].join(''));
+        observer.onNext({ "pin": gpioPin, "value": value });
+        // console.log([gpioPin, ':', value].join(''));
 
-        // EMIT!
     });
+
+  });
 }
 
 module.exports = {
-	readAllPins: readAllPins,
-	readPin: readPin
+  readAllPins: readAllPins,
+  readPin: readPin
 };
-

@@ -1,44 +1,37 @@
-function GPS() {
-    var gpsd = require('node-gpsd');
+var Rx = require('rx');
+var gpsd = require('node-gpsd');
 
+function GPS() {
+  return Rx.Observable.create(function (observer) {
+    
+    'use strict';
     var listener = new gpsd.Listener({
-        port: 2947,
-        hostname: 'localhost',
-        logger:  {
-            info: function() {},
-            warn: console.warn,
-            error: console.error
-        },
-        parse: true
+      port: 2947,
+      hostname: 'localhost',
+      logger:  {
+        info: function() {},
+        warn: console.warn,
+        error: console.error
+      },
+      parse: true
     });
 
     listener.on('TPV', function (tpv) {
-        emitter.onChange(tpv);
+      observer.onNext({ name: 'GPS', value: tpv });
     });
 
     listener.connect(function() {
-        listener.watch();
+      listener.watch();
     });
-
 
     // cleanup
     process.on('exit', function() {
-        console.log('CLEANUP:GPS');
-        listener.unwatch();
-
-        process.exit();
+      console.log('CLEANUP:GPS');
+      listener.unwatch();
     });
 
-
-    // return
-    var emitter = {
-        onChange: function() { }
-    }
-
-    return {
-        name: 'GPS',
-        emitter: emitter
-    };
+    observer.onNext({ name: 'GPS', value: null });
+  });
 }
 
 module.exports = GPS;
