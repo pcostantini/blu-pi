@@ -28,33 +28,7 @@ function bootstrap() {
   var source =  Rx.Observable.combineLatest(sensors)
     .bufferWithTime(1000)
     .map(_.last);
-
-  /*
-  var OLED = require('./outputs/OLED');
-  var redrawTimer = setInterval(function() {
-
-    console.log(JSON.stringify(state, null, '\t'));
-
-    var title = [
-    state.time
-    ].join('');
-
-    var status = [
-    'TMP:',
-    Math.round(state.temp),
-    '* | CPU:',
-    Math.round(state.cpu * 1000) / 1000 
-    ].join('');
-
-    var main = {
-      display: "HELLO WORLD!"
-    }
-
-    OLED(title, main, status);
-
-  }, 1000);
-  */
-
+    
   return source;
 
 }
