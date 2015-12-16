@@ -7,12 +7,7 @@ function bootstrap() {
   var odometerPin = 2;
   var odomoter = require('./odometer')(odometerPin);
   */
-
-  var state = { };
-  function updateState(newstate) {
-    state = _.extend(state, newstate);
-  }
-
+  
   // cpu temp
   var sensors = [];
   sensors.push(require('./sensors/clock')());

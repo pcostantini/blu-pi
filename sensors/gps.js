@@ -1,9 +1,9 @@
 var Rx = require('rx');
 var gpsd = require('node-gpsd');
+var CleanUp = require('../cleanup');
 
 function GPS() {
   return Rx.Observable.create(function (observer) {
-    
     'use strict';
     var listener = new gpsd.Listener({
       port: 2947,
@@ -16,21 +16,24 @@ function GPS() {
       parse: true
     });
 
-    listener.on('TPV', function (tpv) {
-      observer.onNext({ name: 'GPS', value: tpv });
-    });
-
     listener.connect(function() {
       listener.watch();
     });
 
-    // cleanup
-    process.on('exit', function() {
-      console.log('CLEANUP:GPS');
-      listener.unwatch();
+    listener.on('TPV', function (tpv) {
+      observer.onNext({ name: 'GPS', value: tpv });
     });
 
+    // initial state, null
     observer.onNext({ name: 'GPS', value: null });
+
+    // var clean = false;
+    // CleanUp(function () {
+    //   if(clean) return;
+    //   clean = true;
+    //   console.log('CLEANUP:GPS', new Date().getTime());
+    //   listener.unwatch();
+    // });
   });
 }
 

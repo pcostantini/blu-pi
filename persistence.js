@@ -1,36 +1,69 @@
 var _ = require('lodash');
+var Rx = require('rx');
+var sqlite3 = require('sqlite3').verbose();
+var CleanUp = require('./cleanup');
+
+var batchRecords = 50;
+var batchTimeout = batchRecords * 1000 + 500;
 
 function OpenDb(dbFile) {
 
   "use strict";
-  var sqlite3 = require('sqlite3').verbose();
-  var Schema = "CREATE TABLE IF NOT EXISTS sensors (timestamp INTEGER, info TEXT)"
 
-  function insert(sensorsData) {
+  var SqlSchema = 'CREATE TABLE IF NOT EXISTS sensors (timestamp INTEGER, info TEXT)';
+  var SqlInsertSensors = 'INSERT INTO sensors VALUES (?, ?)';
 
-    var time = get(sensorsData, 'Clock').getTime();
-    var json = JSON.stringify(sensorsData);
-
-    // console.log('insert', sensorsData);
-    db.run(
-      "INSERT INTO sensors VALUES (?, ?)",
-      [time, json]);
-  }
-
+  // create db
   var db = new sqlite3.Database(dbFile, function () {
-    db.run(Schema);
+    db.run(SqlSchema);
   });
 
-  // cleanup
-  process.on('exit', function() {
+  // buffered inserts
+  var insertStream = new Rx.Subject();
+  var transactionStream = insertStream.bufferWithTimeOrCount(batchTimeout, batchRecords);
+  
+  // on buffer complete
+  transactionStream.subscribe(function(bulk) {
+    if(!db || !bulk) return; // db close or bulk empty
+    
+    console.log('saving %s records', bulk.length);
+    db.serialize(function() {
+        db.exec("BEGIN");
+        var dbStatement = db.prepare(SqlInsertSensors);
+        _.each(bulk, function(parameters) {
+          dbStatement.run(parameters);
+        });
+        db.exec("COMMIT");
+    });
+  });
+
+  // flush and cleanup on exit
+  process.on('SIGINT', function () {
     console.log('CLEANUP:SQLITE');
-    if(db) {
-      db.close();
-    }
+
+    // flush remaining records from bufer
+    insertStream.onCompleted();
+  
+  // close db on exit, then exit!
+  transactionStream.subscribeOnCompleted(function() {
+    db.close();
+    db = null;
+    process.exit();
+  });
+
   });
 
   return {
-    insert: insert
+    insert: function (sensorsData) {
+      // ts
+      var time = get(sensorsData, 'Clock').getTime();
+
+      // data?
+      var json = JSON.stringify(sensorsData);
+
+      // queue
+      insertStream.onNext([time, json]);
+    }
   };
 
 }
