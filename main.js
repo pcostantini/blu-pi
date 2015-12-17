@@ -3,8 +3,18 @@ var OLED = require('./outputs/OLED');
 var bootstrapSensors = require('./bootstrap_sensors');
 var persistence = require('./persistence');
 
-// log
-var echo = function(o) { console.log(o); return o; };
+
+// ???
+var gpio = require('./gpios');
+var pin = gpio.readPin(23);
+pin.subscribe(console.log);
+// ???
+
+
+var config = {
+  utfOffset: new Date().getTimezoneOffset(),
+  dbFile: 'sensors-' + new Date().getTime() + '.sqlite3'
+}
 
 var state = { };
 function updateState(newstate) {
@@ -14,9 +24,9 @@ function updateState(newstate) {
 var sensorsStream = bootstrapSensors();
 
 // log
-var db = persistence.OpenDb('sensors-' + new Date().getTime() + '.sqlite3');
+var db = persistence.OpenDb(config.dbFile);
 sensorsStream
-  .map(echo)
+  // .map(echo)
   .where(_.negate(_.isEmpty))
   .subscribe(db.insert);
 
@@ -26,9 +36,6 @@ sensorsStream
   .bufferWithTime(5000)
   .map(_.last)
   .map(function (state) {
-    // log!
-    console.log(getState(state, 'GPS'));
-
     return {
       time:   getState(state, 'Clock').toLocaleTimeString().split(':').slice(0, -1).join(':'),
       temp:   getState(state, 'CpuTemperature'),
@@ -38,12 +45,11 @@ sensorsStream
   })
   .subscribe(oled ? OLED.displayState : console.log);
 
-var gpio = require('./gpios');
-var pin = gpio.readPin(23);
-pin.subscribe(console.log);
+
 
 // helpers
 function getState(state, key) {
   return _.find(state, function(o) { return o.name === key; }).value;
 }
 
+function echo(o) { console.log(o); return o; };

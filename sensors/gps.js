@@ -1,6 +1,5 @@
 var Rx = require('rx');
 var gpsd = require('node-gpsd');
-var CleanUp = require('../cleanup');
 
 function GPS() {
   return Rx.Observable.create(function (observer) {

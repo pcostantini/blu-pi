@@ -1,7 +1,6 @@
 var _ = require('lodash');
 var Rx = require('rx');
 var sqlite3 = require('sqlite3').verbose();
-var CleanUp = require('./cleanup');
 
 var batchRecords = 50;
 var batchTimeout = batchRecords * 1000 + 500;
@@ -44,12 +43,12 @@ function OpenDb(dbFile) {
     // flush remaining records from bufer
     insertStream.onCompleted();
   
-  // close db on exit, then exit!
-  transactionStream.subscribeOnCompleted(function() {
-    db.close();
-    db = null;
-    process.exit();
-  });
+    // close db on exit, then exit!
+    transactionStream.subscribeOnCompleted(function() {
+      db.close();
+      db = null;
+      process.exit();
+    });
 
   });
 
