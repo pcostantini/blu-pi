@@ -10,11 +10,20 @@ function bootstrap() {
   
   // cpu temp
   var sensors = [];
-  sensors.push(require('./sensors/clock')());
-  sensors.push(require('./sensors/cpu_temperature')());
-  sensors.push(require('./sensors/cpu_load')());
-  sensors.push(require('./sensors/gps')());
-  sensors.push(require('./sensors/clock')());
+  function add(sensorStream) {
+    sensors.push(sensorStream);
+    return sensorStream;
+  }
+
+  add(require('./sensors/lsm303')())
+    .subscribe(console.log);
+  add(require('./sensors/barometer')())
+    .subscribe(console.log);
+  add(require('./sensors/cpu_temperature')())
+  add(require('./sensors/cpu_load')())
+    .subscribe(console.log);
+  add(require('./sensors/gps')())
+  add(require('./sensors/clock')())
 
   // console.log('sensors', sensors);
 

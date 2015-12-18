@@ -1,12 +1,57 @@
 // OLED
-var OLEDPI = require('./oled-js-pi');
+var OledPi = require('./oled-js-pi');
 var font = require('oled-font-5x7');
+
+
+// var pngtolcd = require('png-to-lcd');
+// pngtolcd('nyan-cat.png', true, function(err, bitmap) {
+//   console.log('oled.wrn!', err)
+//   console.log(bitmap);
+//   // oled.buffer = bitmap;
+// });
 
 var oled = null;
 
-function displayState(state) {
+function display(title, main, status) {
+  try {
 
-  console.log(JSON.stringify(state));
+    if(!oled) {
+      oled = new OledPi({
+        width: 128,
+        height: 64,
+        address: 0x3D,
+        device: '/dev/i2c-1'
+      });
+    }
+
+    oled.turnOnDisplay();
+    oled.dimDisplay(false);
+    oled.clearDisplay();
+
+    oled.fillRect(0, 0, 127, 7, 0, false);
+    oled.setCursor(0, 0);
+    oled.writeString(font, 1, title, false, false, false);
+
+    oled.fillRect(0, 57, 127, 7, 0, false);
+    oled.setCursor(0, 57);
+    oled.writeString(font, 1, status, false, false, false);
+
+    if (typeof(main.display) === 'string') {
+      oled.setCursor(0, 11);
+      oled.writeString(font, 2, main.display, false, true, false);    
+    }
+
+    oled.drawLine(0, 9, 127, 9, true, false);
+    oled.drawLine(0, 55, 127, 55, true, false);
+
+    oled.update();
+
+  } catch(err) {
+    console.log('OLED:ERR!', err);
+  }
+}
+
+function displayState(state) {
 
   var title = [
     state.time,
@@ -20,48 +65,10 @@ function displayState(state) {
   ].join('');
 
   var main = {
-    display: "HELLO WORLD!"
-  }
+    display: Math.round(state.heading).toString()
+  };
 
   display(title, main, status);
-}
-
-function display(title, main, status) {
-  try {
-    if(oled == null) {
-      oled = new OLEDPI({
-        width: 128,
-        height: 64,
-        address: 0x3D,
-        device: '/dev/i2c-1'
-      });
-
-      oled.turnOnDisplay();
-      oled.dimDisplay(false);
-      oled.clearDisplay();
-    }
-
-    oled.fillRect(0, 0, 127, 7, 0, false);
-    oled.setCursor(0, 0);
-    oled.writeString(font, 1, title, false, false, false);
-
-    oled.fillRect(0, 57, 127, 7, 0, false);
-    oled.setCursor(0, 57);
-    oled.writeString(font, 1, status, false, false, false);
-
-    if (typeof(main.display) === 'string') {
-      console.log()
-      oled.setCursor(0, 11);
-      oled.writeString(font, 2, main.display, false, true, false);    
-    }
-
-    oled.drawLine(0, 9, 127, 9, true, false);
-    oled.drawLine(0, 55, 127, 55, true, false);
-
-    oled.update();
-  } catch(err) {
-    console.log('OLED:ERR!', err);
-  }
 }
 
 module.exports = {
