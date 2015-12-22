@@ -1,0 +1,27 @@
+{
+	"name": "pi-blu",
+	"version": "0.0.1",
+	"dependencies": {
+		"bmp085": {
+			"version": "0.3.2",
+			"dependencies": {
+				"i2c": {
+					"version": "0.2.1"
+				},
+				"underscore": {
+					"version": "1.5.2"
+				}
+			}
+		},
+		"lsm303": {
+			"version": "0.1.0",
+			"from": "praneshkmr/node-lsm303",
+			"resolved": "git://github.com/praneshkmr/node-lsm303.git#f92fc63815e8574535867644872c1c3c548d2829",
+			"dependencies": {
+				"i2c": {
+					"version": "0.2.1"
+				}
+			}
+		}
+	}
+}

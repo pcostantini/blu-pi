@@ -4,7 +4,9 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
+    "bmp085": "^0.3.2",
     "lodash": "^3.10.1",
+    "lsm303": "git://github.com/praneshkmr/node-lsm303",
     "node-gpsd": "^0.2.4",
     "oled-font-5x7": "^1.0.0",
     "onoff": "^1.0.3",
