@@ -8,7 +8,6 @@ function bootstrap() {
   var odomoter = require('./odometer')(odometerPin);
   */
   
-  // cpu temp
   var sensors = [];
   function add(sensorStream) {
     sensors.push(sensorStream);
@@ -16,16 +15,11 @@ function bootstrap() {
   }
 
   add(require('./sensors/lsm303')())
-    .subscribe(console.log);
   add(require('./sensors/barometer')())
-    .subscribe(console.log);
   add(require('./sensors/cpu_temperature')())
   add(require('./sensors/cpu_load')())
-    .subscribe(console.log);
   add(require('./sensors/gps')())
   add(require('./sensors/clock')())
-
-  // console.log('sensors', sensors);
 
   // merge and sample every second
   // store latest values of each sensor stream

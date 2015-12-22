@@ -1,15 +1,5 @@
-// OLED
 var OledPi = require('./oled-js-pi');
 var font = require('oled-font-5x7');
-
-
-// var pngtolcd = require('png-to-lcd');
-// pngtolcd('nyan-cat.png', true, function(err, bitmap) {
-//   console.log('oled.wrn!', err)
-//   console.log(bitmap);
-//   // oled.buffer = bitmap;
-// });
-
 var oled = null;
 
 function display(title, main, status) {
@@ -56,12 +46,13 @@ function displayState(state) {
   var title = [
     state.time,
     ' | GPSFix:',
-    state.gpsFix ? 1 : 0
+    state.gpsFix ? '1' : '0'
   ].join('');
 
   var status = [
-    'TMP:', Math.round(state.temp),
-    '* | CPU:', state.cpu
+    'TMP:', Math.round(state.temp), '*',
+    ' | ',
+    'CPU:', state.cpu
   ].join('');
 
   var main = {
