@@ -3,7 +3,7 @@ var BMP085 = require('bmp085');
 
 function Barometer() {
   return Rx.Observable.create(function (observer) {
-  	var barometer = new BMP085({ mode: 3 });
+  	var barometer = new BMP085({ mode: 1 });
 
   	function read() {
       try {
