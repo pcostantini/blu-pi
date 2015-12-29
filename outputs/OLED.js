@@ -45,18 +45,18 @@ function displayState(state) {
 
   var title = [
     state.time,
-    ' | GPSFix:',
-    state.gpsFix ? '1' : '0'
+    ' | ',
+    Math.round(state.temp * 10) / 10, '*'
   ].join('');
 
   var status = [
-    'TMP:', Math.round(state.temp), '*',
-    ' | ',
-    'CPU:', state.cpu
+    'CPU:', Math.round(state.cpu * 1000) / 1000,
+    ' | GPS:',
+    state.gpsFix ? '1' : '0'
   ].join('');
 
   var main = {
-    display: Math.round(state.heading).toString()
+    display: (state.heading) ? state.heading.toString() : '0'
   };
 
   display(title, main, status);

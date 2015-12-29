@@ -11,6 +11,7 @@
     "oled-font-5x7": "^1.0.0",
     "onoff": "^1.0.3",
     "pi-temperature": "^1.0.0",
+    "replify": "^1.2.0",
     "rx": "^4.0.7",
     "sqlite3": "^3.1.1"
   },

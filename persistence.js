@@ -55,7 +55,7 @@ function OpenDb(dbFile) {
   return {
     insert: function (sensorsData) {
       // ts
-      var time = get(sensorsData, 'Clock').getTime();
+      var time = sensorsData.Clock;
 
       // data?
       var json = JSON.stringify(sensorsData);
