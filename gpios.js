@@ -7,7 +7,7 @@ function readAllPins(pins) {
   return pins.map(readPin);
 }
 
-function readPin(gpioPin) {
+function readPin(gpioPin, respondOnValue) {
   return Rx.Observable.create(function (observer) {
 
     var reed = new GPIO(gpioPin, 'in', 'both');
@@ -16,8 +16,9 @@ function readPin(gpioPin) {
            throw err;
         }
 
-        observer.onNext({ "pin": gpioPin, "value": value });
-        // console.log([gpioPin, ':', value].join(''));
+	if(respondOnValue === undefined || value === respondOnValue) {
+          observer.onNext({ "pin": gpioPin, "value": value });
+        }
 
     });
 
