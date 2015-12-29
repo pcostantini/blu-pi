@@ -7,10 +7,14 @@ function CpuLoad() {
   return Rx.Observable.create(function (observer) {
 
   	function readAndEmit() {
-      observer.onNext({ name: 'CpuLoad', value: os.loadavg() });
+  		try {
+      	observer.onNext({ name: 'CpuLoad', value: os.loadavg() });
+      } catch(err) {
+  		  console.log('cpu_load.read.err!', err);
+      }
     }
 
-    setInterval(readAndEmit, 5000);
+    setInterval(readAndEmit, 1000);
     readAndEmit();
 
   });

@@ -8,7 +8,7 @@ function Clock() {
       observer.onNext(e);
     }
     
-    setInterval(readAndEmit, 1000);
+    setInterval(readAndEmit, 100);
     readAndEmit();
 
   });

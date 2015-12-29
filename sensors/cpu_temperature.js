@@ -7,6 +7,7 @@ function CpuTemperature() {
 
     var lastTemp;
     function readAndEmit() {
+      // TODO: try/catch
       temp.measure(function (value)
       {
         if(lastTemp === value)
@@ -20,7 +21,7 @@ function CpuTemperature() {
       });
     }
     
-    setInterval(readAndEmit, 5000);
+    setInterval(readAndEmit, 1000);
     readAndEmit();
 
   });

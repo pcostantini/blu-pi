@@ -37,7 +37,10 @@ function LSM303_Observable() {
       mag.readHeading(handleRead('MagnetometerHeading', magReadHeading));
     })();
 
-    // mag.readTemp(handleRead('MagnetometerTemperature'))
+    // useless!
+    (function magReadTemp() {
+      mag.readTemp(handleRead('MagnetometerTemperature', magReadTemp));
+    })();
 
     return observer;
   });
