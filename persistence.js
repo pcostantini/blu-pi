@@ -70,8 +70,3 @@ function OpenDb(dbFile) {
 module.exports = {
   OpenDb: OpenDb
 };
-
-// helpers
-function get(state, key) {
-  return _.find(state, function(o) { return o.name === key; }).value;
-}
