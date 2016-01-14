@@ -1,4 +1,4 @@
-var SensorsDb = require('./main_persistence');
+var SensorsDb = require('./persistence');
 
 var fs = require('fs');
 var _ = require('lodash');
