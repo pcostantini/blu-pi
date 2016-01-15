@@ -1,11 +1,54 @@
-function Odometer(gpioPin) {
+var GPIO = require('onoff').Gpio;
+var Rx = require('rx');
+
+function OdometerObservable(gpioPin) {
+  return Rx.Observable.create(function (observer) {
+    
+    var ts;
+    var reedVal;
+
+    var reed = new GPIO(gpioPin, 'in', 'both');
+    reed.watch(function (err, value) {
+        if(err) {
+           throw err;
+        }
+
+        onReedSwitchEvent(value);
+        if(value == 0) {
+          onWheelRevolution();
+        }
+    });
+
+    // WATCH GPIO CHANGES
+
+    function onReedSwitchEvent(newValue) {
+      reedVal = newValue;
+      ts = new Date();
+
+      // emit
+    }
+
+    function onWheelRevolution() {
+      console.log('whiii!');
+
+      var event = {
+        type: 'wheelContact',
+        timestamp: new Date()
+      };
+
+      observer.onNext( { name: 'Odometer', value: event } );
+
+      // emit
+      // observer....
+    }
+
+
 
     var radius = 13.5;// tire radius (in inches)
     var circumference = 2*3.14*radius;
 
     var mph;
     
-    var reedVal;
     var timer;// time between one full rotation (in ms)
     var maxReedCounter = 100;//min time (in ms) of one rotation (for debouncing)
     var reedCounter = maxReedCounter;
@@ -40,42 +83,13 @@ function Odometer(gpioPin) {
       });
     }
 
-    // WATCH GPIO CHANGES
-
-    function onReedSwitchEvent(newValue) {
-      reedVal = newValue;
-    }
-
-    function onWheelRevolution() {
-      console.log('whiii!');
-    }
-
-    var GPIO = require('onoff').Gpio;
-    var reed = new GPIO(gpioPin, 'in', 'both');
-    reed.watch(function (err, value) {
-        if(err) {
-           throw err;
-        }
-
-        onReedSwitchEvent(value);
-        if(value == 0) {
-          onWheelRevolution();
-        }
-    });
-
-    // ON EXIT, cleanup
+    // EXIT CLEANUP
+    // TODO: test!
     process.on('SIGINT', function () {
         reed.unexport();
         process.exit();
     });
-
-    // START
-    // setInterval(calculate, 3);
-
-    return {
-      name: 'Odometer',
-      emitter: null,  // TODO!
-    };
+  });
 }
 
-module.exports = Odometer;
+module.exports = OdometerObservable;
