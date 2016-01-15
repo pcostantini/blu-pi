@@ -1,6 +1,6 @@
 "use strict";
 
-console.log('starting pi-blu...')
+console.log('starting pi-blu...');
 var startTs = new Date();
 
 var _ = require('lodash');
@@ -8,26 +8,20 @@ var Rx = require('rx');
 
 var bootstrapSensors = require('./bootstrap_sensors');
 
-// config
+// config - TODO: READ FROM ENV.VARS
 var config = {
   persist: true,
   dbFile: 'sensors-' + new Date().getTime() + '.sqlite3',
-  displayFunc: require('./outputs/OLED').displayState
+  displayFunc: console.log // require('./outputs/OLED').displayState
 };
 
-// // INPUTS
-// var gpio = require('./gpios');
-
-// // odometer pin
-// // gpio.readPin(18).subscribe(console.log);
-// var inputBack = gpio.readPin(23);
-// var inputNext = gpio.readPin(24);
-// var inputOk = gpio.readPin(25);
-
-// var input = Rx.Observable.combineLatest([
-//   inputBack, inputNext, inputOk ]);
-
-// input.subscribe(console.log);
+// INPUTS (WIP)
+var gpio = require('./gpios');
+var inputBack = gpio.readPin(18, 0).select(as(-1));
+var inputNext = gpio.readPin(23, 0).select(as(0));
+var inputOk = gpio.readPin(25, 0).select(as(1));
+var input = Rx.Observable.merge([ inputBack, inputNext, inputOk ])
+input.subscribe(console.log);
 
 // INIT sensors
 var sensors = bootstrapSensors();
@@ -35,7 +29,7 @@ var snapshot = sensors
     .scan(aggregateSensorState, {})
     .throttle(1000);
 
-// persist every second a snapshot of sensors
+// persist every second a snapshot of sensor data
 if(config.persist) {
   var persistence = require('./persistence');
   var db = persistence.OpenDb(config.dbFile);
@@ -43,10 +37,9 @@ if(config.persist) {
   snapshot.subscribe(db.insert);
 }
 
-// display
-if(config.displayFunc) {
-  snapshot
-    .throttle(4000)
+// TODO: EXTRACT
+var displayState = snapshot
+    .throttle(5000)
     .select(function (snapshot) {
       return {
         time:   getTime(snapshot.Clock),
@@ -56,63 +49,41 @@ if(config.displayFunc) {
         heading:snapshot.MagnetometerHeading,
         ticking:snapshot.Ticks
       };
-    })
-    .select(echo)
-    .subscribe(config.displayFunc);
+    });
+
+if(config.displayFunc) {
+  displayState.subscribe(config.displayFunc);
+}
+
+var app = {
+  config: config,
+  streams: {
+    sensors: sensors,
+    snapshot: snapshot,
+    displayState: displayState
+  }
+};
+
+// REPL support
+initRepl(app);
+function initRepl(app) {
+  var replify = require('replify');
+  replify('pi-blu', app);
+  console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
 }
 
 // done
 var endTs = new Date();
 console.log('ready! took %d \'\'', (endTs - startTs) / 1000 );
 
-// var orientationAndSpeed = sensors
-//   .where(nameIn(['MagnetometerHeading', 'Accelerometer', 'MagnetometerAxes']))
-//   .scan(aggregateSensorState, {});
-
-  // .map(JSON.stringify)
-  // .subscribe(console.log);
-
-// REPL support
-var replify = require('replify');
-var app = {
-  sensors: sensors,
-  config: config
-};
-replify('pi-blu', app);
-console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
-
-
-
-
-
-
-
-
-
-// helpers
-function aggregateSensorState(state, sensor) {
-  var o = {};
-  o[sensor.name] = sensor.value;
-  return _.extend(state, o);
-}
-
+// ...
 function nameIn(names) {
   return function(s) {
     return names.indexOf(s.name) > -1;
   };
 }
-function nameIs(name) {
-  return function(s) {
-    return s.name === name;
-  };
-}
 
-// function getState(state, key) {
-//   var stateTuple = _.find(state, function(o) { return o.name === key; });
-//   return stateTuple ? stateTuple.value : null;
-// }
-
-function echo(o) { console.log(o); return o; };
+function echo(o) { console.log(o); return o; }
 
 function getTime(date) {
   return date ? date.toLocaleTimeString().split(':').slice(0, -1).join(':') : '00:00';
@@ -136,4 +107,12 @@ function getCpu(cpuUptime) {
   };
 
   return cpuUptime[0];
+}
+
+function as(inputValue) {
+  return function(e) {
+    return {
+      input: inputValue
+    };
+  };
 }
