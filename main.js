@@ -11,7 +11,7 @@ var bootstrapSensors = require('./bootstrap_sensors');
 // config - TODO: READ FROM ENV.VARS
 var config = {
   persist: true,
-  dbFile: 'sensors-' + new Date().getTime() + '.sqlite3',
+  dbFile: './data/sensors-' + startTs + '.sqlite3',
   displayFunc: console.log // require('./outputs/OLED').displayState
 };
 
@@ -31,7 +31,7 @@ var snapshot = sensors
 
 // persist every second a snapshot of sensor data
 if(config.persist) {
-  var persistence = require('./persistence');
+  var persistence = require('./session_persistence');
   var db = persistence.OpenDb(config.dbFile);
 
   snapshot.subscribe(db.insert);
