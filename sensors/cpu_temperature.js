@@ -1,28 +1,32 @@
 var Rx = require('rx');
-var temp = require('pi-temperature');
 
 function CpuTemperature() {
-  'use strict';
   return Rx.Observable.create(function (observer) {
 
     var lastTemp;
-    function readAndEmit() {
-      // TODO: try/catch
-      temp.measure(function (value)
-      {
-        if(lastTemp === value)
-        {
-          return;
-        }
+    function read(temp) {
+      try {
+        temp.measure(function (value) {
+          if(lastTemp === value)
+          {
+            return;
+          }
 
-        lastTemp = value;
-        observer.onNext({ name: 'CpuTemperature', value: value });
+          lastTemp = value;
+          observer.onNext({ name: 'CpuTemperature', value: value });
+        });
+      } catch(err) {
+        console.log('temp.err!', err);
+      }
 
-      });
+      setTimeout(() => read(temp), 5000);
     }
-    
-    setInterval(readAndEmit, 5000);
-    readAndEmit();
+
+    // init only on PI
+    if(require('os').arch() === 'arm') {
+      var temp = require('pi-temperature');
+      read(temp);
+    }
 
   });
 }

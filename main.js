@@ -1,15 +1,12 @@
 var _ = require('underscore');
-var child_process = require('child_process');
-var fork = child_process.fork;
 var Rx = require('rx');
 
 "use strict";
 
-// config
+// init
 var config = {
   dbFile: './sensors-' + new Date().getTime() + '.sqlite3'
 };
-
 console.log('starting pi-blu', config);
 console.log('.');
 var startTs = new Date().getTime();
@@ -49,7 +46,7 @@ sensors.select(function(sensorEvent) {
   }).subscribe(db.insert);
 
 // ticks
-var ticks = require('./sensors/ticks')()
+var ticks = require('./sensors/ticks')();
 
 // convert sensor data to kind of state
 var state = Rx.Observable.merge(

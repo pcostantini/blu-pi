@@ -1,4 +1,4 @@
-var _ = require('lodash');
+var _ = require('underscore');
 var Rx = require('rx');
 var free = require('freem');
 

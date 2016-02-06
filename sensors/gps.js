@@ -9,8 +9,8 @@ function GPS() {
       hostname: 'localhost',
       logger:  {
         info: function() {},
-        warn: console.warn,
-        error: console.error
+        warn: traceError,
+        error: traceError
       },
       parse: true
     });
@@ -34,6 +34,10 @@ function GPS() {
     //   listener.unwatch();
     // });
   });
+}
+
+function traceError(e) {
+  console.log('grps.err!', e);
 }
 
 module.exports = GPS;
