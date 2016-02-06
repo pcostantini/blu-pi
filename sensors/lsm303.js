@@ -1,22 +1,25 @@
 var Rx = require('rx');
 var LSM303 = require('lsm303');
 
-var readIntervalMs = 1000;
+// TODO: READ FAST!!!
+var pauseRead = 33;
 
 function LSM303_Observable() {
   return Rx.Observable.create(function (observer) {
 
     function handleRead(sensorName, reCallback) {
-      return function(err, sensorResp) {
+      return function(err, sensorData) {
         if(err) {
           // throw err!
           console.log(err);
           return;
         }
 
-        observer.onNext({ name: sensorName, value: sensorResp });
+        // TODO: RESOLVE OR RETURN BUFFERED SAMPLES ON ARRAY FROM ABOVE LAYER
+        console.log(sensorData);
+        // observer.onNext({ name: sensorName, value: sensorData });
 
-        setTimeout(reCallback, readIntervalMs)
+        setTimeout(reCallback, pauseRead);
       };
     }
 
@@ -26,20 +29,20 @@ function LSM303_Observable() {
 
     // read
     (function accelReadAxes() {
-      accel.readAxes(handleRead('Accelerometer', accelReadAxes));
+      accel.readAxes(handleRead('Acceleration', accelReadAxes));
     })();
 
     (function magReadAxes() {
-      mag.readAxes(handleRead('MagnetometerAxes', magReadAxes));
+      mag.readAxes(handleRead('MagnometerAxis', magReadAxes));
     })();
 
     (function magReadHeading() {
-      mag.readHeading(handleRead('MagnetometerHeading', magReadHeading));
+      mag.readHeading(handleRead('MagnometerHeading', magReadHeading));
     })();
 
     // useless!
     (function magReadTemp() {
-      mag.readTemp(handleRead('MagnetometerTemperature', magReadTemp));
+      mag.readTemp(handleRead('MagnometerTemperature', magReadTemp));
     })();
 
     return observer;

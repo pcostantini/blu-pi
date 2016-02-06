@@ -1,80 +1,94 @@
-"use strict";
-
-console.log('starting pi-blu...');
-var startTs = new Date();
-
-var _ = require('lodash');
+var _ = require('underscore');
+var child_process = require('child_process');
+var fork = child_process.fork;
 var Rx = require('rx');
 
-var bootstrapSensors = require('./bootstrap_sensors');
+"use strict";
 
-// config - TODO: READ FROM ENV.VARS
+// config
 var config = {
-  persist: true,
-  dbFile: './data/sensors-' + startTs + '.sqlite3',
-  displayFunc: console.log // require('./outputs/OLED').displayState
+  dbFile: './sensors-' + new Date().getTime() + '.sqlite3'
 };
 
-// INPUTS (WIP)
+console.log('starting pi-blu', config);
+console.log('.');
+var startTs = new Date().getTime();
+function done() {
+  var endTs = new Date().getTime();
+  console.log('ready! took %d \'\'', (endTs - startTs) / 1000 );
+}
+
+// inputs
 var gpio = require('./gpios');
 var inputBack = gpio.readPin(18, 0).select(as(-1));
 var inputNext = gpio.readPin(23, 0).select(as(0));
 var inputOk = gpio.readPin(25, 0).select(as(1));
-var input = Rx.Observable.merge([ inputBack, inputNext, inputOk ])
-input.subscribe(console.log);
+var inputs = Rx.Observable.merge(
+  [ inputBack, inputNext, inputOk ]);
+inputs.subscribe(console.log);
 
-// INIT sensors
-var sensors = bootstrapSensors();
-var snapshot = sensors
-    .scan(aggregateSensorState, {})
-    .throttle(1000);
+// ODOMTER & CADENCE
+// ...
+var wheelLoop = gpio.readPin(24, 0).select(as(1));
+wheelLoop.subscribe(() => console.log('...weeeee!'));
 
-// persist every second a snapshot of sensor data
-if(config.persist) {
-  var persistence = require('./session_persistence');
-  var db = persistence.OpenDb(config.dbFile);
+// sensors
+var bootstrap_sensors = require('./bootstrap_sensors');
+var sensors = bootstrap_sensors();
 
-  snapshot.subscribe(db.insert);
-}
+// bufferedd persitence
+var persistence = require('./session_persistence');
+var bufferSize = 30;
+var db = persistence.OpenDb(config.dbFile, bufferSize);
 
-// TODO: EXTRACT
-var displayState = snapshot
-    .throttle(5000)
-    .select(function (snapshot) {
-      return {
-        time:   getTime(snapshot.Clock),
-        temp:   getMagnetometerTemperature(snapshot.MagnetometerTemperature),
-        cpu:    getCpu(snapshot.CpuLoad),
-        gpsFix: hasGpsFix(snapshot.GPS),
-        heading:snapshot.MagnetometerHeading,
-        ticking:snapshot.Ticks
-      };
-    });
+// persist with timestamp
+sensors.select(function(sensorEvent) {
+    return _.extend(
+      { timestamp: new Date().getTime() },
+      sensorEvent);
+  }).subscribe(db.insert);
 
-if(config.displayFunc) {
-  displayState.subscribe(config.displayFunc);
-}
+// ticks
+var ticks = require('./sensors/ticks')()
 
-var app = {
-  config: config,
-  streams: {
-    sensors: sensors,
-    snapshot: snapshot,
-    displayState: displayState
-  }
-};
+// convert sensor data to kind of state
+var state = Rx.Observable.merge(
+  ticks, sensors)
+  .scan(function(currentState, sensor) {
+    currentState[sensor.name] = sensor.value;
+    return currentState;
+    // return _.extend(
+    //   state,
+    //   _.object([[sensor.name, sensor.value]]));
+  }, {})
+  .throttle(1000);
 
-// REPL support
-initRepl(app);
-function initRepl(app) {
-  var replify = require('replify');
-  replify('pi-blu', app);
-  console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
-}
+state.throttle(5000)
+     .subscribe(console.log);
+
+// var screens = [
+//   'ticks',
+//   'screensaver',
+//   'speed',
+//   'intervals',
+// ];
+
+// var Display = require('./display');
+// var ui = Display(sensors, state);
+
+
 
 // done
-var endTs = new Date();
-console.log('ready! took %d \'\'', (endTs - startTs) / 1000 );
+done();
+
+// REPL support
+// initRepl(app);
+// function initRepl(app) {
+//   var replify = require('replify');
+//   replify('pi-blu', app);
+//   console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
+// }
+
 
 // ...
 function nameIn(names) {

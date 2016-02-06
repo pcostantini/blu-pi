@@ -11,7 +11,7 @@ function Barometer() {
           observer.onNext({ name: 'Barometer', value: data });
         });
 
-        setTimeout(read, 1000);
+        setTimeout(read, 2500);
       } catch(err) {
         console.log('BMP085.ERR!', err);
         // retry?

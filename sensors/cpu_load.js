@@ -14,7 +14,7 @@ function CpuLoad() {
       }
     }
 
-    setInterval(readAndEmit, 1000);
+    setInterval(readAndEmit, 3000);
     readAndEmit();
 
   });

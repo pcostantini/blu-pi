@@ -1,5 +1,5 @@
 var sqlite3 = require('sqlite3').verbose();
-var _ = require('lodash');
+var _ = require('underscore');
 
 module.exports = function(dbFile, readOnly) {
 

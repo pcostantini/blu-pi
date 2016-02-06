@@ -1,7 +1,7 @@
 var SensorsDb = require('./persistence');
 
 var fs = require('fs');
-var _ = require('lodash');
+var _ = require('underscore');
 var Rx = require('rx');
 
 var dataDir = './data/';

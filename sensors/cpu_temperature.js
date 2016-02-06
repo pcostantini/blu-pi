@@ -1,5 +1,5 @@
 var Rx = require('rx');
-var temp = require("pi-temperature");
+var temp = require('pi-temperature');
 
 function CpuTemperature() {
   'use strict';
@@ -21,7 +21,7 @@ function CpuTemperature() {
       });
     }
     
-    setInterval(readAndEmit, 1000);
+    setInterval(readAndEmit, 5000);
     readAndEmit();
 
   });
