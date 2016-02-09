@@ -2,7 +2,7 @@ var Rx = require('rx');
 var LSM303 = require('lsm303');
 
 // TODO: READ FAST!!!
-var pauseRead = 33;
+var pauseRead = 250;
 
 function LSM303_Observable() {
   return Rx.Observable.create(function (observer) {
@@ -16,8 +16,7 @@ function LSM303_Observable() {
         }
 
         // TODO: RESOLVE OR RETURN BUFFERED SAMPLES ON ARRAY FROM ABOVE LAYER
-        console.log(sensorData);
-        // observer.onNext({ name: sensorName, value: sensorData });
+        observer.onNext({ name: sensorName, value: sensorData });
 
         setTimeout(reCallback, pauseRead);
       };

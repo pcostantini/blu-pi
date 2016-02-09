@@ -12,7 +12,7 @@ function bootstrap() {
   var sensors = [];
 
   // sensors
-  // sensors.push(require('./sensors/lsm303')());
+  sensors.push(require('./sensors/lsm303')());
   // sensors.push(require('./sensors/barometer')());
   sensors.push(require('./sensors/gps')());
 
