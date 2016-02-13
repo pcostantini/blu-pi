@@ -13,7 +13,8 @@ function bootstrap(sensorsConfig) {
     require('./sensors/gps')(),
     // sys
     require('./sensors/cpu_temperature')(),
-    require('./sensors/cpu_load')()/*,
+    require('./sensors/cpu_load')(),
+    require('./sensors/freememory')()/*,
     require('./sensors/freem')()()*/];
 
   // TODO: handle errors
