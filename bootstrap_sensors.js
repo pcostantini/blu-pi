@@ -14,8 +14,7 @@ function bootstrap(sensorsConfig) {
     // sys
     require('./sensors/cpu_temperature')(),
     require('./sensors/cpu_load')(),
-    require('./sensors/freememory')()/*,
-    require('./sensors/freem')()()*/];
+    require('./sensors/memory')()];
 
   // TODO: handle errors
   return Rx.Observable.merge(sensors);

@@ -62,8 +62,9 @@ var state = Rx.Observable.merge(
     currentState[sensor.name] = sensor.value;
     return currentState;
   }, {})
-  .throttle(5000)
-  .do(console.log);
+  .throttle(5000);
+
+state.subscribe(console.log);
 
 // var screens = [
 //   'screensaver', // dummy stuff
@@ -90,6 +91,20 @@ var ui = Display(sensors, state);
 //   replify('pi-blu', app);
 //   console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
 // }
+
+// GC COLLECTION - TODO: REVIEW IS REALLY NEEDED
+var gcWaitTime = 60000; // 1'
+(function gc() {
+  if (global.gc) {
+    console.log('GC...');
+    global.gc();
+    setTimeout(gc, gcWaitTime);
+  } else {
+    console.log('Garbage collection unavailable.  Pass --expose-gc '
+      + 'when launching node to enable forced garbage collection.');
+  }
+})();
+
 
 
 // ...

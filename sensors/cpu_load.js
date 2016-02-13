@@ -1,14 +1,14 @@
 var Rx = require('rx');
 var os = require('os');
 
+var SensorName = 'CpuLoad';
 function CpuLoad() {
-  'use strict';
 
   return Rx.Observable.create(function (observer) {
 
   	function readAndEmit() {
   		try {
-      	observer.onNext({ name: 'CpuLoad', value: os.loadavg() });
+      	observer.onNext({ name: SensorName, value: os.loadavg() });
       } catch(err) {
   		  console.log('cpu_load.read.err!', err);
       }

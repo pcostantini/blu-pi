@@ -11,9 +11,12 @@ module.exports = function Display(sensorStream, stateStream) {
 
   var memoryState = null;
   var cpuState = null;
-  stateStream.subscribe(s => {
-    memoryState = s.Memory;
-    cpuState = s.CpuLoad;
+  sensorStream.subscribe(s => {
+    if(s.name == 'CpuLoad') {
+      cpuState = s.value;
+    } else if(s.name == 'Memory') {
+      memoryState = s.value;
+    }
   });
 
   var lcd = _.extend(new SSD1306(), new AFGFX(width, height));
@@ -33,8 +36,8 @@ module.exports = function Display(sensorStream, stateStream) {
   // draw loop
   (function redraw() {
 
-    drawCpuAndRam(lcd, cpuState, memoryState);
     drawBackground(lcd);
+    drawCpuAndRam(lcd, cpuState, memoryState);
     lcd.display();
 
     setTimeout(redraw, wait);
@@ -51,15 +54,15 @@ function drawCpuAndRam(lcd, cpuState, memoryState) {
   if(cpuState) {
     var cpu = cpuState[0] < 2 ? cpuState[0] : 2;
     var cpuWidth = Math.round((126 / 2) * (2-cpu));
-    lcd.fillRect(127 - cpuWidth, 1, cpuWidth, 2, false);
+    lcd.fillRect(cpuWidth, 1, 127 - cpuWidth, 2, false);
   }
 
   // mem
   if(memoryState) {
-    var total = memoryState[0].total;
-    var free = memoryState[0].free;
+    var total = memoryState.heapTotal;
+    var free = total - memoryState.heapUsed;
     var freeWidth = Math.round((126 / total) * free);
-    lcd.fillRect(127 - freeWidth, 3, freeWidth, 1, false);
+    lcd.fillRect(freeWidth, 3, 127 - freeWidth, 1, false);
   }
 
 }
