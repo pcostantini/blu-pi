@@ -12,47 +12,57 @@ function OpenDb(dbFile, bufferSize) {
   var SqlSchema = 'CREATE TABLE IF NOT EXISTS SensorEvents (timestamp INTEGER, sensor VARCHAR(64), data TEXT)';
   var SqlInsertMessage = 'INSERT INTO SensorEvents VALUES (?, ?, ?)';
 
-  // create db
-  var db = new sqlite3.Database(dbFile, function () {
-    db.run(SqlSchema);
-  });
-
   // buffered inserts
-  var insertStream = new Rx.Subject();
-  var transactionStream = insertStream.bufferWithTimeOrCount(bufferTimeout, bufferSize);
-  
-  // on buffer fill
-  transactionStream.subscribe(function(bulk) {
-    if(!db || !bulk) return; // db close or bulk empty
-    
-    console.log('saving %s records', bulk.length);
+  var inserts = new Rx.Subject();
+  var bufferedInserts = inserts.bufferWithTimeOrCount(bufferTimeout, bufferSize);
 
-    db.serialize(function() {
-        db.exec("BEGIN");
-        var dbStatement = db.prepare(SqlInsertMessage);
-        _.each(bulk, function(parameters) {
-          dbStatement.run(parameters);
-        });
-        db.exec("COMMIT");
+  var db = null;
+  // create db
+  var dbCreated = new Promise(function(resolve, reject) {
+    var db = new sqlite3.Database(dbFile, function () {
+      // create initial schema
+      db.run(SqlSchema, function() {
+        resolve(db);
+      });
     });
-
   });
 
   // flush and cleanup on exit
-  exitHook(function () {
-    console.log('CLEANUP:SQLITE');
+  dbCreated.then(db => {
+    exitHook(function () {
+      console.log('CLEANUP:SQLITE');
+      // flush remaining records from bufer
+      inserts.onCompleted();
+      // close db on exit, then exit!
+      bufferedInserts.subscribeOnCompleted(function() {
+        db.close();
+        console.log('CLEANUP:SQLITE.CLOSED!')
+      });
 
-    // flush remaining records from bufer
-    insertStream.onCompleted();
-  
-    // close db on exit, then exit!
-    transactionStream.subscribeOnCompleted(function() {
-      db.close();
-      db = null;
-      console.log('CLEANUP:SQLITE.CLOSED!')
     });
+  });
+  
+  // on buffer fill
+  bufferedInserts.subscribe(function(bulk) {
+    if(!bulk || bulk.length === 0) return;
+    
+    if(db == null) {
+      dbCreated.then((db) => serializeInserts(db, bulk));
+    } else {
+      serializeInserts(db, bulk);
+    }
 
   });
+
+  function serializeInserts(db, bulk) {
+    console.log('saving %s records', bulk.length);
+    var insertStatement = db.prepare(SqlInsertMessage);
+    db.serialize(function() {
+      db.exec("BEGIN");
+      _.each(bulk, (params) => insertStatement.run(params ));
+      db.exec("COMMIT");
+    });
+  }
 
   return {
     insert: function (message) {
@@ -60,7 +70,7 @@ function OpenDb(dbFile, bufferSize) {
       var ts = message.timestamp;
       var sensor = message.name;
       var data = JSON.stringify(message.value);
-      insertStream.onNext([ts, sensor, data]);
+      inserts.onNext([ts, sensor, data]);
     }
   };
 

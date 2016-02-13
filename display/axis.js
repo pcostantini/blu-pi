@@ -3,7 +3,7 @@ var exitHook = require('exit-hook');
 var SSD1306 = require('./ssd1306.js');
 var AFGFX = require('./Adafruit_GFX.js');
 
-var wait = 5000;
+var wait = 1000;
 var width = 128;
 var height = 64;
 

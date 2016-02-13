@@ -1,85 +1,87 @@
 var _ = require('underscore');
-var child_process = require('child_process');
-var fork = child_process.fork;
 var Rx = require('rx');
-
-"use strict";
+require('heapdump'); // FOR MEMORY ANALYSIS PURPOSES
 
 // config
+var sessionId = new Date().getTime();
 var config = {
-  dbFile: './sensors-' + new Date().getTime() + '.sqlite3'
+  persist: false,
+  persistBuffer: 30,
+  sessionId: sessionId,
+  dbFile: './sensors-' + sessionId + '.sqlite3',
+  sensors: {
+    // refresh times
+    lsm303: {
+      acceleration: 1000,
+      axes: 1000,
+      heading: 1000,
+      temp: 1000
+    }
+  }
 };
-
-console.log('starting pi-blu', config);
-console.log('.');
-var startTs = new Date().getTime();
-function done() {
-  var endTs = new Date().getTime();
-  console.log('ready! took %d \'\'', (endTs - startTs) / 1000 );
-}
 
 // inputs
 var gpio = require('./gpios');
 var inputBack = gpio.readPin(18, 0).select(as(-1));
-var inputNext = gpio.readPin(23, 0).select(as(0));
-var inputOk = gpio.readPin(25, 0).select(as(1));
+var inputNext = gpio.readPin(27, 0).select(as( 0));
+// var inputOk = gpio.readPin(25, 0).select(as(1));
 var inputs = Rx.Observable.merge(
-  [ inputBack, inputNext, inputOk ]);
+  [ inputBack, inputNext/*, inputOk*/ ]);
 inputs.subscribe(console.log);
 
 // ODOMTER & CADENCE
 // ...
-var wheelLoop = gpio.readPin(24, 0).select(as(1));
-wheelLoop.subscribe(() => console.log('...weeeee!'));
+// var wheelLoop = gpio.readPin(24, 0).select(as(1));
+// wheelLoop.subscribe(() => console.log('...weeeee!'));
 
 // sensors
-var bootstrap_sensors = require('./bootstrap_sensors');
-var sensors = bootstrap_sensors();
+var sensors = require('./bootstrap_sensors')(config.sensors);
 
-// bufferedd persitence
-var persistence = require('./session_persistence');
-var bufferSize = 30;
-var db = persistence.OpenDb(config.dbFile, bufferSize);
+if(config.persist) {
 
-// persist with timestamp
-sensors.select(function(sensorEvent) {
-    return _.extend(
-      { timestamp: new Date().getTime() },
-      sensorEvent);
-  }).subscribe(db.insert);
+  var persistence = require('./session_persistence');
+  var db = persistence.OpenDb(config.dbFile, config.persistBuffer);
+
+  // persist with timestamp
+  sensors
+    .select(function(sensorEvent) {
+      return _.extend(
+        { timestamp: new Date().getTime() },
+        sensorEvent);
+    })
+    .subscribe(db.insert);
+}
 
 // ticks
-var ticks = require('./sensors/ticks')()
+var ticks = require('./sensors/ticks')();
 
-// convert sensor data to kind of state
+// convert sensor data to state
 var state = Rx.Observable.merge(
   ticks, sensors)
   .scan(function(currentState, sensor) {
     currentState[sensor.name] = sensor.value;
     return currentState;
-    // return _.extend(
-    //   state,
-    //   _.object([[sensor.name, sensor.value]]));
   }, {})
-  .throttle(1000);
-
-state.throttle(5000)
-     .subscribe(console.log);
+  .throttle(5000)
+  .do(console.log);
 
 // var screens = [
-//   'ticks',
-//   'screensaver',
-//   'speed',
+//   'screensaver', // dummy stuff
+//   'ticks',       // time and distance
+//   'speed',       // current speed values (gps, odometer, cadence)
 //   'intervals',
 // ];
 
-// var Display = require('./display');
-// var ui = Display(sensors, state);
+// menu
+var Display = require('./display');
 
+// axis
+// var Display = require('./display/axis');
 
+// ...
+var ui = Display(sensors, state);
+// ui?
 
-// done
-done();
 
 // REPL support
 // initRepl(app);
@@ -91,38 +93,6 @@ done();
 
 
 // ...
-function nameIn(names) {
-  return function(s) {
-    return names.indexOf(s.name) > -1;
-  };
-}
-
-function echo(o) { console.log(o); return o; }
-
-function getTime(date) {
-  return date ? date.toLocaleTimeString().split(':').slice(0, -1).join(':') : '00:00';
-}
-
-function hasGpsFix(gps) {
-  return !!gps && gps.mode > 1
-}
-
-function getTemp(barometer) {
-  return barometer ? barometer.temperature : 0;
-}
-
-function getMagnetometerTemperature(magnometer) {
-  return magnometer ? magnometer.temp : 0;
-}
-
-function getCpu(cpuUptime) {
-  if(!cpuUptime) {
-    return 0;
-  };
-
-  return cpuUptime[0];
-}
-
 function as(inputValue) {
   return function(e) {
     return {
