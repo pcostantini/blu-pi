@@ -2,7 +2,7 @@ var _ = require('underscore');
 var Rx = require('rx');
 require('heapdump'); // FOR MEMORY ANALYSIS PURPOSES
 
-// config
+// init
 var sessionId = new Date().getTime();
 var config = {
   persist: false,

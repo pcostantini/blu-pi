@@ -10,8 +10,7 @@ function Memory() {
     function readAndEmit() {
     	var value = process.memoryUsage();
     	value.freeMem = os.freemem();
-        var e = { name: SensorName, value: value };
-        observer.onNext(e);
+        observer.onNext({ name: SensorName, value: value });
     }
 
     setInterval(readAndEmit, 5000);

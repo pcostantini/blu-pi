@@ -10,17 +10,20 @@ function readAllPins(pins) {
 function readPin(gpioPin, respondOnValue) {
   return Rx.Observable.create(function (observer) {
 
-    var reed = new GPIO(gpioPin, 'in', 'both');
-    reed.watch(function (err, value) {
+    try {
+      var read = new GPIO(gpioPin, 'in', 'both');
+      read.watch(function (err, value) {
         if(err) {
            throw err;
         }
 
-	if(respondOnValue === undefined || value === respondOnValue) {
+        if(respondOnValue === undefined || value === respondOnValue) {
           observer.onNext({ "pin": gpioPin, "value": value });
         }
-
-    });
+      });
+    } catch(err) {
+      console.log('gpios.err!', err);
+    }
 
   });
 }

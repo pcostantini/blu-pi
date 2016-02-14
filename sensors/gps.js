@@ -18,4 +18,8 @@ function GPS() {
   });
 }
 
+function traceError(e) {
+  console.log('grps.err!', e);
+}
+
 module.exports = GPS;
