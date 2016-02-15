@@ -54,22 +54,22 @@ function drawCpuAndRam(lcd, cpuState, memoryState) {
   if(cpuState) {
     var cpu = cpuState[0] < 2 ? cpuState[0] : 2;
     var cpuWidth = Math.round((126 / 2) * (2-cpu));
-    lcd.fillRect(cpuWidth, 1, 127 - cpuWidth, 2, false);
+    lcd.fillRect(1, 1, cpuWidth, 2, false);
   }
 
   // mem
   if(memoryState) {
-    var total = memoryState.heapTotal;
-    var free = total - memoryState.heapUsed;
+    var total = 181; // RPi a+ // TODO: extract
+    var free = memoryState.freeMem / (1024 * 1024);
     var freeWidth = Math.round((126 / total) * free);
-    lcd.fillRect(freeWidth, 3, 127 - freeWidth, 1, false);
+    lcd.fillRect(1, 3, freeWidth, 1, false);
   }
 
 }
 
 function drawBackground(lcd) {
   lcd.fillRect(0, 5, 128, 64, false);
-  lcd.drawCircle(42, height/2, getRandomArbitrary(), true);
+  lcd.drawCircle(92, height/2, getRandomArbitrary(), true);
   lcd.drawLine(0, getRandomArbitrary(), 127, getRandomArbitrary(), true);
   lcd.drawLine(0, getRandomArbitrary(), 127, getRandomArbitrary(), true);
 }

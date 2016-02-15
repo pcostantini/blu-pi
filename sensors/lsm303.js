@@ -1,49 +1,45 @@
 var Rx = require('rx');
+var LSM303 = require('lsm303');
 
 // TODO: READ FAST!!!
 function LSM303_Observable(waitTimes) {
 
   return Rx.Observable.create(function (observer) {
 
-    function handleRead(sensorName, reCallback, wait) {
+    function handleRead(callback, sensorName, wait) {
       return function(err, sensorData) {
-        if(err) {
-          // TODO: log err!
-          console.log('ls303.err!', err);
-        } else {
+        var value = sensorData || err;
+        observer.onNext({ name: sensorName, value: value });
+        setTimeout(callback, wait);
 
-          // TODO: RESOLVE OR RETURN BUFFERED SAMPLES ON ARRAY FROM ABOVE LAYER
-          // console.log(sensorData);
-
-          observer.onNext({ name: sensorName, value: sensorData });
-        }
-
-        setTimeout(reCallback, wait);
       };
     }
 
     try {
-      var LSM303 = require('lsm303');
+
       var ls = new LSM303();
-      var accel = ls.accelerometer();
-      var mag = ls.magnetometer();
+      var accelerometer = ls.accelerometer();
+      var magnetometer = ls.magnetometer();
 
-      // read
-      (function accelReadAxes() {
-        accel.readAxes(handleRead('Acceleration', accelReadAxes, waitTimes.acceleration /*500*/));
+      (function accel() {
+        accelerometer.readAxes(handleRead(accel, 
+          'Acceleration', waitTimes.acceleration));
       })();
 
-      (function magReadAxes() {
-        mag.readAxes(handleRead('MagnometerAxis', magReadAxes, waitTimes.axes/*500*/));
+      (function axis() {
+        magnetometer.readAxes(handleRead(axis, 
+          'MagnometerAxis', waitTimes.axes));
       })();
 
-      (function magReadHeading() {
-        mag.readHeading(handleRead('MagnometerHeading', magReadHeading, waitTimes.heading/*1000*/));
+      (function heading() {
+        magnetometer.readHeading(handleRead(heading, 
+          'MagnometerHeading', waitTimes.heading));
       })();
 
       // useless?
-      (function magReadTemp() {
-        mag.readTemp(handleRead('MagnometerTemperature', magReadTemp, waitTimes.temp/*5000*/));
+      (function temp() {
+        magnetometer.readTemp(handleRead(temp, 
+          'MagnometerTemperature', waitTimes.temp));
       })();
 
     } catch(err) {

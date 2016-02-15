@@ -13,7 +13,7 @@ function Memory() {
         observer.onNext({ name: SensorName, value: value });
     }
 
-    setInterval(readAndEmit, 5000);
+    setInterval(readAndEmit, 3000);
     readAndEmit();
 
   });    

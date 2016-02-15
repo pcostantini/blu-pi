@@ -1,12 +1,14 @@
 var _ = require('underscore');
 var Rx = require('rx');
-require('heapdump'); // FOR MEMORY ANALYSIS PURPOSES
+
+// for debugging leaks
+// // require('heapdump'); 
 
 // init
 var sessionId = new Date().getTime();
 var config = {
-  persist: false,
-  persistBuffer: 30,
+  persist: true,
+  persistBuffer: 0,
   sessionId: sessionId,
   dbFile: './sensors-' + sessionId + '.sqlite3',
   sensors: {
@@ -20,27 +22,31 @@ var config = {
   }
 };
 
+console.log('blu-pi!', config);
+
 // inputs
 var gpio = require('./gpios');
 var inputBack = gpio.readPin(18, 0).select(as(-1));
 var inputNext = gpio.readPin(27, 0).select(as( 0));
-// var inputOk = gpio.readPin(25, 0).select(as(1));
+var inputOk = gpio.readPin(25, 0).select(as(1));
 var inputs = Rx.Observable.merge(
-  [ inputBack, inputNext/*, inputOk*/ ]);
+  [ inputBack, inputNext, inputOk ]);
 inputs.subscribe(console.log);
 
-// ODOMTER & CADENCE
-// ...
-// var wheelLoop = gpio.readPin(24, 0).select(as(1));
-// wheelLoop.subscribe(() => console.log('...weeeee!'));
 
 // sensors
 var sensors = require('./bootstrap_sensors')(config.sensors);
 
 if(config.persist) {
 
-  var persistence = require('./session_persistence');
-  var db = persistence.OpenDb(config.dbFile, config.persistBuffer);
+  var useBufferedPersistence = config.persistBuffer > 0;
+  var persistence = useBufferedPersistence
+    ? require('./session_persistence_buffered') 
+    : require('./session_persistence');
+
+  var db = useBufferedPersistence
+    ? persistence.OpenDb(config.dbFile, config.persistBuffer)
+    : persistence.OpenDb(config.dbFile);
 
   // persist with timestamp
   sensors
@@ -96,7 +102,7 @@ var ui = Display(sensors, state);
 var gcWaitTime = 60000; // 1'
 (function gc() {
   if (global.gc) {
-    console.log('GC...');
+    console.log('...GC!');
     global.gc();
     setTimeout(gc, gcWaitTime);
   } else {
