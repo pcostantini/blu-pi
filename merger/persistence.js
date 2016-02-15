@@ -1,15 +1,16 @@
 var sqlite3 = require('sqlite3').verbose();
-var _ = require('underscore');
+var _ = require('lodash');
 
 module.exports = function(dbFile, readOnly) {
 
   "use strict";
 
   var SqlSchemas = [
-    'CREATE TABLE IF NOT EXISTS sensors (' +
+    'CREATE TABLE IF NOT EXISTS sensorEvents (' +
       'sessionId INTEGER NOT NULL, ' + 
       'timestamp INTEGER NOT NULL, ' +
-      'info TEXT NOT NULL);',
+      'sensor TEXT NOT NULL, ' +
+      'data TEXT NOT NULL);',
 
     'CREATE TABLE IF NOT EXISTS sessions (' +
       'sessionId INTEGER PRIMARY KEY AUTOINCREMENT, ' +
@@ -17,7 +18,7 @@ module.exports = function(dbFile, readOnly) {
       'endTimestamp INTEGER NOT NULL, ' +
       'name TEXT);'];
 
-  var SqlInsertSensor = 'INSERT INTO sensors VALUES (?, ?, ?)';
+  var SqlInsertSensor = 'INSERT INTO sensorEvents VALUES (?, ?, ?, ?)';
   var SqlInsertSession = 'INSERT INTO sessions (startTimestamp, endTimestamp, name) VALUES (?, ?, ?)';
 
   // create db conn
@@ -34,7 +35,16 @@ module.exports = function(dbFile, readOnly) {
   return {
 
     readSensors: function () {
-      return readSensorData(db);
+      return new Promise(function(res, rej) {
+        db.all('SELECT timestamp, sensor, data FROM sensorEvents', function(err, rows) {
+          // ignore errors
+          // if(err) {
+          //   return rej(err);
+          // }
+
+          res(rows);
+        });
+      });
     },
     
     insertSession: function(rowSet) {
@@ -68,7 +78,7 @@ module.exports = function(dbFile, readOnly) {
               db.exec("BEGIN");
               var dbStatement = db.prepare(SqlInsertSensor);
               _.each(rowSet, function(row) {
-                dbStatement.run(sessionId, row.timestamp, row.info);
+                dbStatement.run(sessionId, row.timestamp, row.sensor, row.data);
               });
               db.exec("COMMIT");
 
@@ -84,17 +94,4 @@ module.exports = function(dbFile, readOnly) {
     }
   };
 
-}
-
-function readSensorData(db) {
-  return new Promise(function(res, rej) {
-    db.all('SELECT timestamp, info FROM sensors', function(err, rows) {
-      // ignore errors
-      // if(err) {
-      //   return rej(err);
-      // }
-
-      res(rows);
-    });
-  });
 }

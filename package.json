@@ -6,9 +6,8 @@
   "dependencies": {
     "bancroft": "0.0.12",
     "exit-hook": "^1.1.1",
-    "oled-font-5x7": "^1.0.0",
-    "oled-js-pi": "^1.0.5",
-    "pi-temperature": "^1.0.0",
+    "kefir": "^3.2.0",
+    "lodash": "^4.3.0",
     "replify": "^1.2.0",
     "rx": "^4.0.7",
     "sqlite3": "^3.1.1",
@@ -19,7 +18,10 @@
     "i2c": "^0.2.1",
     "bmp085": "^0.3.2",
     "lsm303": "git://github.com/praneshkmr/node-lsm303",
-    "onoff": "^1.0.3"
+    "onoff": "^1.0.3",
+    "pi-temperature": "^1.0.0",
+    "oled-font-5x7": "^1.0.0",
+    "oled-js-pi": "^1.0.5"
   },
   "devDependencies": {},
   "scripts": {

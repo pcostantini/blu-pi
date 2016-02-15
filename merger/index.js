@@ -1,10 +1,10 @@
 var SensorsDb = require('./persistence');
 
 var fs = require('fs');
-var _ = require('underscore');
-var Rx = require('rx');
+var _ = require('lodash');
+var Kefir = require('kefir');
 
-var dataDir = './data/';
+var dataDir = '../data/';
 var mainDataFile = 'main.sqlite3';
 
 // Main Db where all sensor data is merged
@@ -15,20 +15,15 @@ function initMainDb() {
 }
 
 // read from existing dbs
-var dbFetchs =
-    Rx.Observable.merge(
+var sessions =
+    Kefir.merge(
         fs.readdirSync(dataDir)
         .filter(function(s) { return _.last(s.split('.')) == 'sqlite3' })
         .filter(function(s) { return s !== mainDataFile; })
-        .map(readFromDb))
-    .where(notEmpty)
-    .select(mainDb.insertSession)            // append to main db
-    // report
-    .mergeAll()
-    .do(console.log)
-    .filter(function(res) { return res.newSession })
-    .reduce(function(acc, current) { return acc + current; }, 0)
-    .subscribe(function(t) { console.log('added total rows:', t); });
+        .map(readFromDb)
+        .map(Kefir.fromPromise))
+    .filter(notEmpty)
+    .onValue(mainDb.insertSession);  // append to DB
 
 
 function readFromDb(dbFile) {
