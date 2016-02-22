@@ -4,7 +4,7 @@ var sqlite3 = require('sqlite3').verbose();
 
 var bufferTimeout = 10 * 1000;
 
-function OpenDb(dbFile, bufferSize) {
+function OpenDb(dbFile) {
 
   "use strict";
 
