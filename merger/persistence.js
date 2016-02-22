@@ -20,6 +20,7 @@ module.exports = function(dbFile, readOnly) {
 
   var SqlInsertSensor = 'INSERT INTO sensorEvents VALUES (?, ?, ?, ?)';
   var SqlInsertSession = 'INSERT INTO sessions (startTimestamp, endTimestamp, name) VALUES (?, ?, ?)';
+  var SqlSelectSensor = 'SELECT timestamp, sensor, data FROM sensorEvents ORDER BY timestamp ASC';
 
   // create db conn
   var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
@@ -36,11 +37,10 @@ module.exports = function(dbFile, readOnly) {
 
     readSensors: function () {
       return new Promise(function(res, rej) {
-        db.all('SELECT timestamp, sensor, data FROM sensorEvents', function(err, rows) {
-          // ignore errors
-          // if(err) {
-          //   return rej(err);
-          // }
+        db.all(SqlSelectSensor, function(err, rows) {
+          if(err) {
+            return rej(err);
+          }
 
           res(rows);
         });
