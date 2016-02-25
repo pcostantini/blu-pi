@@ -6,6 +6,7 @@
   "dependencies": {
     "bancroft": "0.0.12",
     "exit-hook": "^1.1.1",
+    "hapi": "^13.0.0",
     "kefir": "^3.2.0",
     "lodash": "^4.3.0",
     "replify": "^1.2.0",

@@ -10,7 +10,7 @@ var config = {
   persist: true,
   persistBuffer: 0,
   sessionId: sessionId,
-  dbFile: '../data/sensors-' + sessionId + '.sqlite3',
+  dbFile: 'sensors-' + sessionId + '.sqlite3',
   sensors: {
     // refresh times
     lsm303: {
@@ -36,7 +36,7 @@ inputs.subscribe(console.log);
 
 // sensors
 var sensors = require('./bootstrap_sensors')(config.sensors);
-
+var db;
 if(config.persist) {
 
   var useBufferedPersistence = config.persistBuffer > 0;
@@ -44,7 +44,7 @@ if(config.persist) {
     ? require('../persistence/session_buffered') 
     : require('../persistence/session');
 
-  var db = useBufferedPersistence
+  db = useBufferedPersistence
     ? persistence.OpenDb(config.dbFile, config.persistBuffer)
     : persistence.OpenDb(config.dbFile);
 
@@ -81,13 +81,7 @@ state.subscribe(console.log);
 
 // menu
 var Display = require('./display');
-
-// axis
-// var Display = require('./display/axis');
-
-// ...
 var ui = Display(sensors, state);
-// ui?
 
 
 // REPL support
@@ -97,6 +91,9 @@ var ui = Display(sensors, state);
 //   replify('pi-blu', app);
 //   console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
 // }
+
+// web server + api
+var server = require('../server')(db);
 
 // GC COLLECTION - TODO: REVIEW IS REALLY NEEDED
 var gcWaitTime = 60000; // 1'

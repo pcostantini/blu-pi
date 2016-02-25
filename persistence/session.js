@@ -10,21 +10,22 @@ function OpenDb(dbFile) {
 
   var SqlSchema = 'CREATE TABLE IF NOT EXISTS SensorEvents (timestamp INTEGER, sensor VARCHAR(64), data TEXT)';
   var SqlInsertMessage = 'INSERT INTO SensorEvents VALUES (?, ?, ?)';
+  var SqlSelectSensors = 'SELECT timestamp, sensor, data FROM sensorEvents ORDER BY timestamp ASC';
 
   // create db
   var db = null;
   var insertStatement = null;
   var dbCreated = new Promise(function(resolve, reject) {
-    var db = new sqlite3.Database(dbFile, function () {
+    var newDb = new sqlite3.Database(dbFile, function () {
       // create initial schema
-      db.run(SqlSchema, function() {
-        resolve(db);
+      newDb.run(SqlSchema, function() {
+        resolve(newDb);
       });
     });
   });
 
-  dbCreated.then((dbInstance) => {
-    db = dbInstance;
+  dbCreated.then((newDb) => {
+    db = newDb;
     insertStatement = db.prepare(SqlInsertMessage);
   });
 
@@ -35,14 +36,28 @@ function OpenDb(dbFile) {
     insertStatement.run(event);
   });
 
+  function insert(message) {
+    var ts = message.timestamp;
+    var sensor = message.name;
+    var data = JSON.stringify(message.value);
+    inserts.onNext([ts, sensor, data]);
+  }
+
+  function retrieveAll() {
+    return new Promise(function(res, rej) {
+      console.log(db)
+      if(db === null) return res([]);
+      db.all(SqlSelectSensors, function(err, rows) {
+        console.log(arguments)
+        if(err) return rej(err);
+        res(rows);
+      });
+    });
+  }
+
   return {
-    insert: function (message) {
-      // TODO: insert properly. dump sensor event as json, normalize name
-      var ts = message.timestamp;
-      var sensor = message.name;
-      var data = JSON.stringify(message.value);
-      inserts.onNext([ts, sensor, data]);
-    }
+    insert: insert,
+    retrieveAll: retrieveAll 
   };
 
 }
