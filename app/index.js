@@ -10,7 +10,7 @@ var config = {
   persist: true,
   persistBuffer: 0,
   sessionId: sessionId,
-  dbFile: './sensors-' + sessionId + '.sqlite3',
+  dbFile: '../data/sensors-' + sessionId + '.sqlite3',
   sensors: {
     // refresh times
     lsm303: {
@@ -41,8 +41,8 @@ if(config.persist) {
 
   var useBufferedPersistence = config.persistBuffer > 0;
   var persistence = useBufferedPersistence
-    ? require('./session_persistence_buffered') 
-    : require('./session_persistence');
+    ? require('../persistence/session_buffered') 
+    : require('../persistence/session');
 
   var db = useBufferedPersistence
     ? persistence.OpenDb(config.dbFile, config.persistBuffer)

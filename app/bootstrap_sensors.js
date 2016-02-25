@@ -9,14 +9,13 @@ function bootstrap(sensorsConfig) {
 
   var sensors = [
     require('./sensors/lsm303')(sensorsConfig.lsm303),
-    // require('./sensors/barometer')(),
+    require('./sensors/barometer')(),
     require('./sensors/gps')(),
     // sys
     require('./sensors/cpu_temperature')(),
-    require('./sensors/cpu_load')(),
-    require('./sensors/memory')()];
+    require('./sensors/cpu_load')()];
 
-  // TODO: handle errors
+  // TODO: handle errors here?
   return Rx.Observable.merge(sensors);
 
 }
