@@ -81,13 +81,7 @@ state.subscribe(console.log);
 
 // menu
 var Display = require('./display');
-
-// axis
-// var Display = require('./display/axis');
-
-// ...
 var ui = Display(sensors, state);
-// ui?
 
 
 // REPL support
