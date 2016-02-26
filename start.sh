@@ -1,11 +1,12 @@
 #!/bin/bash -f
 
 # reset oled
-cd /home/pi/Temp/Adafruit_Python_SSD1306/examples/
+cd ../../Temp/Adafruit_Python_SSD1306/examples/
 sudo python image.py
 
 # run blu-pi
-cd "$(dirname "$0")"
+# cd "$(dirname "$0")"
+cd ../../../Projects/blu-pi/
 
 SCREEN_NAME=blu
 

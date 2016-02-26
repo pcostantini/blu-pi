@@ -13,12 +13,13 @@ function Barometer() {
         console.log('barometer.err!', err);
       }
 
-      setTimeout(() => read(barometer), 2500);
+      setTimeout(() => read(barometer), 2000);
     }
 
     try {
       var BMP085 = require('bmp085');
-      var barometer = new BMP085({ mode: 1 });
+      //var barometer = new BMP085({ mode: 2 }); // highres mode
+      var barometer = new BMP085();
       read(barometer);
     } catch(err) {
       console.log('barometer.initErr!', err);

@@ -36,11 +36,11 @@ function LSM303_Observable(waitTimes) {
           'MagnometerHeading', waitTimes.heading));
       })();
 
-      // useless?
-      (function temp() {
+      // useless due to lsm303 being inside box. temperature will be highier
+      /*(function temp() {
         magnetometer.readTemp(handleRead(temp, 
           'MagnometerTemperature', waitTimes.temp));
-      })();
+      })();*/
 
     } catch(err) {
       console.log('lsm303.initErr!', err);

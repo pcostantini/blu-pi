@@ -9,18 +9,16 @@ var height = 64;
 
 module.exports = function Display(sensorStream, stateStream) {
 
-  var memoryState = null;
   var cpuState = null;
   sensorStream.subscribe(s => {
     if(s.name == 'CpuLoad') {
       cpuState = s.value;
-    } else if(s.name == 'Memory') {
-      memoryState = s.value;
     }
   });
 
   var lcd = _.extend(new SSD1306(), new AFGFX(width, height));
   lcd.init();
+  // lcd.dim(true);
   lcd.clear();
   lcd.display();
 
@@ -34,21 +32,30 @@ module.exports = function Display(sensorStream, stateStream) {
   });
 
   // draw loop
+  var bit = false;
   (function redraw() {
 
-    drawBackground(lcd);
-    drawCpuAndRam(lcd, cpuState, memoryState);
-    lcd.display();
+    bit = !bit;
 
+    // drawBackground(lcd);
+    drawCpu(lcd, cpuState);
+    drawBit(lcd, bit);
+   
+    lcd.display();
     setTimeout(redraw, wait);
 
   })();
 }
 
-function drawCpuAndRam(lcd, cpuState, memoryState) {
+function drawBit(lcd, bit) {
+    lcd.drawPixel(0, 63, bit ? 1 : 0);
+}
+
+
+function drawCpu(lcd, cpuState) {
   
   // clear
-  lcd.fillRect(0, 0, 128, 5, true);
+  lcd.fillRect(0, 0, 128, 4, true);
 
   // cpu
   if(cpuState) {
@@ -56,15 +63,6 @@ function drawCpuAndRam(lcd, cpuState, memoryState) {
     var cpuWidth = Math.round((126 / 2) * (2-cpu));
     lcd.fillRect(1, 1, cpuWidth, 2, false);
   }
-
-  // mem
-  if(memoryState) {
-    var total = 181; // RPi a+ // TODO: extract
-    var free = memoryState.freeMem / (1024 * 1024);
-    var freeWidth = Math.round((126 / total) * free);
-    lcd.fillRect(1, 3, freeWidth, 1, false);
-  }
-
 }
 
 function drawBackground(lcd) {
