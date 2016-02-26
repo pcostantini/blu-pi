@@ -12,9 +12,6 @@
     "rx": "^4.0.7",
     "sqlite3": "^3.1.1",
     "underscore": "^1.8.3"
-  },
-  "optionalDependencies": {
-    "node-gpsd": "^0.2.4",
     "i2c": "^0.2.1",
     "bmp085": "^0.3.2",
     "lsm303": "git://github.com/praneshkmr/node-lsm303",
