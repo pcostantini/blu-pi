@@ -1,12 +1,12 @@
 // BLU-PI API:
 /*
-  ../api/session
+  ../api/sessions
     - list sessions
-  ../api/session/current/
+  ../api/sessions/current/
     - ?
-  ../api/session/current/sensors
+  ../api/sessions/current/sensors
     - current session readouts
-  ../api/session/current/sensors?type=Gps
+  ../api/sessions/current/sensors?type=Gps
     - current session gps readouts
 */
 var Hapi = require('hapi');
@@ -27,7 +27,7 @@ function init(currentPersistence) {
 
   server.route({
     method: 'GET',
-    path: '/api/session/current/sensors',
+    path: '/api/sessions/current/sensors',
     handler: function(req, reply) {
       currentPersistence
         .retrieveAll()
