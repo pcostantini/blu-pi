@@ -9,6 +9,10 @@ function GPS() {
     var bancroft = new Bancroft();
 
     bancroft.on('location', function (location) {
+
+      if(isNaN(location.timestamp)) {
+	return observer.onNext({ name: SensorName, value: null });
+      }
       
       // remove ...      geometries: { type: 'Point', coordinates: [Object] }
       var cleanLocation = _.omit(location, ['geometries']);
