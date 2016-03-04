@@ -4,7 +4,7 @@ var fs = require('fs');
 var _ = require('lodash');
 var Kefir = require('kefir');
 
-var dataDir = '../data/';
+var dataDir = './data/';
 var mainDataFile = 'main.sqlite3';
 
 // Main Db where all sensor data is merged
