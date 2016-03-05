@@ -32,7 +32,7 @@ module.exports = function(dbFile, readOnly) {
     });
   }
 
-	function insertSession(rowSet) {
+	function insertSession(rowSet, sessionName) {
 
     return new Promise(function(res, rej) {
 
@@ -43,7 +43,6 @@ module.exports = function(dbFile, readOnly) {
       // timeframe
       var first = _.first(rowSet);
       var last = _.last(rowSet);
-      var sessionName = new Date(first.timestamp).toString();
 
       // add session
       var sessionCreated = new Promise(function(sessionResolve, sessionReject) {

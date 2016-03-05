@@ -1,13 +1,27 @@
 var xml2json = require('xml2json');
 var _ = require('lodash');
 
-function gpx(sensorEvents) {
-  var items = getTrackEvents(sensorEvents)
-  var json = asGpxObject(items);
+const CreatorName = 'blu-pi with barometer';
+const CreatorVersion = '0.1';
+
+function read(sensorEvents, activityName) {
+  var items = asTrackEvents(sensorEvents)
+  var json = asGpxObject(items, activityName);
   return xml2json.toXml(json);
 }
 
-function getTrackEvents(sensorEvents) {
+function readWithActivityName(activityName) {
+  return function(sensorEvents) {
+    return read(sensorEvents, activityName);
+  }
+}
+
+module.exports = {
+  read: read,
+  readWithActivityName: readWithActivityName
+};
+
+function asTrackEvents(sensorEvents) {
   var events = sensorEvents.map(s => ({
     timestamp: s.timestamp,
     sensor: s.sensor,
@@ -42,7 +56,7 @@ const asTemp = (s) => ({
   pres: s.data.pressure
 });
 
-function asGpxObject(items) {
+function asGpxObject(items, activityName) {
 
   var trackPoints = _.reduce(
     items,
@@ -64,8 +78,8 @@ function asGpxObject(items) {
 
   var gpx = {
     gpx: {
-      creator:        'blu-pi v0.1',
-      version:        '1.1',
+      creator:        CreatorName,
+      version:        CreatorVersion,
       xmlns:          'http://www.topografix.com/GPX/1/1',
       'xmlns:gpxx':   'http://www.garmin.com/xmlschemas/GpxExtensions/v3',
       'xmlns:gpxtpx': 'http://www.garmin.com/xmlschemas/TrackPointExtension/v1',
@@ -76,7 +90,7 @@ function asGpxObject(items) {
       },
       trk: {
         name: {
-          '$t': 'Test Ride'
+          '$t': activityName
         },
         trkseg: trackPoints.map(toTrkpt)
       }
@@ -124,5 +138,3 @@ const toExtensions = (e) => {
     }
   };
 };
-
-module.exports = gpx;
