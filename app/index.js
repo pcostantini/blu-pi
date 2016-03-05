@@ -40,7 +40,6 @@ var inputs = Rx.Observable.merge(
   [ inputBack, inputNext, inputOk ]);
 inputs.subscribe(console.log);
 
-
 // sensors
 var sensors = require('./bootstrap_sensors')(config.sensors);
 var db;
@@ -89,7 +88,6 @@ state.subscribe(console.log);
 // menu
 var Display = require('./display');
 var ui = Display(sensors, state);
-
 
 // REPL support
 // initRepl(app);

@@ -1,9 +1,23 @@
 var Persistence = require('../persistence');
-var asGpx = require('./gpx');
+var Gpx = require('./gpx');
 
-var dbPath = process.argv[2];
+// input:
+// [0] = .sqlite file
+// [1] = activity name [optional]
 
-var db = Persistence(dbPath, true);
-var track = db.readSensors()
-  .then(asGpx)
-  .then(console.log);
+var dbFilePath = process.argv[2];
+if(!dbFilePath) throw new Error('no path to .sqlite!');
+var activityName = process.argv[3];
+if(!activityName) {
+	activityName = parseInt(dbFilePath, 10);
+}
+if(!activityName) {
+	activityName = dbFilePath.split('.')[0]; // remove .ext
+}
+
+var db = Persistence(dbFilePath, true);
+
+var track =
+  db.readSensors(dbFilePath)
+    .then(Gpx.readWithActivityName(activityName))
+    .then(console.log);
