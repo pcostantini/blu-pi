@@ -24,6 +24,13 @@ var config = {
 
 console.log('blu-pi!', config);
 
+// global error handling
+// this is due to some sensor code may throw error in async ways, not making it possible to catch
+process.on('uncaughtException', (err) => {
+  console.log('Caught exception: ', err);
+});
+
+
 // inputs
 var gpio = require('./gpios');
 var inputBack = gpio.readPin(18, 0).select(as(-1));
@@ -93,7 +100,7 @@ var ui = Display(sensors, state);
 // }
 
 // web server + api
-var server = require('../server')(db);
+// var server = require('../server')(db);
 
 // GC COLLECTION - TODO: REVIEW IS REALLY NEEDED
 var gcWaitTime = 60000; // 1'
