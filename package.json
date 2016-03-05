@@ -5,21 +5,22 @@
   "main": "main.js",
   "dependencies": {
     "bancroft": "0.0.12",
+    "bmp085": "^0.3.2",
     "exit-hook": "^1.1.1",
     "hapi": "^13.0.0",
+    "i2c": "^0.2.1",
     "kefir": "^3.2.0",
     "lodash": "^4.3.0",
+    "lsm303": "git://github.com/praneshkmr/node-lsm303",
+    "oled-font-5x7": "^1.0.0",
+    "oled-js-pi": "^1.0.5",
+    "onoff": "^1.0.3",
+    "pi-temperature": "^1.0.0",
     "replify": "^1.2.0",
     "rx": "^4.0.7",
     "sqlite3": "^3.1.1",
-    "underscore": "^1.8.3"
-    "i2c": "^0.2.1",
-    "bmp085": "^0.3.2",
-    "lsm303": "git://github.com/praneshkmr/node-lsm303",
-    "onoff": "^1.0.3",
-    "pi-temperature": "^1.0.0",
-    "oled-font-5x7": "^1.0.0",
-    "oled-js-pi": "^1.0.5"
+    "underscore": "^1.8.3",
+    "xml2json": "^0.9.0"
   },
   "devDependencies": {},
   "scripts": {
