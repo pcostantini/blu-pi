@@ -1,7 +1,6 @@
 var _ = require('underscore');
 var exitHook = require('exit-hook');
-// var Lcd = require('./lcd');
-var Lcd = require('./lcd_web');
+var Lcd = require('./lcd_web'); // require('./lcd');
 
 var refreshDisplayDelay = 1000;
 var width = 128;
@@ -50,10 +49,10 @@ module.exports = function Display(eventsStream) {
   }
 
   function drawCpu(lcd, cpuState) {
-    lcd.fillRect(0, 0, 128, 4, true);
+    lcd.fillRect(0, 0, 4, height, true);
     var cpu = cpuState[0] < 2 ? cpuState[0] : 2;
-    var cpuWidth = Math.round((126 / 2) * (2-cpu));
-    lcd.fillRect(1, 1, cpuWidth, 2, false);
+    var cpuWidth = Math.round((height / 2) * (2-cpu));
+    lcd.fillRect(1, 1, 2, cpuWidth, false);
   }
 
   function drawBackground(lcd) {
