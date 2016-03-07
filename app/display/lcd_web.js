@@ -2,8 +2,9 @@ var _ = require('lodash');
 var fs = require('fs');
 var http = require('http');
 var SocketIo = require('socket.io');
-
 var AFGFX = require('./Adafruit_GFX.js');
+
+var httpPort = 8080;
 
 function Lcd(width, height) {
   var lcd =  _.extend(new AFGFX(width, height), new DisplayMock(width, height));
@@ -43,7 +44,7 @@ function DisplayMock(width, height) {
 
   this.io = io;
 
-  server.listen(88);
+  server.listen(httpPort);
 }
 
 DisplayMock.prototype.clear = function() {
