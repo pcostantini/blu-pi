@@ -25,12 +25,8 @@ var config = {
 console.log('blu-pi!', config);
 
 // inputs
-var gpio = require('./gpios');
-var inputBack = gpio.readPin(18, 0).select(as(-1));
-var inputNext = gpio.readPin(27, 0).select(as( 0));
-var inputOk = gpio.readPin(25, 0).select(as(1));
-var inputs = Rx.Observable.merge(
-  [ inputBack, inputNext, inputOk ]);
+// var inputs = require('./inputs');
+var inputs = Rx.Observable.empty();
 inputs.subscribe(console.log);
 
 // sensors
@@ -57,19 +53,7 @@ if(config.persist) {
     .subscribe(db.insert);
 }
 
-// ticks
-var ticks = require('./sensors/ticks')();
 
-// convert sensor data to state
-var state = Rx.Observable.merge(
-  ticks, sensors)
-  .scan(function(currentState, sensor) {
-    currentState[sensor.name] = sensor.value;
-    return currentState;
-  }, {})
-  .throttle(5000);
-
-state.subscribe(console.log);
 
 // var screens = [
 //   'screensaver', // dummy stuff
@@ -78,9 +62,12 @@ state.subscribe(console.log);
 //   'intervals',
 // ];
 
-// menu
+var ticks = require('./sensors/ticks')();
+var all = Rx.Observable.merge(ticks, sensors, inputs);
+// all.subscribe(console.log)
+
 var Display = require('./display');
-var ui = Display(sensors, state);
+var ui = Display(all);
 
 // REPL support
 // initRepl(app);
@@ -107,12 +94,3 @@ var gcWaitTime = 60000; // 1'
 })();
 
 
-
-// ...
-function as(inputValue) {
-  return function(e) {
-    return {
-      input: inputValue
-    };
-  };
-}
