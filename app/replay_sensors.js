@@ -31,7 +31,7 @@ function schedule(source) {
       Rx.Scheduler.default.scheduleFuture(
         null,
         t.offset,
-        () => source.onNext(_.pick(t, ['sensor', 'data'])));
+        () => source.onNext(_.pick(t, ['name', 'value'])));
     });
   }
 }
@@ -50,8 +50,8 @@ function adaptEvent(offset) {
   return function(event) {
     return {
       offset: event.timestamp - offset,
-      sensor: event.sensor,
-      data: JSON.parse(event.data)
+      name: event.sensor,
+      value: JSON.parse(event.data)
     };
   };
 }
