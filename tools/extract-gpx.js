@@ -18,6 +18,6 @@ if(!activityName) {
 var db = Persistence(dbFilePath, true);
 
 var track =
-  db.readSensors(dbFilePath)
+  db.readSensors()
     .then(Gpx.readWithActivityName(activityName))
     .then(console.log);
