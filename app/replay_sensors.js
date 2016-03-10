@@ -5,17 +5,12 @@ var _ = require('lodash');
 var start = new Date();
 
 function ReplayFromDb(dbFilePath) {
-
-  // var baseTime = new Date();
   var source = new Rx.Subject();
-
   var db = Persistence(dbFilePath, true);
   db.readSensors()
     .then(startWithGps)
-    .then(adaptEvents)
+    .then(toEvents)
     .then(schedule(source));
-
-
   return source;
 }
 
@@ -36,17 +31,17 @@ function schedule(source) {
   }
 }
 
-function adaptEvents(events) {
+function toEvents(events) {
   if(events.length === 0) return [];
   var first = events[0];
   var offset = first.timestamp;
 
   console.log('REPLAY OFFSET', offset)
 
-  return events.map(adaptEvent(offset));
+  return events.map(toEvent(offset));
 }
 
-function adaptEvent(offset) {
+function toEvent(offset) {
   return function(event) {
     return {
       offset: event.timestamp - offset,
