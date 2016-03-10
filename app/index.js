@@ -7,7 +7,7 @@ var Rx = require('rx');
 // init
 var sessionId = new Date().getTime();
 var config = {
-  persist: true,
+  persist: false,
   persistBuffer: 0,
   sessionId: sessionId,
   dbFile: 'sensors-' + sessionId + '.sqlite3',
@@ -30,7 +30,8 @@ var inputs = Rx.Observable.empty();
 inputs.subscribe(console.log);
 
 // sensors
-var sensors = require('./bootstrap_sensors')(config.sensors);
+// var sensors = require('./bootstrap_sensors')(config.sensors);
+var sensors = require('./replay_sensors')('sensors-1456895867978-TestRideParqueSarmiento.sqlite3');
 var db;
 if(config.persist) {
 
@@ -64,7 +65,7 @@ if(config.persist) {
 
 var ticks = require('./sensors/ticks')();
 var all = Rx.Observable.merge(ticks, sensors, inputs);
-// all.subscribe(console.log)
+all.subscribe(console.log)
 
 var Display = require('./display');
 var ui = Display(all);
@@ -78,7 +79,7 @@ var ui = Display(all);
 // }
 
 // web server + api
-var server = require('../server')(db);
+// var server = require('../server')(db);
 
 // GC COLLECTION - TODO: REVIEW IS REALLY NEEDED
 var gcWaitTime = 60000; // 1'
