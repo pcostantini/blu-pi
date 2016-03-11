@@ -24,6 +24,13 @@ var config = {
 
 console.log('blu-pi!', config);
 
+// global error handling
+// this is due to some sensor code may throw error in async ways, not making it possible to catch
+process.on('uncaughtException', (err) => {
+  console.log('Caught exception: ', err);
+});
+
+
 // inputs
 // var inputs = require('./inputs');
 var inputs = Rx.Observable.empty();
