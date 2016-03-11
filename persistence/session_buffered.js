@@ -1,4 +1,3 @@
-var _ = require('underscore');
 var exitHook = require('exit-hook');
 var Rx = require('rx');
 var sqlite3 = require('sqlite3').verbose();
@@ -59,7 +58,7 @@ function OpenDb(dbFile, bufferSize) {
     var insertStatement = db.prepare(SqlInsertMessage);
     db.serialize(function() {
       db.exec("BEGIN");
-      _.each(bulk, (params) => insertStatement.run(params ));
+      bulk.forEach((params) => insertStatement.run(params));
       db.exec("COMMIT");
     });
   }

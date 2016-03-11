@@ -1,4 +1,4 @@
-var _ = require('underscore');
+var _ = require('lodash');
 var Rx = require('rx');
 var Bancroft = require('bancroft');
 

@@ -6,7 +6,7 @@ var SocketIo = require('socket.io');
 var httpPort = 8080;
 
 // Mock Display that routes buffer data using socket.io
-function LcdMock(width, height) {
+function OledMock(width, height) {
   
   this.bufferWidth =  width;
   this.bufferHeight = height;
@@ -42,7 +42,7 @@ function LcdMock(width, height) {
   server.listen(httpPort);
 }
 
-DisplayMock.prototype.clear = function() {
+OledMock.prototype.clear = function() {
   this.buffer = [];
   for(var y=0; y<this.bufferHeight; y++) {
     this.buffer[y] = _.fill(Array(this.bufferWidth), 0);
@@ -50,7 +50,7 @@ DisplayMock.prototype.clear = function() {
 }
 
 // update single pixel in buffer
-DisplayMock.prototype.drawPixel = function(x, y, color) {
+OledMock.prototype.drawPixel = function(x, y, color) {
   x = Math.round(x);
   y = Math.round(y);
   if(x > this.bufferWidth-1 || x < 0 ||
@@ -60,9 +60,9 @@ DisplayMock.prototype.drawPixel = function(x, y, color) {
   this.buffer[y][x] = bit;
 }
 
-DisplayMock.prototype.display = function() {
+OledMock.prototype.display = function() {
   // send buffer to socket for redraw
   this.io.sockets.emit('buffer', this.buffer);
 }
 
-module.exports = LcdMock;
+module.exports = OledMock;
