@@ -20,6 +20,7 @@ module.exports = function Display(eventsStream) {
           break;
         case 'Ticks':
           bit = !bit;
+          drawBackground(lcd);
           drawBit(lcd, bit);
           break;
       }
@@ -56,7 +57,7 @@ module.exports = function Display(eventsStream) {
   }
 
   function drawBackground(lcd) {
-    lcd.fillRect(0, 5, 128, 64, false);
+    lcd.fillRect(4, 0, 124, 64, false);
     lcd.drawCircle(92, height/2, getRandomArbitrary(), true);
     lcd.drawLine(0, getRandomArbitrary(), 127, getRandomArbitrary(), true);
     lcd.drawLine(0, getRandomArbitrary(), 127, getRandomArbitrary(), true);
