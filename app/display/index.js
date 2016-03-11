@@ -46,7 +46,7 @@ module.exports = function Display(eventsStream) {
 
   // graph functions
   function drawBit(lcd, bit) {
-    lcd.fillRect(0, 60, 4, 4, bit ? 1 : 0);
+    lcd.fillRect(124, 60, 4, 4, bit ? 1 : 0);
   }
 
   function drawCpu(lcd, cpuState) {
@@ -59,8 +59,8 @@ module.exports = function Display(eventsStream) {
   function drawBackground(lcd) {
     lcd.fillRect(4, 0, 124, 64, false);
     lcd.drawCircle(92, height/2, getRandomArbitrary(), true);
-    lcd.drawLine(0, getRandomArbitrary(), 127, getRandomArbitrary(), true);
-    lcd.drawLine(0, getRandomArbitrary(), 127, getRandomArbitrary(), true);
+    lcd.drawLine(4, getRandomArbitrary(), 127, getRandomArbitrary(), true);
+    lcd.drawLine(4, getRandomArbitrary(), 127, getRandomArbitrary(), true);
   }
 
   function getRandomArbitrary() {

@@ -54,8 +54,13 @@ DisplayMock.prototype.clear = function() {
   }
 }
 
+// update single pixel in buffer
 DisplayMock.prototype.drawPixel = function(x, y, color) {
-  // update single pixel in buffer
+  x = Math.round(x);
+  y = Math.round(y);
+  if(x > this.bufferWidth-1 || x < 0 ||
+     y > this.bufferHeight-1 || y < 0) return;
+    
   var bit = !!color ? 1 : 0;
   this.buffer[y][x] = bit;
 }
