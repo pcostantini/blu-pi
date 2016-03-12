@@ -8,7 +8,7 @@ var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 // init
 var sessionId = new Date().getTime();
 var config = {
-  persist: false,
+  persist: true,
   persistBuffer: 0,
   sessionId: sessionId,
   dbFile: 'sensors-' + sessionId + '.sqlite3',
@@ -28,10 +28,8 @@ console.log('blu-pi!', config);
 // global error handling
 // this is due to some sensor code may throw error in async ways, not making it possible to catch
 process.on('uncaughtException', (err) => {
-  console.log('ERROR!: ', {
-    err: err,
-    stack: err.stack
-  });
+  console.log('ERROR!: ', err.toString());
+  console.log('ERROR.....', err/stack);
 });
 
 
@@ -41,8 +39,9 @@ var inputs = Rx.Observable.empty();
 inputs.subscribe(console.log);
 
 // sensors
-// var sensors = require('./bootstrap_sensors')(config.sensors);
-var sensors = require('./replay_sensors')('sensors-1456895867978-TestRideParqueSarmiento.sqlite3');
+var sensors = require('./bootstrap_sensors')(config.sensors);
+// var sensors = require('./replay_sensors')('sensors-1456895867978-TestRideParqueSarmiento.sqlite3');
+
 var db;
 if(config.persist) {
 
@@ -78,8 +77,8 @@ var ticks = require('./sensors/ticks')();
 var all = Rx.Observable.merge(ticks, sensors, inputs);
 // all.subscribe(console.log)
 
-var Driver = require('./display/web');  // MOCK
-// var Driver = require('./display/oled'); // OLED
+// var Driver = require('./display/web');  // MOCK
+var Driver = require('./display/oled'); // OLED
 
 var width = 128;
 var height = 64;
@@ -90,14 +89,6 @@ var driver = _.extend(gfx, driverImpl);
 
 var Display = require('./display');
 var ui = Display(driver, all);
-
-// REPL support
-// initRepl(app);
-// function initRepl(app) {
-//   var replify = require('replify');
-//   replify('pi-blu', app);
-//   console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
-// }
 
 // web server + api
 // var server = require('../server')(db);

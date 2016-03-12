@@ -1,5 +1,3 @@
-var exitHook = require('exit-hook');
-
 var refreshDisplayDelay = 1000;
 var width = 128;
 var height = 64;
@@ -45,15 +43,6 @@ module.exports = function Display(driver, eventsStream) {
     driver.display();
     setTimeout(redraw, refreshDisplayDelay);
   })();
-
-  exitHook(function () {
-    // TODO: cleanup subscriptions to streams
-    console.log('CLEANUP:driver');
-    if(driver) {
-      driver.clear();
-      driver.display();
-    }
-  });
 
   // graph functions
   function drawBit(driver, bit) {
