@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+  <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+      <title>blu-pi test display</title>
+      <style>
+          body {
+              font-family: 'sans serif';
+              background-color: #111;
+              text-align: center;
+          }
+
+          #display {
+            transform: translate(0px, 50px) rotate(90deg);
+          }
+      </style>
+  </head>
+  
+  <body>
+
+    <canvas id="display" width="128" height="64"></canvas>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+      // canvas
+      var canvas = document.getElementById('display');
+      var canvasWidth = canvas.width;
+      var canvasHeight = canvas.height;
+      var ctx = canvas.getContext("2d");
+      var canvasData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+
+      function drawBit(x, y, bit) {
+        var c = !!bit ? 255 : 0;
+        drawPixel(x, y, c, c, c, 255);
+      }
+
+      function drawPixel(x, y, r, g, b, a) {
+        var index = (x + y * canvasWidth) * 4;
+        canvasData.data[index + 0] = r;
+        canvasData.data[index + 1] = g;
+        canvasData.data[index + 2] = b;
+        canvasData.data[index + 3] = a;
+      }
+
+      function updateCanvas() {
+        ctx.putImageData(canvasData, 0, 0);
+      }
+     
+      var socket = io(window.location.origin);
+      socket.on('buffer', function (buffer) {
+        // draw
+        for(var y = 0; y < buffer.length; y++) {
+          for(var x = 0; x < buffer[y].length; x++) {
+            var bit = buffer[y][x];
+            drawBit(x, y, bit);
+          }
+        }
+
+        // and update...
+        updateCanvas();
+      });
+    </script>
+  </body>
+</html>
