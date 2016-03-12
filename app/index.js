@@ -65,7 +65,7 @@ if(config.persist) {
 
 var ticks = require('./sensors/ticks')();
 var all = Rx.Observable.merge(ticks, sensors, inputs);
-all.subscribe(console.log)
+// all.subscribe(console.log)
 
 var Display = require('./display');
 var ui = Display(all);

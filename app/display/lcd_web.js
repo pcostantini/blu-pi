@@ -2,17 +2,12 @@ var _ = require('lodash');
 var fs = require('fs');
 var http = require('http');
 var SocketIo = require('socket.io');
-var AFGFX = require('./Adafruit_GFX.js');
 
 var httpPort = 8080;
 
-function Lcd(width, height) {
-  var lcd =  _.extend(new AFGFX(width, height), new DisplayMock(width, height));
-  return lcd;
-}
-
-// Mock Display that routes buffer data through socket.io
-function DisplayMock(width, height) {
+// Mock Display that routes buffer data using socket.io
+function LcdMock(width, height) {
+  
   this.bufferWidth =  width;
   this.bufferHeight = height;
   this.clear();
@@ -60,7 +55,7 @@ DisplayMock.prototype.drawPixel = function(x, y, color) {
   y = Math.round(y);
   if(x > this.bufferWidth-1 || x < 0 ||
      y > this.bufferHeight-1 || y < 0) return;
-    
+
   var bit = !!color ? 1 : 0;
   this.buffer[y][x] = bit;
 }
@@ -70,4 +65,4 @@ DisplayMock.prototype.display = function() {
   this.io.sockets.emit('buffer', this.buffer);
 }
 
-module.exports = Lcd;
+module.exports = LcdMock;
