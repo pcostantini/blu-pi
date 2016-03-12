@@ -22,6 +22,16 @@
 					"version": "0.2.1"
 				}
 			}
+		},
+		"edison-ssd1306": {
+			"version": "1.0.0",
+			"from": "wballard/edisonedison-ssd1306",
+			"resolved": "git://github.com/wballard/edisonedison-ssd1306.git",
+			"dependencies": {
+				"i2c": {
+					"version": "0.2.1"
+				}
+			}
 		}
 	}
 }
