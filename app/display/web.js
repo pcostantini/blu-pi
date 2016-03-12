@@ -15,7 +15,7 @@ function OledMock(width, height) {
   // web server to host page with canvas
   var server = http.createServer(function (req, res) {
     // index.html
-    fs.readFile(__dirname + '/lcd_web.html', function (err, data) {
+    fs.readFile(__dirname + '/web.html', function (err, data) {
       if (err) {
           res.writeHead(500);
           return res.end('Error loading index.html');
@@ -53,6 +53,24 @@ OledMock.prototype.clear = function() {
 OledMock.prototype.drawPixel = function(x, y, color) {
   x = Math.round(x);
   y = Math.round(y);
+
+  // check rotation, move pixel around if necessary
+  //switch (getRotation()) {
+  switch (3) {
+  case 1:
+    x = [y, y = x][0];//swap(x, y);
+    x = this.bufferWidth - x - 1;
+    break;
+  case 2:
+    x = this.bufferWidth - x - 1;
+    y = this.bufferHeight - y - 1;
+    break;
+  case 3:
+    x = [y, y = x][0];//swap(x, y);
+    y = this.bufferHeight - y - 1;
+    break;
+  }  
+
   if(x > this.bufferWidth-1 || x < 0 ||
      y > this.bufferHeight-1 || y < 0) return;
 

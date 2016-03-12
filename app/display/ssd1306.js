@@ -191,13 +191,10 @@ OLED.prototype.dim = function(dim) {
 }
 
 OLED.prototype.drawPixel = function(x, y, color) {
-	
-  if ((x < 0) || (x >= SSD1306.LCDWIDTH) || (y < 0) || (y >= SSD1306.LCDHEIGHT))
-    return;
 
   // check rotation, move pixel around if necessary
   //switch (getRotation()) {
-  switch (0) {
+  switch (3) {
   case 1:
     x = [y, y = x][0];//swap(x, y);
     x = SSD1306.LCDWIDTH - x - 1;
@@ -212,17 +209,20 @@ OLED.prototype.drawPixel = function(x, y, color) {
     break;
   }  
 
+  if ((x < 0) || (x >= SSD1306.LCDWIDTH) || (y < 0) || (y >= SSD1306.LCDHEIGHT))
+    return;
+
   // x is which column
   if (color == SSD1306.WHITE) {
     buffer[x+ (y/8>>0)*SSD1306.LCDWIDTH] |= (1 << (y&7)); //(a/b>>0) is Inter divison
   } else {
     buffer[x+ (y/8>>0)*SSD1306.LCDWIDTH] &= ~(1 << (y&7));
   }
-	
+  
 }
 
 
-	
+  
 }
 
 module.exports = OLED;

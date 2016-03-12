@@ -1,6 +1,6 @@
 var refreshDisplayDelay = 1000;
-var width = 128;
-var height = 64;
+var width = 64;
+var height = 128;
 
 const mpsTokph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 
@@ -18,18 +18,17 @@ module.exports = function Display(driver, eventsStream) {
 
         case 'Ticks':
           bit = !bit;
-          drawBackground(driver);
           drawBit(driver, bit);
           break;
 
         case 'Gps':
+
+          drawBackground(driver);
+
           var speed = s.value.speed;
           if(speed == undefined) speed = 0;
-          var kph = mpsTokph(speed);
-          var sKph = toFixed(kph, 2); 
-
-          // driver.write('c', true)
-          console.log(sKph);
+          var kmPh = mpsTokph(speed);
+          writeSpeed(driver, kmPh);
 
           break;
       }
@@ -46,21 +45,32 @@ module.exports = function Display(driver, eventsStream) {
 
   // graph functions
   function drawBit(driver, bit) {
-    driver.fillRect(124, 60, 4, 4, bit ? 1 : 0);
+    driver.fillRect(0, 124, 4, 4, bit ? 1 : 0);
   }
 
   function drawCpu(driver, cpuState) {
-    driver.fillRect(0, 0, 4, height, true);
+    driver.fillRect(0, 0, height, 4, true);
     var cpu = cpuState[0] < 2 ? cpuState[0] : 2;
-    var cpuWidth = Math.round((height / 2) * (2-cpu));
-    driver.fillRect(1, 1, 2, cpuWidth, false);
+    var cpuWidth = Math.round((width / 2) * (2-cpu));
+    driver.fillRect(cpuWidth, 1, width - cpuWidth - 1, 2, false);
   }
 
   function drawBackground(driver) {
-    driver.fillRect(4, 0, 124, 64, false);
-    driver.drawCircle(92, height/2, getRandomArbitrary(), true);
-    driver.drawLine(4, getRandomArbitrary(), 127, getRandomArbitrary(), true);
-    driver.drawLine(4, getRandomArbitrary(), 127, getRandomArbitrary(), true);
+    driver.fillRect(0, 4, 64, 124, false);
+    driver.drawCircle(width/2, 92, getRandomArbitrary(), true);
+    driver.drawLine(getRandomArbitrary(), 2, getRandomArbitrary(), 127, true);
+    driver.drawLine(getRandomArbitrary(), 4, getRandomArbitrary(), 127, true);
+  }
+
+  function writeSpeed(driver, kmPh) {
+    driver.setCursor(10, 6);
+    driver.setTextSize(2);
+    var sKph = toFixed(kmPh, 1); 
+    var chars = sKph.split('');
+    chars.forEach((c) => {
+      driver.write(c.charCodeAt(0));
+    });
+
   }
 
   function getRandomArbitrary() {

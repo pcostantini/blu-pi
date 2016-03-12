@@ -82,7 +82,7 @@ var Driver = require('./display/oled'); // OLED
 
 var width = 128;
 var height = 64;
-var gfx = new GFX(width, height);
+var gfx = new GFX(height, width);  // invert size since oled is rotated
 var driverImpl = new Driver(width, height);
 var driver = _.extend(gfx, driverImpl);
 
