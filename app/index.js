@@ -29,7 +29,7 @@ console.log('blu-pi!', config);
 // this is due to some sensor code may throw error in async ways, not making it possible to catch
 process.on('uncaughtException', (err) => {
   console.log('ERROR!: ', err.toString());
-  console.log('ERROR.....', err/stack);
+  console.log('ERROR.....', err.stack);
 });
 
 
