@@ -1,6 +1,5 @@
 var _ = require('lodash');
 var Rx = require('rx');
-var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 
 // for debugging leaks
 // // require('heapdump'); 
@@ -75,20 +74,24 @@ if(config.persist) {
 
 var ticks = require('./sensors/ticks')();
 var all = Rx.Observable.merge(ticks, sensors, inputs);
-// all.subscribe(console.log)
+all.subscribe(console.log)
 
-// var Driver = require('./display/web');  // MOCK
-var Driver = require('./display/oled'); // OLED
 
+
+// DISPLAY
 var width = 128;
 var height = 64;
-var gfx = new GFX(height, width);  // invert size since oled is rotated
-var driverImpl = new Driver(width, height);
-var driver = _.extend(gfx, driverImpl);
 
+var GFX = require('edison-ssd1306/src/Adafruit_GFX');
+// var Driver = require('./display/drivers/web');  // MOCK
+var Driver = require('./display/drivers/oled'); // OLED
+var ScreenSaverDisplay = require('./display/screensaver');
 
-var Display = require('./display');
-var ui = Display(driver, all);
+var driver = _.extend(
+  new GFX(height, width),     // invert size since oled is rotated
+  new Driver(width, height));
+
+var ui = ScreenSaverDisplay(driver, all);
 
 // web server + api
 // var server = require('../server')(db);
