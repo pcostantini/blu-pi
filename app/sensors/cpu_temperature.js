@@ -1,6 +1,8 @@
 var Rx = require('rx');
 
-function CpuTemperature() {
+function CpuTemperature(delay) {
+  if(!delay) delay = 5000;
+  
   return Rx.Observable.create(function (observer) {
 
     var lastTemp;
@@ -19,7 +21,7 @@ function CpuTemperature() {
         console.log('temp.err!', err);
       }
 
-      setTimeout(() => read(temp), 5000);
+      setTimeout(() => read(temp), delay);
     }
 
     // init only on PI

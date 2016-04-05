@@ -1,30 +1,21 @@
 var Rx = require('rx');
+var bmp085 = require('bmp085-sensor');
 
-function Barometer() {
+function Barometer(delay) {
+  if(!delay) delay = 5000;
+
   return Rx.Observable.create(function (observer) {
-
-    function read(barometer) {
-      try {
-        barometer.read(function (data) {
+    function read(sensor) {
+        sensor.read(function (err, data) {
           observer.onNext({ name: 'Barometer', value: data });
         });
 
-      } catch(err) {
-        console.log('barometer.err!', err);
-      }
-
-      setTimeout(() => read(barometer), 2000);
+      setTimeout(() => read(sensor), delay);
     }
 
-    try {
-      var BMP085 = require('bmp085');
-      //var barometer = new BMP085({ mode: 2 }); // highres mode
-      var barometer = new BMP085();
-      read(barometer);
-    } catch(err) {
-      console.log('barometer.initErr!', err);
-    }
 
+    var sensor = bmp085({address: 0x77, mode: 3, units: 'metric'});
+    read(sensor);
   });
 }
 
