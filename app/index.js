@@ -18,8 +18,9 @@ var config = {
       acceleration: 1000,
       axes: 1000,
       heading: 1000,
-      temp: 1000
-    }
+      temp: 5000
+    },
+    temperature: 5000
   }
 };
 
