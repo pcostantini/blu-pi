@@ -1,16 +1,22 @@
 var _ = require('lodash');
+var minimist = require('minimist');
 var Rx = require('rx');
-
 // for debugging leaks
 // // require('heapdump'); 
 
+var argv = minimist(process.argv.slice(2));
+
 // init
 var sessionId = new Date().getTime();
+var demoMode = argv.demo || argv.d;
+var webDisplay = argv.webDisplay || argv.wd;
 var config = {
-  persist: true,
+  persist: !demoMode,
   persistBuffer: 0,
   sessionId: sessionId,
-  dbFile: 'sensors-' + sessionId + '.sqlite3',
+  dbFile: !demoMode
+    ? 'sensors-' + sessionId + '.sqlite3'
+    : './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3',
   sensors: {
     // refresh times
     lsm303: {
@@ -19,7 +25,10 @@ var config = {
       heading: 1000,
       temp: 1000
     }
-  }
+  },
+  displayDriver: !webDisplay
+    ? require('./display/drivers/oled')
+    : require('./display/drivers/web')
 };
 
 console.log('blu-pi!', config);
@@ -38,8 +47,9 @@ var inputs = Rx.Observable.empty();
 inputs.subscribe(console.log);
 
 // sensors
-var sensors = require('./bootstrap_sensors')(config.sensors);
-// var sensors = require('./replay_sensors')('sensors-1456895867978-TestRideParqueSarmiento.sqlite3');
+var sensors = !demoMode
+  ? require('./bootstrap_sensors')(config.sensors)
+  : require('./replay_sensors')(config.dbFile);
 
 var db;
 if(config.persist) {
@@ -63,8 +73,6 @@ if(config.persist) {
     .subscribe(db.insert);
 }
 
-
-
 // var screens = [
 //   'screensaver', // dummy stuff
 //   'ticks',       // time and distance
@@ -76,21 +84,16 @@ var ticks = require('./sensors/ticks')();
 var all = Rx.Observable.merge(ticks, sensors, inputs);
 all.subscribe(console.log)
 
-
-
 // DISPLAY
+var Driver = config.displayDriver;
+var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 var width = 128;
 var height = 64;
-
-var GFX = require('edison-ssd1306/src/Adafruit_GFX');
-// var Driver = require('./display/drivers/web');  // MOCK
-var Driver = require('./display/drivers/oled'); // OLED
-var ScreenSaverDisplay = require('./display/screensaver');
-
 var driver = _.extend(
   new GFX(height, width),     // invert size since oled is rotated
   new Driver(width, height));
 
+var ScreenSaverDisplay = require('./display/screensaver');
 var ui = ScreenSaverDisplay(driver, all);
 
 // web server + api
