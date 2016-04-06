@@ -23,9 +23,9 @@ module.exports = function Display(driver, eventsStream) {
 
         case 'Gps':
 
-          drawBackground(driver);
+          // drawBackground(driver);
 
-          var speed = s.value.speed;
+          var speed = s.value ? s.value.speed : 0;
           if(speed == undefined) speed = 0;
           var kmPh = mpsTokph(speed);
           writeSpeed(driver, kmPh);
@@ -65,6 +65,7 @@ module.exports = function Display(driver, eventsStream) {
   function writeSpeed(driver, kmPh) {
     driver.setCursor(10, 6);
     driver.setTextSize(2);
+    driver.setTextColor(1, 0);
     var sKph = toFixed(kmPh, 1); 
     var chars = sKph.split('');
     chars.forEach((c) => {
