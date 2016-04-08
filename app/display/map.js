@@ -1,10 +1,9 @@
 var _ = require('lodash');
 
 var refreshDisplayDelay = 1000;
-var width = 64;
+var width = 63;
 var height = 128;
 
-// TODO
 var bounds = {
   width: width,
   height: height,
@@ -28,7 +27,7 @@ module.exports = function Display(driver, eventsStream, state) {
           if(s.value && s.value.latitude) {
             var coord = [s.value.latitude, s.value.longitude];
             if(!bounds.lonLeft) {
-              centerBounds(bounds, coord);
+              initBounds(bounds, coord);
             }
 
             drawPathCoordinate(driver, coord, bounds);
@@ -37,10 +36,9 @@ module.exports = function Display(driver, eventsStream, state) {
           break;
 
         case 'Input:Ok':
-          // bounds.zoom += 1;
-          // if(bounds.zoom > 4) bounds.zoom = 1;
+          bounds.zoom += 1;
+          if(bounds.zoom > 4) bounds.zoom = 1;
 
-          bounds.zoom = 1;
           if(state && state.gpsPath) {
             console.log('zooooomin!', bounds.zoom)
             driver.clear();
@@ -71,34 +69,21 @@ function renderWholePath(driver, path) {
 
   var lowLongitude = _.minBy(path, (s) => s[1])[1];
   var maxLongitude = _.maxBy(path, (s) => s[1])[1];
-  var latitude = _.maxBy(path, (s) => s[0])[0];
-  var lonDelta = maxLongitude - lowLongitude;
+  var latitude = _.minBy(path, (s) => s[0])[0];
 
-  bounds.width           = width * bounds.zoom;
-  bounds.height          = height * bounds.zoom;
+  // zoom on last point only
+  if(bounds.zoom > 1) {
+    var last = _.last(path);
+    lowLongitude = last[1] - 0.01 / bounds.zoom;
+    maxLongitude = last[1] + 0.01 / bounds.zoom;
+    latitude = last[0] - 0.02 / bounds.zoom;
+  }
+
+  var lonDelta = maxLongitude - lowLongitude;
+  
   bounds.lonLeft         = lowLongitude;
   bounds.lonDelta        = lonDelta;
   bounds.latBottomDegree = latitude * Math.PI / 180;
-
-  var last = _.last(path);
-  var lastPixel = convertGeoToPixel(
-    last[0], last[1],
-    bounds.width,
-    bounds.height,
-    bounds.lonLeft,
-    bounds.lonDelta,
-    bounds.latBottomDegree);
-
-  console.log('lastPixel', lastPixel)
-
-  if(bounds.zoom > 1) {
-    bounds.offset = {
-      x: lastPixel.x - (width / 2),
-      y: 0 // TODO
-    };
-  } else {
-    bounds.offset = {x:0, y:0}
-  }
 
   path.forEach(coord => drawPathCoordinate(driver, coord, bounds));
 }
@@ -114,20 +99,18 @@ function drawPathCoordinate(driver, coord, bounds) {
     bounds.lonDelta,
     bounds.latBottomDegree);
 
-  point.x = point.x - bounds.offset.x;
-  point.y = point.y - bounds.offset.y;
-
-  driver.drawPixel(Math.round(point.x), Math.round(point.y) - height, 1);
+  var x = Math.round(point.x);
+  var y = Math.round(point.y);
+  
+  driver.drawPixel(x, y, 1);
 }
 
-function centerBounds(bounds, coord) {
+function initBounds(bounds, initialCoord) {
   bounds.zoom            = 1;
-  bounds.width           = width * bounds.zoom;
-  bounds.height          = height * bounds.zoom,
-  bounds.lonLeft         = coord[1] - 0.01;
+  bounds.lonLeft         = initialCoord[1] - 0.01;
   bounds.lonDelta        = 0.02;
-  bounds.latBottomDegree = (coord[0] + 0.01) * Math.PI / 180;
-  bounds.offset = { x:0, y:0 };
+  bounds.latBottomDegree = (initialCoord[0] - 0.02) * Math.PI / 180;
+  console.log('bounds inited', bounds);
 }
 
 function drawBit(driver, bit) {
