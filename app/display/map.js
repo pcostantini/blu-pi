@@ -112,7 +112,7 @@ function initBounds(bounds, initialCoord) {
 }
 
 function drawBit(driver, bit) {
-  driver.fillRect(0, 0, 4, 4, bit ? 1 : 0);
+  driver.fillRect(0, 124, 4, 4, bit ? 1 : 0);
 }
 
 function convert(lat, lon){
