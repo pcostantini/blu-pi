@@ -37,20 +37,34 @@ console.log('blu-pi!', config);
 // global error handling
 // this is due to some sensor code may throw error in async ways, not making it possible to catch
 process.on('uncaughtException', (err) => {
-  console.log('ERROR!: ', err.toString());
-  console.log('ERROR.....', err.stack);
+  console.log('ERROR!: ', {
+    err: err.toString(),
+    stack: err.stack
+  });
 });
 
 
 // inputs
 // var inputs = require('./inputs');
-var inputs = Rx.Observable.empty();
+// var inputs = Rx.Observable.empty();
+var inputs = require('./inputs_console')();
 inputs.subscribe(console.log);
 
 // sensors
 var sensors = !demoMode
   ? require('./bootstrap_sensors')(config.sensors)
   : require('./replay_sensors')(config.dbFile);
+
+// state img
+var state = { gpsPath: [] };
+sensors
+  .filter(s => s.name === 'Gps' && s.value && s.value.latitude)
+  .select(s => [s.value.latitude, s.value.longitude])
+  .scan((path, point) => {
+    path.push(point);
+    return path;
+  }, state.gpsPath)
+  .subscribe();
 
 var db;
 if(config.persist) {
@@ -83,7 +97,7 @@ if(config.persist) {
 
 var ticks = require('./sensors/ticks')();
 var all = Rx.Observable.merge(ticks, sensors, inputs);
-all.subscribe(console.log)
+// all.subscribe(console.log)  
 
 // DISPLAY
 var Driver = config.displayDriver;
@@ -94,8 +108,18 @@ var driver = _.extend(
   new GFX(height, width),     // invert size since oled is rotated
   new Driver(width, height));
 
-var ScreenSaverDisplay = require('./display/screensaver');
-var ui = ScreenSaverDisplay(driver, all);
+var ScreenSaverDisplay = require('./display/map');
+var ui = ScreenSaverDisplay(driver, all, state);
+
+// HACK WEB UI -- START
+if(driver.setLocation) {
+  all.subscribe((e) => {
+    if(e.name === 'Gps' && e.value && e.value.longitude) {
+      driver.setLocation([e.value.latitude, e.value.longitude]);
+    }
+  });
+}
+// HACK WEB UI -- END
 
 // web server + api
 // var server = require('../server')(db);
