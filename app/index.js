@@ -10,6 +10,8 @@ var argv = minimist(process.argv.slice(2));
 var sessionId = new Date().getTime();
 var demoMode = argv.demo || argv.d;
 var webDisplay = argv.webDisplay || argv.wd;
+var consoleInput = argv.console || argv.c;
+
 var config = {
   persist: !demoMode,
   persistBuffer: 0,
@@ -29,7 +31,10 @@ var config = {
   },
   displayDriver: !webDisplay
     ? require('./display/drivers/oled')
-    : require('./display/drivers/web')
+    : require('./display/drivers/web'),
+  inputDriver: !consoleInput
+    ? require('./inputs')
+    : require('./inputs_console')
 };
 
 console.log('blu-pi!', config);
@@ -45,9 +50,7 @@ process.on('uncaughtException', (err) => {
 
 
 // inputs
-// var inputs = require('./inputs');
-// var inputs = Rx.Observable.empty();
-var inputs = require('./inputs_console')();
+var inputs = config.inputDriver();
 inputs.subscribe(console.log);
 
 // sensors
