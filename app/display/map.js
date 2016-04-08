@@ -40,7 +40,6 @@ module.exports = function Display(driver, eventsStream, state) {
           if(bounds.zoom > 4) bounds.zoom = 1;
 
           if(state && state.gpsPath) {
-            console.log('zooooomin!', bounds.zoom)
             driver.clear();
             renderWholePath(driver, state.gpsPath);
           }
@@ -110,7 +109,6 @@ function initBounds(bounds, initialCoord) {
   bounds.lonLeft         = initialCoord[1] - 0.01;
   bounds.lonDelta        = 0.02;
   bounds.latBottomDegree = (initialCoord[0] - 0.02) * Math.PI / 180;
-  console.log('bounds inited', bounds);
 }
 
 function drawBit(driver, bit) {

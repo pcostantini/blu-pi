@@ -114,16 +114,6 @@ var driver = _.extend(
 var ScreenSaverDisplay = require('./display/map');
 var ui = ScreenSaverDisplay(driver, all, state);
 
-// HACK WEB UI -- START
-if(driver.setLocation) {
-  all.subscribe((e) => {
-    if(e.name === 'Gps' && e.value && e.value.longitude) {
-      driver.setLocation([e.value.latitude, e.value.longitude]);
-    }
-  });
-}
-// HACK WEB UI -- END
-
 // web server + api
 // var server = require('../server')(db);
 
