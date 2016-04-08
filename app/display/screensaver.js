@@ -23,7 +23,7 @@ module.exports = function Display(driver, eventsStream) {
 
         case 'Gps':
 
-          // drawBackground(driver);
+          drawBackground(driver);
 
           var speed = s.value ? s.value.speed : 0;
           if(speed == undefined) speed = 0;

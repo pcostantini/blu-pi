@@ -22,15 +22,12 @@ module.exports = function Display(driver, eventsStream) {
           break;
 
         case 'Gps':
-
-          // console.log(s.value);
-
-          var speed = s.value.speed;
+          var speed = s.value ? s.value.speed : 0;
           if(speed == undefined) speed = 0;
           var kmPh = mpsTokph(speed);
           writeSpeed(driver, kmPh);
 	
-          var altitude = s.value.altitude
+          var altitude = s.value ? s.value.altitude : 0;
           if(altitude == undefined) altitude = 0
           writeAltitude(driver, altitude);
 
@@ -59,13 +56,6 @@ module.exports = function Display(driver, eventsStream) {
     driver.fillRect(cpuWidth, 1, width - cpuWidth - 1, 2, false);
   }
 
-  function drawBackground(driver) {
-    driver.fillRect(0, 4, 64, 124, false);
-    driver.drawCircle(width/2, 92, getRandomArbitrary(), true);
-    driver.drawLine(getRandomArbitrary(), 2, getRandomArbitrary(), 127, true);
-    driver.drawLine(getRandomArbitrary(), 4, getRandomArbitrary(), 127, true);
-  }
-
   function writeSpeed(driver, kmPh) {
     driver.setTextColor(1, 0);
     driver.setCursor(4, 6);
@@ -86,10 +76,6 @@ module.exports = function Display(driver, eventsStream) {
     chars.forEach((c) => {
       driver.write(c.charCodeAt(0));
     });
-  }
-
-  function getRandomArbitrary() {
-    return Math.random() * (55 - 9) + 9;
   }
 
   function toFixed(value, precision) {
