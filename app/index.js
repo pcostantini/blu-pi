@@ -4,10 +4,9 @@ var Rx = require('rx');
 // for debugging leaks
 // // require('heapdump'); 
 
-var argv = minimist(process.argv.slice(2));
-
 // init
 var sessionId = new Date().getTime();
+var argv = minimist(process.argv.slice(2));
 var demoMode = argv.demo || argv.d;
 var webDisplay = argv.webDisplay || argv.wd;
 var consoleInput = argv.console || argv.c;
@@ -111,13 +110,13 @@ var driver = _.extend(
   new GFX(height, width),     // invert size since oled is rotated
   new Driver(width, height));
 
-var ScreenSaverDisplay = require('./display/map');
-var ui = ScreenSaverDisplay(driver, all, state);
+var Display = require('./display');
+var ui = Display(driver, all, state);
 
 // web server + api
 // var server = require('../server')(db);
 
-// GC COLLECTION - TODO: REVIEW IS REALLY NEEDED
+// GC COLLECTION - TODO: REVIEW IF REALLY NEEDED
 var gcWaitTime = 60000; // 1'
 (function gc() {
   if (global.gc) {

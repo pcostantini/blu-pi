@@ -10,12 +10,12 @@ var bounds = {
   zoom: 1
 };
 
-module.exports = function Display(driver, eventsStream, state) {
+function Display(driver, eventsStream, state) {
 
   driver.clear();
 
   var bit = false;
-  eventsStream.subscribe((s) => {
+  this.eventsSubscription = eventsStream.subscribe((s) => {
     try {
       switch(s.name) {
         case 'Ticks':
@@ -57,10 +57,10 @@ module.exports = function Display(driver, eventsStream, state) {
   }
 
   // refresh screen
-  (function redraw() {
+  (function redraw(self) {
     driver.display();
-    setTimeout(redraw, refreshDisplayDelay);
-  })();
+    self.timeout = setTimeout(redraw.bind(null, self), refreshDisplayDelay);
+  })(this);
 }
 
 function renderWholePath(driver, path) {
@@ -137,3 +137,15 @@ function convertGeoToPixel(latitude, longitude ,
 
     return { x: x, y: y };
 }
+
+Display.prototype.dispose = function() {
+  if(this.eventsSubscription) {
+    this.eventsSubscription.dispose();
+  }
+
+  if(this.timeout) {
+    clearTimeout(this.timeout);
+  }
+}
+
+module.exports = Display;

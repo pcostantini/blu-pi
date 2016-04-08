@@ -4,12 +4,12 @@ var height = 128;
 
 const mpsTokph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 
-module.exports = function Display(driver, eventsStream) {
+function Display(driver, eventsStream) {
 
   driver.clear();
 
   var bit = false;
-  eventsStream.subscribe((s) => {
+  this.eventsSubscription = eventsStream.subscribe((s) => {
     try {
       switch(s.name) {
         case 'CpuLoad':
@@ -39,10 +39,10 @@ module.exports = function Display(driver, eventsStream) {
   });
 
   // refresh screen
-  (function redraw() {
+  (function redraw(self) {
     driver.display();
-    setTimeout(redraw, refreshDisplayDelay);
-  })();
+    self.timeout = setTimeout(redraw.bind(null, self), refreshDisplayDelay);
+  })(this);
 
   // graph functions
   function drawBit(driver, bit) {
@@ -91,5 +91,16 @@ module.exports = function Display(driver, eventsStream) {
       }
       return result;
   }
-
 }
+
+Display.prototype.dispose = function() {
+  if(this.eventsSubscription) {
+    this.eventsSubscription.dispose();
+  }
+
+  if(this.timeout) {
+    clearTimeout(this.timeout);
+  }
+}
+
+module.exports = Display;
