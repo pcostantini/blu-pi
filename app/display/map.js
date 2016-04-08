@@ -115,12 +115,6 @@ function drawBit(driver, bit) {
   driver.fillRect(0, 124, 4, 4, bit ? 1 : 0);
 }
 
-function convert(lat, lon){
-  var y = ((-1 * lat) + 90) * (height / 180);
-  var x = (lon + 180) * (width / 360);
-  return {x:x,y:y};
-}
-
 function convertGeoToPixel(latitude, longitude ,
                            mapWidth , // in pixels
                            mapHeight , // in pixels
