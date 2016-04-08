@@ -154,5 +154,5 @@ function convertGeoToPixel(latitude, longitude ,
     var mapOffsetY = (worldMapWidth / 2 * Math.log((1 + Math.sin(mapLatBottomDegree)) / (1 - Math.sin(mapLatBottomDegree))));
     var y = mapHeight - ((worldMapWidth / 2 * Math.log((1 + Math.sin(latitude)) / (1 - Math.sin(latitude)))) - mapOffsetY);
 
-    return { x, y };
+    return { x: x, y: y };
 }
