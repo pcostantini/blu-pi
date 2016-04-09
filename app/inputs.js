@@ -1,4 +1,5 @@
 var gpio = require('./gpios');
+var Rx = require('rx');
 
 module.exports = function() {
 	var inputBack = gpio.readPin(18, 0).select(as(-1));
