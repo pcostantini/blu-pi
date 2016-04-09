@@ -35,6 +35,7 @@ function DistanceDisplay(driver, eventsStream, state) {
 
           if(s.value) {
             // distance
+          if(s.value) {
             var coord = [s.value.latitude, s.value.longitude];
             if(displayState.lastCoord) {
               var offset = GpsDistance(
