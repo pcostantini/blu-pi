@@ -61,8 +61,8 @@ function DistanceDisplay(driver, eventsStream, state) {
 
           break;
       }
-    } catch(err) {
-      console.log('driver.draw.err!', { err: err, stack: err.stack });
+    } catch(e) {
+      console.log('driver.draw.err!', { err: e.toString, stack: e.stack });
     }
   });
 
