@@ -33,24 +33,26 @@ function DistanceDisplay(driver, eventsStream, state) {
         case 'Gps':
 
           // distance
-          var coord = [s.value.latitude, s.value.longitude];
-          if(displayState.lastCoord) {
-            var offset = GpsDistance(
-              displayState.lastCoord[0], displayState.lastCoord[1],
-              coord[0], coord[1]);
-            displayState.distance += offset;
-          }
-          displayState.lastCoord = coord;
+          if(s.value) {
+            var coord = [s.value.latitude, s.value.longitude];
+            if(displayState.lastCoord) {
+              var offset = GpsDistance(
+                displayState.lastCoord[0], displayState.lastCoord[1],
+                coord[0], coord[1]);
+              displayState.distance += offset;
+            }
+            displayState.lastCoord = coord;
 
-          // speed
-          var speed = s.value ? s.value.speed : 0;
-          if(speed == undefined) speed = 0;
-          displayState.speed = mpsTokph(speed);
-  
-          // altitude
-          var altitude = s.value ? s.value.altitude : 0;
-          if(altitude == undefined) altitude = 0
-          displayState.altitude = altitude;
+            // speed
+            var speed = s.value ? s.value.speed : 0;
+            if(speed == undefined) speed = 0;
+            displayState.speed = mpsTokph(speed);
+    
+            // altitude
+            var altitude = s.value ? s.value.altitude : 0;
+            if(altitude == undefined) altitude = 0
+            displayState.altitude = altitude;
+          }
 
           // draw!
           display(driver, displayState);
