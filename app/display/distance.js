@@ -13,7 +13,8 @@ function DistanceDisplay(driver, eventsStream, state) {
     distance: 0,
     lastCoord: null,
     speed: 0,
-    altitude: 0
+    altitude: 0,
+    time: 0
   };
 
   this.eventsSubscription = eventsStream.subscribe((s) => {
@@ -24,10 +25,9 @@ function DistanceDisplay(driver, eventsStream, state) {
           break;
 
         case 'Ticks':
+          displayState.ticks = s.value[0];    // wait for gps to draw time
           displayState.bit = !displayState.bit;
           drawBit(driver, displayState.bit);
-
-          // TODO: time
           break;
 
         case 'Gps':
@@ -46,12 +46,13 @@ function DistanceDisplay(driver, eventsStream, state) {
           var speed = s.value ? s.value.speed : 0;
           if(speed == undefined) speed = 0;
           displayState.speed = mpsTokph(speed);
-	
+  
           // altitude
           var altitude = s.value ? s.value.altitude : 0;
           if(altitude == undefined) altitude = 0
           displayState.altitude = altitude;
 
+          // draw!
           display(driver, displayState);
 
           break;
@@ -91,6 +92,13 @@ function DistanceDisplay(driver, eventsStream, state) {
     driver.setCursor(4, 22);
     driver.setTextSize(1);
     write(driver, 'A:' + Math.round(values.altitude).toString() + ' m');
+
+    // time
+    var elapsed = Math.round(values.ticks / 1000);
+    driver.setTextColor(1, 0);
+    driver.setCursor(4, height - 24);
+    driver.setTextSize(1);
+    write(driver, formatTime(elapsed));
 
     // distance
     driver.setTextColor(1, 0);
@@ -143,5 +151,17 @@ DistanceDisplay.prototype.dispose = function() {
 }
 
 const mpsTokph = (mps) => Math.round(mps * 3.6 * 100) / 100;
+
+function formatTime(ticks) {
+  var hh = Math.floor(ticks / 3600);
+  var mm = Math.floor((ticks % 3600) / 60);
+
+  return pad(hh, 2) + ':' + pad(mm, 2);
+}
+
+function pad(n, width) {
+  var n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
+}
 
 module.exports = DistanceDisplay;
