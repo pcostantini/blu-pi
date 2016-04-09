@@ -11,6 +11,7 @@
     "hapi": "^13.0.0",
     "i2c": "^0.2.1",
     "kefir": "^3.2.0",
+    "keypress": "^0.2.1",
     "lodash": "^4.3.0",
     "lsm303": "git://github.com/praneshkmr/node-lsm303",
     "minimist": "^1.2.0",
