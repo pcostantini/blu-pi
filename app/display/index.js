@@ -1,6 +1,6 @@
 var Displays = [
+	require('./distance'),
 	require('./map'),
-	require('./altitude'),
 	require('./screensaver')];
 
 function Init(driver, eventsStream, state) {

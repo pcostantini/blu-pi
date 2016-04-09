@@ -1,14 +1,20 @@
+var GpsDistance = require('gps-distance');
+
 var refreshDisplayDelay = 1000;
 var width = 64;
 var height = 128;
 
 const mpsTokph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 
-function Display(driver, eventsStream) {
+function Display(driver, eventsStream, state) {
 
   driver.clear();
 
+  // state
   var bit = false;
+  var currentDistance = 0;
+  var lastCoord = null;
+
   this.eventsSubscription = eventsStream.subscribe((s) => {
     try {
       switch(s.name) {
@@ -19,14 +25,33 @@ function Display(driver, eventsStream) {
         case 'Ticks':
           bit = !bit;
           drawBit(driver, bit);
+
+          // TODO: time
+
           break;
 
         case 'Gps':
+
+          // distance
+          var coord = [s.value.latitude, s.value.longitude];
+          if(lastCoord) {
+            var offset = GpsDistance(lastCoord[0], lastCoord[1], coord[0], coord[1]);
+            currentDistance += offset;
+          }
+          lastCoord = coord;
+
+          if(currentDistance > 0) {
+            writeDistance(driver, currentDistance);
+          }
+
+
+          // speed
           var speed = s.value ? s.value.speed : 0;
           if(speed == undefined) speed = 0;
           var kmPh = mpsTokph(speed);
           writeSpeed(driver, kmPh);
 	
+          // altitude
           var altitude = s.value ? s.value.altitude : 0;
           if(altitude == undefined) altitude = 0
           writeAltitude(driver, altitude);
@@ -37,6 +62,14 @@ function Display(driver, eventsStream) {
       console.log('driver.draw.err!', { err: err, stack: err.stack });
     }
   });
+
+
+  // initial state
+  if(state && state.gpsPath) {
+    // distasnce
+    currentDistance = GpsDistance(state.gpsPath);
+    console.log('distance', currentDistance);
+  }
 
   // refresh screen
   (function redraw(self) {
@@ -70,6 +103,14 @@ function Display(driver, eventsStream) {
     driver.setTextSize(1);
     write(driver, Math.round(altitude).toString())
   }
+
+  function writeDistance(driver, altitude) {
+    driver.setTextColor(1, 0);
+    driver.setCursor(4, height - 12);
+    driver.setTextSize(1);
+    write(driver, toFixed(altitude, 2))
+  }
+
 
   function write(driver, string) {
     var chars = string.split('');
