@@ -8,6 +8,7 @@
     "bmp085": "^0.3.2",
     "edison-ssd1306": "git://github.com/wballard/edisonedison-ssd1306",
     "exit-hook": "^1.1.1",
+    "gps-distance": "0.0.4",
     "hapi": "^13.0.0",
     "i2c": "^0.2.1",
     "kefir": "^3.2.0",
