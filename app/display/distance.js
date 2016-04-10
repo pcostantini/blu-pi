@@ -103,11 +103,12 @@ function DistanceDisplay(driver, eventsStream, state) {
     driver.fillRect(0, 124, 4, 4, bit ? 1 : 0);
   }
 
+  var maxBarWidth = width - 2;
   function drawCpu(driver, cpuState) {
     driver.fillRect(0, 0, height, 4, true);
     var cpu = cpuState[0] < 2 ? cpuState[0] : 2;
-    var cpuWidth = Math.round((width / 2) * (2-cpu));
-    driver.fillRect(cpuWidth, 1, width - cpuWidth - 1, 2, false);
+    var cpuWidth = Math.round((maxBarWidth / 2) * (cpu));
+    driver.fillRect(cpuWidth + 1, 1, maxBarWidth - cpuWidth - 1, 2, false);
   }
 
   function write(driver, string) {
