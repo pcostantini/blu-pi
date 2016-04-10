@@ -17,7 +17,7 @@ var config = {
   sessionId: sessionId,
   dbFile: !demoMode
     ? 'sensors-' + sessionId + '.sqlite3'
-    : './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3',
+    : 'sensors-1456895867978-TestRideParqueSarmiento.sqlite3',
   sensors: {
     // refresh times
     lsm303: {
@@ -57,8 +57,13 @@ var sensors = !demoMode
   ? require('./bootstrap_sensors')(config.sensors)
   : require('./replay_sensors')(config.dbFile);
 
-// state img
-var state = { gpsPath: [] };
+// state
+var state = {
+  distance: 0,
+  gpsPath: []
+};
+
+// take gps events and accumulate path points
 sensors
   .filter(s => s.name === 'Gps' && s.value && s.value.latitude)
   .select(s => [s.value.latitude, s.value.longitude])
@@ -68,15 +73,33 @@ sensors
   }, state.gpsPath)
   .subscribe();
 
-var db;
-if(config.persist) {
+// take gps events and calculate distance
+var GpsDistance = require('gps-distance');
+var GpsNoiseFilter = require('./gps_noise_filter');
+sensors
+  .filter(s => s.name === 'Gps')
+  .select(s => s.value)
+  .filter(GpsNoiseFilter(GpsNoiseFilter.DefaultSpeedThreshold))
+  .select(gps => [gps.latitude, gps.longitude])
+  .scan((last, curr) => {
+    if(last) {
+        var offset = GpsDistance(last[0], last[1],
+                                 curr[0], curr[1]);
 
+        state.distance += offset;
+    }
+    return curr;
+  }, null)
+  .subscribe();
+
+
+if(config.persist) {
   var useBufferedPersistence = config.persistBuffer > 0;
   var persistence = useBufferedPersistence
     ? require('../persistence/session_buffered') 
     : require('../persistence/session');
 
-  db = useBufferedPersistence
+  var db = useBufferedPersistence
     ? persistence.OpenDb(config.dbFile, config.persistBuffer)
     : persistence.OpenDb(config.dbFile);
 
@@ -89,13 +112,6 @@ if(config.persist) {
     })
     .subscribe(db.insert);
 }
-
-// var screens = [
-//   'screensaver', // dummy stuff
-//   'ticks',       // time and distance
-//   'speed',       // current speed values (gps, odometer, cadence)
-//   'intervals',
-// ];
 
 var ticks = require('./sensors/ticks')();
 var all = Rx.Observable.merge(ticks, sensors, inputs);

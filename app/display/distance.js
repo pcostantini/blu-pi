@@ -1,9 +1,8 @@
-var GpsDistance = require('gps-distance');
+const SpeedThreshold = require('../gps_noise_filter').DefaultSpeedThreshold;
 
 var refreshDisplayDelay = 1000;
 var width = 64;
 var height = 128;
-var speedThreshold = 5;
 
 function DistanceDisplay(driver, eventsStream, state) {
 
@@ -12,10 +11,9 @@ function DistanceDisplay(driver, eventsStream, state) {
   var displayState = {
     bit: false,
     distance: 0,
-    lastCoord: null,
     speed: 0,
     altitude: 0,
-    time: 0
+    ticks: 0
   };
 
   this.eventsSubscription = eventsStream.subscribe((s) => {
@@ -33,30 +31,29 @@ function DistanceDisplay(driver, eventsStream, state) {
 
         case 'Gps':
 
-          if(s.value) {
-            // distance
-            var coord = [s.value.latitude, s.value.longitude];
-            if(displayState.lastCoord) {
-              var offset = GpsDistance(
-                displayState.lastCoord[0], displayState.lastCoord[1],
-                coord[0], coord[1]);
-              displayState.distance += offset;
-            }
-            displayState.lastCoord = coord;
+          // distance
+          // var coord = [s.value.latitude, s.value.longitude];
+          // if(displayState.lastCoord) {
+          //   var offset = GpsDistance(
+          //     displayState.lastCoord[0], displayState.lastCoord[1],
+          //     coord[0], coord[1]);
+          //   displayState.distance += offset;
+          // }
+          // displayState.lastCoord = coord;
 
-            // speed
-            var speed = s.value ? s.value.speed : 0;
-            if(!speed || speed < speedThreshold) speed = 0;
-            displayState.speed = mpsTokph(speed);
-    
-            // altitude
-            var altitude = s.value ? s.value.altitude : 0;
-            if(altitude == undefined) altitude = 0
-            displayState.altitude = altitude;
-          }
+          // distance
+          displayState.distance = state.distance;
+
+          // speed
+          var speed = s.value ? s.value.speed : 0;
+          if(!speed || speed < SpeedThreshold) speed = 0;
+          displayState.speed = mpsTokph(speed);
+  
+          // altitude
+          displayState.altitude = s.value ? s.value.altitude : '-';
 
           // draw!
-          display(driver, displayState);
+          render(driver, displayState);
 
           break;
       }
@@ -67,10 +64,9 @@ function DistanceDisplay(driver, eventsStream, state) {
 
 
   // initial state
-  if(state && state.gpsPath) {
-    // distance
-    displayState.distance = GpsDistance(state.gpsPath);
-    display(driver, displayState);
+  if(state) {
+    displayState.distance = state.distance;
+    render(driver, displayState);
   }
 
   // refresh screen
@@ -80,7 +76,9 @@ function DistanceDisplay(driver, eventsStream, state) {
   })(this);
 
   // graph functions
-  function display(driver, values) {
+  function render(driver, values) {
+    console.log('render', values);
+
     driver.fillRect(0, 6, width, height - 10, 0);
 
     // speed
@@ -92,14 +90,15 @@ function DistanceDisplay(driver, eventsStream, state) {
 
     // altitude
     driver.setTextColor(1, 0);
-    driver.setCursor(4, 22);
+    driver.setCursor(4, 24);
     driver.setTextSize(1);
-    write(driver, 'A:' + Math.round(values.altitude).toString() + ' m');
+    var altText = values.altitude !== undefined ? (toFixed(values.altitude, 1)  + ' m') : '-';
+    write(driver, 'A:' + altText);
 
     // time
     var elapsed = Math.round(values.ticks / 1000);
     driver.setTextColor(1, 0);
-    driver.setCursor(4, height - 24);
+    driver.setCursor(4, height - 22);
     driver.setTextSize(1);
     write(driver, formatTime(elapsed));
 
