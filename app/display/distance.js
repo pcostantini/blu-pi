@@ -32,16 +32,6 @@ function DistanceDisplay(driver, eventsStream, state) {
         case 'Gps':
 
           // distance
-          // var coord = [s.value.latitude, s.value.longitude];
-          // if(displayState.lastCoord) {
-          //   var offset = GpsDistance(
-          //     displayState.lastCoord[0], displayState.lastCoord[1],
-          //     coord[0], coord[1]);
-          //   displayState.distance += offset;
-          // }
-          // displayState.lastCoord = coord;
-
-          // distance
           displayState.distance = state.distance;
 
           // speed
