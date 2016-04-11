@@ -82,7 +82,7 @@ function DistanceDisplay(driver, eventsStream, state) {
     driver.setTextColor(1, 0);
     driver.setCursor(4, 24);
     driver.setTextSize(1);
-    var altText = values.altitude !== undefined ? (toFixed(values.altitude, 1)  + ' m') : '-';
+    var altText = !isNaN(values.altitude) ? (toFixed(values.altitude, 1)  + ' m') : '-';
     write(driver, 'A:' + altText);
 
     // time
