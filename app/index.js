@@ -17,7 +17,7 @@ var config = {
   sessionId: sessionId,
   dbFile: !demoMode
     ? 'sensors-' + sessionId + '.sqlite3'
-    : './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3',
+    : './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3',   // https://www.strava.com/activities/508017565
   sensors: {
     // refresh times
     lsm303: {
