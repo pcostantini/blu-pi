@@ -1,4 +1,4 @@
-const DefaultSpeedThreshold = 5;
+const DefaultSpeedThreshold = 4;
 
 module.exports = function(threshold) {
   var last = null;

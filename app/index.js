@@ -91,8 +91,6 @@ sensors
     if(last) {
       var offset = GpsDistance(last[0], last[1],
                                curr[0], curr[1]);
-
-      console.log('offset', offset)
       state.distance += offset;
     }
     return curr;
