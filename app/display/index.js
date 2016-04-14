@@ -21,7 +21,8 @@ function Init(driver, eventsStream, state) {
 		if(i > Displays.length - 1) i = 0;
 	}
 
-	cycle();
+	// give some time for the OLED reset proc.
+	setTimeout(cycle, 250);
 
 }
 
