@@ -26,6 +26,7 @@ function DistanceDisplay(driver, eventsStream, state) {
         case 'Ticks':
           displayState.ticks = s.value[0];    // wait for gps to draw time
           displayState.bit = !displayState.bit;
+          drawTime(driver, displayState.ticks);
           drawBit(driver, displayState.bit);
           break;
 
@@ -35,15 +36,14 @@ function DistanceDisplay(driver, eventsStream, state) {
           displayState.distance = state.distance;
 
           // speed
-          var speed = s.value ? s.value.speed : 0;
-          if(!speed || speed < SpeedThreshold) speed = 0;
-          displayState.speed = mpsTokph(speed);
+          var speed = s.value ? s.value.speed : '-';
+          if(!isNaN(speed) || speed < SpeedThreshold) speed = 0;
+          displayState.speed = speed;
   
           // altitude
           displayState.altitude = s.value ? s.value.altitude : '-';
 
-          // draw!
-          render(driver, displayState);
+          renderLocation(driver, displayState);
 
           break;
       }
@@ -66,17 +66,21 @@ function DistanceDisplay(driver, eventsStream, state) {
   })(this);
 
   // graph functions
-  function render(driver, values) {
+  function renderLocation(driver, values) {
     console.log('render', values);
 
-    driver.fillRect(0, 6, width, height - 10, 0);
+    driver.fillRect(0, 6, width, 26, 0);
 
     // speed
     driver.setTextColor(1, 0);
     driver.setCursor(4, 6);
     driver.setTextSize(2);
-    var sKph = toFixed(values.speed, 1); 
-    write(driver, sKph);
+    var speed = values.speed;
+    if(isNaN(speed)) {
+      write(driver, '--');
+    } else {
+      write(driver, toFixed(mpsToKph(speed), 1));
+    }
 
     // altitude
     driver.setTextColor(1, 0);
@@ -84,13 +88,6 @@ function DistanceDisplay(driver, eventsStream, state) {
     driver.setTextSize(1);
     var altText = !isNaN(values.altitude) ? (toFixed(values.altitude, 1)  + ' m') : '-';
     write(driver, 'A:' + altText);
-
-    // time
-    var elapsed = Math.round(values.ticks / 1000);
-    driver.setTextColor(1, 0);
-    driver.setCursor(4, height - 22);
-    driver.setTextSize(1);
-    write(driver, formatTime(elapsed));
 
     // distance
     driver.setTextColor(1, 0);
@@ -101,6 +98,15 @@ function DistanceDisplay(driver, eventsStream, state) {
 
   function drawBit(driver, bit) {
     driver.fillRect(0, 124, 4, 4, bit ? 1 : 0);
+  }
+
+  function drawTime(driver, ticks) {
+    // time
+    var elapsed = Math.round(ticks / 1000);
+    driver.setTextColor(1, 0);
+    driver.setCursor(4, height - 22);
+    driver.setTextSize(1);
+    write(driver, formatTime(elapsed));
   }
 
   var maxBarWidth = width - 2;
@@ -143,7 +149,7 @@ DistanceDisplay.prototype.dispose = function() {
   }
 }
 
-const mpsTokph = (mps) => Math.round(mps * 3.6 * 100) / 100;
+const mpsToKph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 
 function formatTime(ticks) {
   var hh = Math.floor(ticks / 3600);
