@@ -15,7 +15,8 @@ function bootstrap(sensorsConfig) {
     require('./sensors/cpu_load')()];
 
   // TODO: handle errors here?
-  return Rx.Observable.merge(sensors);
+  return Rx.Observable.merge(sensors)
+    .share();
 
 }
 

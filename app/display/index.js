@@ -1,7 +1,6 @@
 var Displays = [
 	require('./distance'),
-	require('./map'),
-	require('./screensaver')];
+	require('./map')];
 
 function Init(driver, eventsStream, state) {
 
@@ -15,14 +14,16 @@ function Init(driver, eventsStream, state) {
 	var i = 0;
 	function cycle() {
 		if(current) {
-			if(current.cycle && current.cycle()) {
-				console.log('cycling subscreen');
+			var isSubscreen = current.cycle && current.cycle();
+			if(isSubscreen) {
+				console.log('Cycling SubScreen');
 				return;
 			}
 			current.dispose();
 		}
+		
+		console.log('Cycling Screen');
 		current = new Displays[i](driver, eventsStream, state);
-
 		i++;
 		if(i > Displays.length - 1) i = 0;
 	}

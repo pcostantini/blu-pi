@@ -23,7 +23,7 @@ var config = {
     lsm303: {
       acceleration: 1000,
       axes: 1000,
-      heading: 1000,
+      heading: 250,
       temp: 5000
     },
     temperature: 5000
@@ -108,10 +108,10 @@ sensors
   .subscribe();
 
 // inputs & ticks
-var ticks = require('./sensors/ticks')();
-var inputs = config.inputDriver();
+var inputs = config.inputDriver().share();
 inputs.subscribe(console.log);
-var all = Rx.Observable.merge(ticks, sensors, inputs);
+var ticks = require('./sensors/ticks')();
+var all = Rx.Observable.merge(ticks, sensors, inputs).share();
 // all.subscribe(console.log)  
 
 // DISPLAY

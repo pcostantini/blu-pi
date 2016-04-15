@@ -6,12 +6,14 @@ var start = new Date();
 
 function ReplayFromDb(dbFilePath) {
   var source = new Rx.Subject();
+  
   var db = Persistence(dbFilePath, true);
   db.readSensors()
     .then(startWithGps)
     .then(toEvents)
     .then(schedule(source));
-  return source;
+
+  return source.share();
 }
 
 function startWithGps(events) {
