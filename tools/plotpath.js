@@ -1,4 +1,4 @@
-var Persistence = require('./persistence');
+var Persistence = require('../persistence');
 var Rx = require('rx');
 var _ = require('lodash');
 
@@ -15,11 +15,11 @@ var pathDone = db
                     .map(getCoordinate));
 
 // inputs
-var inputs = require('./app/inputs_console')();
+var inputs = require('../app/inputs_console')();
 inputs.subscribe(console.log);
 
 // ui
-var Driver = require('./app/display/drivers/oled');
+var Driver = require('../app/display/drivers/oled');
 var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 var width = 128;
 var height = 64;
@@ -33,7 +33,7 @@ pathDone.then(path => {
     var state = {
       gpsPath: path
     };
-    var Display = require('./app/display/map');
+    var Display = require('../app/display/map');
     var ui = Display(driver, inputs, state);
   } catch(err) {
     console.log('INIT.ERR!', {
