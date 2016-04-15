@@ -1,11 +1,10 @@
 const DefaultSpeedThreshold = 4;
 
-module.exports = function(threshold) {
+module.exports = function CreateGpsNoiseFilter(threshold) {
   var last = null;
-  return function GpsNoiseFilter(gps) {
+  return function(gps) {
     var previous = last;
     var current = gps;
-    last = current;
 
     var previousSpeed = (previous ? previous.speed : 0) || 0;
     var currentSpeed = (current ? current.speed : 0) || 0;
@@ -19,7 +18,7 @@ module.exports = function(threshold) {
       return false;
     }
 
-
+    last = current;
     return true;
   }
 }
