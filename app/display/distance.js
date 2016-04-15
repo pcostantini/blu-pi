@@ -11,8 +11,8 @@ function DistanceDisplay(driver, eventsStream, state) {
   var displayState = {
     bit: false,
     distance: 0,
-    speed: 0,
-    altitude: 0,
+    speed: NaN,
+    altitude: NaN,
     ticks: 0
   };
 
@@ -43,7 +43,7 @@ function DistanceDisplay(driver, eventsStream, state) {
           // altitude
           displayState.altitude = s.value ? s.value.altitude : '-';
 
-          renderLocation(driver, displayState);
+          drawLocation(driver, displayState);
 
           break;
       }
@@ -56,7 +56,8 @@ function DistanceDisplay(driver, eventsStream, state) {
   // initial state
   if(state) {
     displayState.distance = state.distance;
-    render(driver, displayState);
+    drawLocation(driver, displayState);
+    drawTime(driver, displayState.ticks);
   }
 
   // refresh screen
@@ -66,7 +67,7 @@ function DistanceDisplay(driver, eventsStream, state) {
   })(this);
 
   // graph functions
-  function renderLocation(driver, values) {
+  function drawLocation(driver, values) {
     console.log('render', values);
 
     driver.fillRect(0, 6, width, 26, 0);
