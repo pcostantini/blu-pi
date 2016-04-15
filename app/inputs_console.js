@@ -1,7 +1,7 @@
 var keypress = require('keypress');
 var Rx = require('rx');
 
-module.exports = function() {
+module.exports = function ConsoleInput() {
   
   var inputBack = new Rx.Subject();
   var inputNext = new Rx.Subject();
@@ -38,13 +38,3 @@ module.exports = function() {
 
   return Rx.Observable.merge([ inputBack, inputNext, inputOk ]);
 }
-
-function as(inputValue) {
-  return function(e) {
-    return {
-      input: inputValue
-    };
-  };
-}
-
-

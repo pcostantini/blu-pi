@@ -1,7 +1,7 @@
 var gpio = require('./gpios');
 var Rx = require('rx');
 
-module.exports = function() {
+module.exports = function GpioInputs() {
   return gpio.readPin(17, 0).select(() => ({ name: 'Input:Next' }));
   
 	// var inputBack = gpio.readPin(18, 0).select(as(-1));
@@ -11,13 +11,3 @@ module.exports = function() {
 
 	// return inputs;
 }
-
-function as(inputValue) {
-  return function(e) {
-    return {
-      input: inputValue
-    };
-  };
-}
-
-
