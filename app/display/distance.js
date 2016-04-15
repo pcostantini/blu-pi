@@ -37,7 +37,7 @@ function DistanceDisplay(driver, eventsStream, state) {
 
           // speed
           var speed = s.value ? s.value.speed : '-';
-          if(!isNaN(speed) || speed < SpeedThreshold) speed = 0;
+          if(!isNaN(speed) && speed < SpeedThreshold) speed = 0;
           displayState.speed = speed;
   
           // altitude
