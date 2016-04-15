@@ -14,7 +14,13 @@ function Init(driver, eventsStream, state) {
 	var current = null;
 	var i = 0;
 	function cycle() {
-		if(current) current.dispose();
+		if(current) {
+			if(current.cycle && current.cycle()) {
+				console.log('cycling subscreen');
+				return;
+			}
+			current.dispose();
+		}
 		current = new Displays[i](driver, eventsStream, state);
 
 		i++;
