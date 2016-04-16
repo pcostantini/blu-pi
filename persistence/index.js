@@ -1,7 +1,6 @@
+var _ = require('lodash');
 var Rx = require('rx');
 var sqlite3 = require('sqlite3').verbose();
-
-var bufferTimeout = 10 * 1000;
 
 function SessionPersistence(dbFile, readOnly) {
 
@@ -13,7 +12,6 @@ function SessionPersistence(dbFile, readOnly) {
 
   // create db
   var db = null;
-  var insertStatement = null;
   var dbCreated = new Promise(function(resolve, reject) {
 
     var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
@@ -40,6 +38,7 @@ function SessionPersistence(dbFile, readOnly) {
   });
 
   // inserts
+  var insertStatement = null;
   var inserts = new Rx.Subject();
   inserts.subscribe(function(event) {
     if(db === null) return;
@@ -55,6 +54,7 @@ function SessionPersistence(dbFile, readOnly) {
     inserts.onNext([ts, sensor, data]);
   }
 
+  // query
   function readSensors() {
     return new Promise(function(res, rej) {
       dbCreated.then(db => {
