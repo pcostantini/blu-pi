@@ -17,8 +17,8 @@ var sensors = !config.demoMode
 if(config.persist) {
   var useBufferedPersistence = config.persistBuffer > 0;
   var persistence = useBufferedPersistence
-    ? require('../persistence/session_buffered') 
-    : require('../persistence/session');
+    ? require('../persistence') 
+    : require('../persistence/buffered');
 
   var db = useBufferedPersistence
     ? persistence.OpenDb(config.dbFile, config.persistBuffer)
