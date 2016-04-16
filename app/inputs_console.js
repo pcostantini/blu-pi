@@ -36,5 +36,6 @@ module.exports = function ConsoleInput() {
   process.stdin.setRawMode(true);
   process.stdin.resume();
 
-  return Rx.Observable.merge([ inputBack, inputNext, inputOk ]);
+  return Rx.Observable.merge([ inputBack, inputNext, inputOk ])
+    .share();
 }

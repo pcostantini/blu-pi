@@ -6,9 +6,13 @@ function Barometer(delay) {
 
   return Rx.Observable.create(function (observer) {
     function read(sensor) {
+      try {
         sensor.read(function (data) {
           observer.onNext({ name: 'Barometer', value: data });
         });
+      } catch(err) {
+        console.log('Barometer.err!', err);
+      }
 
       setTimeout(() => read(sensor), delay);
     }
