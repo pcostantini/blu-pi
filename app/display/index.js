@@ -1,8 +1,19 @@
+var _ = require('lodash');
+var GFX = require('edison-ssd1306/src/Adafruit_GFX');
+
 var Displays = [
+	require('./screensaver'),
 	require('./distance'),
 	require('./map')];
 
-function Init(driver, eventsStream, state) {
+var width = 128;
+var height = 64;
+
+function Init(Driver, eventsStream, state) {
+
+	var driver = _.extend(
+	  new GFX(height, width),     // invert size since oled is rotated 90'C
+	  new Driver(width, height));
 
 	// cycle screen when Next is pressed
 	eventsStream
