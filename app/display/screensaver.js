@@ -9,27 +9,32 @@ function Display(driver, eventsStream) {
   driver.clear();
 
   var bit = false;
+  var kmPh = 0;
   this.eventsSubscription = eventsStream.subscribe((s) => {
     try {
       switch(s.name) {
         case 'CpuLoad':
+          
           drawCpu(driver, s.value);
           break;
 
         case 'Ticks':
+
+          driver.fillRect(0, 4, 64, 124, false);
+          drawSpeed(driver, kmPh);
+          drawBackground(driver);
+          
           bit = !bit;
           drawBit(driver, bit);
           break;
 
         case 'Gps':
 
-          drawBackground(driver);
-
           var speed = s.value ? s.value.speed : 0;
           if(speed == undefined) speed = 0;
-          var kmPh = mpsTokph(speed);
-          writeSpeed(driver, kmPh);
+          kmPh = mpsTokph(speed);
 
+          drawSpeed(driver, kmPh);
           break;
       }
     } catch(err) {
@@ -56,13 +61,12 @@ function Display(driver, eventsStream) {
   }
 
   function drawBackground(driver) {
-    driver.fillRect(0, 4, 64, 124, false);
     driver.drawCircle(width/2, 92, getRandomArbitrary(), true);
     driver.drawLine(getRandomArbitrary(), 2, getRandomArbitrary(), 127, true);
     driver.drawLine(getRandomArbitrary(), 4, getRandomArbitrary(), 127, true);
   }
 
-  function writeSpeed(driver, kmPh) {
+  function drawSpeed(driver, kmPh) {
     driver.setCursor(10, height - 45);
     driver.setTextSize(2);
     driver.setTextColor(1, 0);
