@@ -5,6 +5,7 @@ var Rx = require('rx');
 
 // init
 var config = require('./config');
+
 console.log('blu-pi!', config);
 
 // sensors
@@ -78,9 +79,9 @@ sensors
   .subscribe();
 
 // inputs & ticks
-var ticks = require('./sensors/ticks')();
-var inputs = config.inputDriver();
+var inputs = config.inputDriver().share();
 var all = Rx.Observable.merge(ticks, inputs, sensors).share();
+var all = Rx.Observable.merge(ticks, sensors, inputs).share();
 // all.subscribe(console.log)  
 
 // DISPLAY

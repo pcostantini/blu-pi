@@ -1,24 +1,24 @@
-var GPIO = require('onoff').Gpio;
 var Rx = require('rx');
+var rpio = require('rpio');
+
+rpio.init({ mapping: 'gpio' });
 
 // TODO: convert to single stream
-function readAllPins(pins) {
-  if(!pins) return [0];
-  return pins.map(readPin);
-}
+// function readAllPins(pins) {
+//   if(!pins) return [0];
+//   return pins.map(readPin);
+// }
 
-function readPin(gpioPin, respondOnValue) {
+function readPin(gpioPin, respondOnState) {
   return Rx.Observable.create(function (observer) {
 
     try {
-      var read = new GPIO(gpioPin, 'in', 'both');
-      read.watch(function (err, value) {
-        if(err) {
-           throw err;
-        }
-
-        if(respondOnValue === undefined || value === respondOnValue) {
-          observer.onNext({ "pin": gpioPin, "value": value });
+      console.log('Registering GPIO #' + gpioPin);
+      rpio.open(gpioPin, rpio.INPUT, rpio.POLL_BOTH);
+      rpio.poll(gpioPin, () => {
+        var state = rpio.read(gpioPin) ? 0 : 1;
+        if(state === respondOnState) {
+          observer.onNext({ 'pin': gpioPin, 'value': state });
         }
       });
     } catch(err) {
@@ -29,6 +29,6 @@ function readPin(gpioPin, respondOnValue) {
 }
 
 module.exports = {
-  readAllPins: readAllPins,
+  // readAllPins: readAllPins,
   readPin: readPin
 };

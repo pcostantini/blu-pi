@@ -2,10 +2,7 @@ var keypress = require('keypress');
 var Rx = require('rx');
 
 module.exports = function ConsoleInput() {
-  // var inputBack = gpio.readPin(18, 0).select(as('Input:Back'));
-  // var inputNext = gpio.readPin(27, 0).select(as('Input:Next'));
-  // var inputOk = gpio.readPin(25, 0).select(as('Input:Ok'));
-
+  
   var inputBack = new Rx.Subject();
   var inputNext = new Rx.Subject();
   var inputOk = new Rx.Subject();
@@ -41,13 +38,3 @@ module.exports = function ConsoleInput() {
 
   return Rx.Observable.merge([ inputBack, inputNext, inputOk ]);
 }
-
-function as(inputValue) {
-  return function(e) {
-    return {
-      input: inputValue
-    };
-  };
-}
-
-

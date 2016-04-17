@@ -1,7 +1,7 @@
 var _ = require('lodash');
 
 var refreshDisplayDelay = 1000;
-var width = 63;
+var width = 64;
 var height = 128;
 
 var bounds = {
@@ -34,17 +34,6 @@ function Display(driver, eventsStream, state) {
           }
 
           break;
-
-        case 'Input:Ok':
-          bounds.zoom += 1;
-          if(bounds.zoom > 4) bounds.zoom = 1;
-
-          if(state && state.gpsPath) {
-            driver.clear();
-            renderWholePath(driver, state.gpsPath);
-          }
-
-          break;
       }
     } catch(err) {
       console.log('driver.draw.err!', { err: err, stack: err.stack });
@@ -55,7 +44,19 @@ function Display(driver, eventsStream, state) {
   if(state && state.gpsPath) {
     renderWholePath(driver, state.gpsPath);
   }
+  
+  this.toggleZoom = function() {
+    bounds.zoom += 1;
+    if(bounds.zoom > 4) bounds.zoom = 1;
 
+    if(state && state.gpsPath) {
+      driver.clear();
+      renderWholePath(driver, state.gpsPath);
+    }
+    
+    return bounds.zoom !== 1;
+  };
+  
   // refresh screen
   (function redraw(self) {
     driver.display();
@@ -140,6 +141,10 @@ Display.prototype.dispose = function() {
   if(this.timeout) {
     clearTimeout(this.timeout);
   }
+}
+
+Display.prototype.cycle = function() {
+  return this.toggleZoom();
 }
 
 module.exports = Display;
