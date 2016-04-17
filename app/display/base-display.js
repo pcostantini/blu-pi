@@ -1,19 +1,23 @@
 function BaseDisplay(driver, eventsStream, state) {
-
-  this.init(driver, state);
   
-  this.eventsSubscription = eventsStream.subscribe((event) => {
+  var self = this;
+
+  self.init(driver, state);
+  
+  self.eventsSubscription = eventsStream.subscribe((event) => {
     try {
-      this.processEvent(driver, state, event)
+      self.processEvent(driver, state, event)
     } catch(err) {
-      console.log('Display.processEvent.err!', err);
+      console.log('Display.processEvent.err!', {
+        err: err.toString(),
+        stack: err.stack
+      });
     }
   });
 
 
   // refresh screen
   var bit = true;
-  var self = this;
   (function redraw(self) {
     self.heartbeat(driver);
 
@@ -23,7 +27,7 @@ function BaseDisplay(driver, eventsStream, state) {
     driver.display();
 
     self.timeout = setTimeout(redraw.bind(null, self), self.refreshDisplayDelay);
-  })(this);
+  })(self);
 
 }
 

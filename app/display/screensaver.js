@@ -68,7 +68,7 @@ function drawSpeed(driver, kmPh) {
   driver.setCursor(10, height - 45);
   driver.setTextSize(2);
   driver.setTextColor(1, 0);
-  var sKph = toFixed(kmPh, 1); 
+  var sKph = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
   var chars = sKph.split('');
   chars.forEach((c) => {
     driver.write(c.charCodeAt(0));
