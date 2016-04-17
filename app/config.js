@@ -29,4 +29,13 @@ var config = {
     : require('./inputs_console')
 };
 
+// global error handling
+// this is due to some sensor code may throw error in async ways, not making it possible to catch
+process.on('uncaughtException', (err) => {
+  console.log('ERROR!: ', {
+    err: err.toString(),
+    stack: err.stack
+  });
+});
+
 module.exports = config;
