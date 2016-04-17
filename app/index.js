@@ -58,7 +58,8 @@ sensors
   .subscribe();
 
 // inputs & ticks
-var ticks = require('./sensors/ticks')();
+var clock = sensors.filter(s => s.name === 'Clock');
+var ticks = require('./sensors/ticks')(clock);
 var inputs = config.inputDriver();
 inputs.subscribe(console.log);
 

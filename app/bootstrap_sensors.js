@@ -7,7 +7,7 @@ module.exports = function bootstrap(sensorsConfig) {
   // var odometer = require('./sensors/odometer')(odometerPin);
   // ... odometer.subscribe(console.log);
 
-  var clock = require('./sensors/gps_timestamp')().share();
+  var clock = require('./sensors/clock')().share();
 
   var sensors = [
     clock,

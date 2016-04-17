@@ -2,25 +2,17 @@ var Rx = require('rx');
 var Clock = require('./clock');
 
 var sensorName = 'Ticks';
-module.exports = function Ticks() {
+module.exports = function Ticks(clock) {
 
-  var startTick = new Date().getTime();
+  var startTick = Date.now();
 
-  var clock = Clock();
-  var ts = clock.select(function(sensor) {
-    return {
-      name: sensorName,
-      value: sensor.value.getTime()
-    };
-  });
-
-  var totalTicks = ts.select(function(sensor) {
+  return clock.select(function(clock) {
 
     var aMinute = 1000 * 60;
     var anHour = aMinute * 60;
     var aQuarter = 15;
     
-    var ticksSinceStart = sensor.value - startTick;
+    var ticksSinceStart = clock.value - startTick;
     var hours = Math.floor(ticksSinceStart / anHour);
     var minutes = Math.floor(ticksSinceStart / aMinute);
     var quarters = Math.floor(minutes / aQuarter);
@@ -34,8 +26,7 @@ module.exports = function Ticks() {
         [ quarters, minutes % aQuarter ]
       ]
     };
-  });
 
-  return totalTicks;
+  });
 
 }
