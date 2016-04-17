@@ -7,9 +7,9 @@ function bootstrap(sensorsConfig) {
   // ... odometer.subscribe(console.log);
 
   var sensors = [
+    require('./sensors/gps')(),
     require('./sensors/lsm303')(sensorsConfig.lsm303),
     require('./sensors/barometer')(sensorsConfig.temperature),
-    require('./sensors/gps')(),
     // sys
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),
     require('./sensors/cpu_load')()];

@@ -1,41 +1,10 @@
 var _ = require('lodash');
-var minimist = require('minimist');
 var Rx = require('rx');
 // for debugging leaks
 // // require('heapdump'); 
 
 // init
-var sessionId = new Date().getTime();
-var argv = minimist(process.argv.slice(2));
-var demoMode = argv.demo || argv.d;
-var webDisplay = argv.webDisplay || argv.wd;
-var consoleInput = argv.console || argv.c;
-
-var config = {
-  persist: !demoMode,
-  persistBuffer: 0,
-  sessionId: sessionId,
-  dbFile: !demoMode
-    ? 'sensors-' + sessionId + '.sqlite3'
-    : 'sensors-1456895867978-TestRideParqueSarmiento.sqlite3',   // https://www.strava.com/activities/508017565
-  sensors: {
-    // refresh times
-    lsm303: {
-      acceleration: 1000,
-      axes: 1000,
-      heading: 1000,
-      temp: 5000
-    },
-    temperature: 5000
-  },
-  displayDriver: !webDisplay
-    ? require('./display/drivers/oled')
-    : require('./display/drivers/web'),
-  inputDriver: !consoleInput
-    ? require('./inputs')
-    : require('./inputs_console')
-};
-
+var config = require('./config');
 console.log('blu-pi!', config);
 
 // global error handling
@@ -48,7 +17,7 @@ process.on('uncaughtException', (err) => {
 });
 
 // sensors
-var sensors = !demoMode
+var sensors = !config.demoMode
   ? require('./bootstrap_sensors')(config.sensors)
   : require('./replay_sensors')(config.dbFile);
 
@@ -63,15 +32,25 @@ if(config.persist) {
     ? persistence.OpenDb(config.dbFile, config.persistBuffer)
     : persistence.OpenDb(config.dbFile);
 
-  // persist with timestamp
+  // persist with timestamp, using Gps.timestamp as clock
+  var lastTs = {
+    cpu: new Date().getTime(),
+    gps: new Date().getTime()
+  };
+  const getTimestamp = () => lastTs.gps + (new Date().getTime() - lastTs.cpu);
+  var timestamp = sensors.filter(s => s.name === 'Gps' && s.value && s.value.timestamp)
+                         .select(s => ({ name: 'Ts', value: s.value.timestamp}))
+                         .do((s) => lastTs = {
+                            cpu: new Date().getTime(),
+                            gps: s.value
+                          }).subscribe();
   sensors
-    .select(function(sensorEvent) {
-      return _.extend(
-        { timestamp: new Date().getTime() },
-        sensorEvent);
-    })
+    .select(s => _.extend({ timestamp: getTimestamp() }, s))
     .subscribe(db.insert);
 }
+
+// TODO:
+// var stateStream = require('./state').CreateFromEventStream(events);
 
 // state
 var state = {
@@ -110,8 +89,7 @@ sensors
 // inputs & ticks
 var ticks = require('./sensors/ticks')();
 var inputs = config.inputDriver();
-inputs.subscribe(console.log);
-var all = Rx.Observable.merge(ticks, sensors, inputs);
+var all = Rx.Observable.merge(ticks, inputs, sensors).share();
 // all.subscribe(console.log)  
 
 // DISPLAY
@@ -141,5 +119,3 @@ var gcWaitTime = 60000; // 1'
       + 'when launching node to enable forced garbage collection.');
   }
 })();
-
-

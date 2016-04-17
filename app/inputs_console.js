@@ -1,7 +1,7 @@
 var keypress = require('keypress');
 var Rx = require('rx');
 
-module.exports = function() {
+module.exports = function ConsoleInput() {
   // var inputBack = gpio.readPin(18, 0).select(as('Input:Back'));
   // var inputNext = gpio.readPin(27, 0).select(as('Input:Next'));
   // var inputOk = gpio.readPin(25, 0).select(as('Input:Ok'));
