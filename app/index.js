@@ -5,7 +5,6 @@ var Rx = require('rx');
 
 // init
 var config = require('./config');
-
 console.log('blu-pi!', config);
 
 // sensors
@@ -24,21 +23,7 @@ if(config.persist) {
     ? persistence.OpenDb(config.dbFile, config.persistBuffer)
     : persistence.OpenDb(config.dbFile);
 
-  // persist with timestamp, using Gps.timestamp as clock
-  var lastTs = {
-    cpu: new Date().getTime(),
-    gps: new Date().getTime()
-  };
-  const getTimestamp = () => lastTs.gps + (new Date().getTime() - lastTs.cpu);
-  var timestamp = sensors.filter(s => s.name === 'Gps' && s.value && s.value.timestamp)
-                         .select(s => ({ name: 'Ts', value: s.value.timestamp}))
-                         .do((s) => lastTs = {
-                            cpu: new Date().getTime(),
-                            gps: s.value
-                          }).subscribe();
-  sensors
-    .select(s => _.extend({ timestamp: getTimestamp() }, s))
-    .subscribe(db.insert);
+  sensors.subscribe(db.insert);
 }
 
 // TODO:
@@ -79,9 +64,8 @@ sensors
   .subscribe();
 
 // inputs & ticks
-var inputs = config.inputDriver().share();
+var inputs = config.inputDriver();
 var all = Rx.Observable.merge(ticks, inputs, sensors).share();
-var all = Rx.Observable.merge(ticks, sensors, inputs).share();
 // all.subscribe(console.log)  
 
 // DISPLAY
