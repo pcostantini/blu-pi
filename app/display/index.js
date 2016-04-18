@@ -1,5 +1,6 @@
 var _ = require('lodash');
 var GFX = require('edison-ssd1306/src/Adafruit_GFX');
+var hotswap = require('hotswap');
 
 var Displays = [
 	require('./screensaver'),
@@ -20,9 +21,14 @@ function Init(Driver, eventsStream, state) {
 		.filter(s => s.name === 'Input:Next')
 		.subscribe(cycle);
 
+	hotswap.on('swap', () => {
+		current.dispose();
+		current = new Displays[currentIx](driver, eventsStream, state);
+	});
+
 	// cycle screen
 	var current = null;
-	var i = 0;
+	var currentIx = 0;
 	function cycle() {
 		if(current) {
 			var isSubscreen = current.cycle && current.cycle();
@@ -34,9 +40,9 @@ function Init(Driver, eventsStream, state) {
 		}
 		
 		console.log('Cycling Screen');
-		current = new Displays[i](driver, eventsStream, state);
-		i++;
-		if(i > Displays.length - 1) i = 0;
+		current = new Displays[currentIx](driver, eventsStream, state);
+		currentIx++;
+		if(currentIx > Displays.length - 1) currentIx = 0;
 	}
 
 	// give some time for the OLED reset proc.

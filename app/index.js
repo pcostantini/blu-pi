@@ -1,5 +1,7 @@
 var Rx = require('rxjs');
 
+require('hotswap');
+
 var SensorsBootstrap = require('./bootstrap_sensors');
 var ReplaySensors = require('./replay_sensors');
 var Persistence  = require('../persistence');

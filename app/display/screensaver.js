@@ -1,3 +1,5 @@
+module.change_code = 1;
+
 var BaseDisplay = require('./base-display');
 var inherits    = require('util').inherits;
 
@@ -5,7 +7,7 @@ var width = 64;
 var height = 128;
 
 var kmPh = NaN;
-
+console.log('ScreenDisplay.v1', Date.now());
 inherits(ScreenSaverDisplay, BaseDisplay);
 
 function ScreenSaverDisplay(driver, eventsStream, state) {
@@ -14,6 +16,7 @@ function ScreenSaverDisplay(driver, eventsStream, state) {
 
 ScreenSaverDisplay.prototype.init = function(driver, state) {
   driver.fillRect(0, 4, 64, 124, false);
+  drawSpeed(driver, kmPh);
   drawBackground(driver);
 };
 
@@ -26,15 +29,10 @@ ScreenSaverDisplay.prototype.heartbeat = function(driver) {
 ScreenSaverDisplay.prototype.processEvent = function(driver, state, e) {
   switch(e.name) {
 
-    case 'CpuLoad':
-      drawCpu(driver, e.value);
-      break;
-
     case 'Gps':
 
-      var speed = e.value ? e.value.speed : 0;
-      if(speed == undefined) speed = 0;
-      kmPh = mpsTokph(speed);
+      var speed = e.value ? e.value.speed : NaN;
+      kmPh = !isNaN(speed) ? mpsTokph(speed) : NaN;
 
       drawSpeed(driver, kmPh);
       break;
@@ -50,23 +48,23 @@ module.exports = ScreenSaverDisplay;
 
 
 // graph functions
-function drawCpu(driver, cpuState) {
-  driver.fillRect(0, 0, height, 4, true);
-  var cpu = cpuState[0] < 2 ? cpuState[0] : 2;
-  var cpuWidth = Math.round((width / 2) * (2-cpu));
-  driver.fillRect(cpuWidth, 1, width - cpuWidth - 1, 2, false);
-}
 
 function drawBackground(driver) {
   driver.drawCircle(width/2, 92, getRandomArbitrary(), true);
-  driver.drawLine(getRandomArbitrary(), 2, getRandomArbitrary(), 127, true);
-  driver.drawLine(getRandomArbitrary(), 4, getRandomArbitrary(), 127, true);
+
+  var x1 = getRandomArbitrary();
+  var x2 = getRandomArbitrary();
+  x2 += (Math.random() * (1 - 9) + 9) / 2;
+  x1 -= (Math.random() * (1 - 9) + 9) / 2;
+
+  driver.drawLine(x1, 2, x2, 127, true);
+  // driver.drawLine(getRandomArbitrary(), 4, getRandomArbitrary(), 127, true);
 }
 
 const mpsTokph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 function drawSpeed(driver, kmPh) {
   driver.setCursor(10, height - 45);
-  driver.setTextSize(2);
+  driver.setTextSize(3);
   driver.setTextColor(1, 0);
   var sKph = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
   var chars = sKph.split('');
@@ -76,9 +74,22 @@ function drawSpeed(driver, kmPh) {
 
 }
 
+var r0 = Math.PI * Math.PI;
+var r = r0;
 function getRandomArbitrary() {
-  return Math.random() * (55 - 9) + 9;
+  r = r + 0.15;
+
+  // + factor
+  // like vibration
+  // speed
+  // ... more of it will make noise
+
+  if(r > 45) {
+    r = r0;
+  }
+  return r;
 }
+
 
 function toFixed(value, precision) {
     var precision = precision || 0,

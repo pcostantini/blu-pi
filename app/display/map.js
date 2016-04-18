@@ -1,3 +1,5 @@
+module.change_mode = 1;
+
 var _ = require('lodash');
 
 var refreshDisplayDelay = 1000;
@@ -18,20 +20,16 @@ function Display(driver, eventsStream, state) {
   this.eventsSubscription = eventsStream.subscribe((s) => {
     try {
       switch(s.name) {
-        case 'Ticks':
-          bit = !bit;
-          drawBit(driver, bit);
-          break;
 
         case 'Gps':
-          if(s.value && s.value.latitude) {
-            var coord = [s.value.latitude, s.value.longitude];
-            if(!bounds.lonLeft) {
-              initBounds(bounds, coord);
-            }
+          if(!(s.value && s.value.latitude)) return;
 
-            drawPathCoordinate(driver, coord, bounds);
+          var coord = [s.value.latitude, s.value.longitude];
+          if(!bounds.lonLeft) {
+            initBounds(bounds, coord);
           }
+
+          drawPathCoordinate(driver, coord, bounds);
 
           break;
       }
