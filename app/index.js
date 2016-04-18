@@ -77,12 +77,12 @@ var ui = Display(config.displayDriver, all, state);
 // require('heapdump'); 
 
 // REPL supportString::NewSymbol("write"),
-initRepl(all);
-function initRepl(app) {
-  var replify = require('replify');
-  replify('pi-blu', app);      
-  console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
-}
+// initRepl(all);
+// function initRepl(app) {
+//   var replify = require('replify');
+//   replify('pi-blu', app);      
+//   console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
+// }
 
 
 // ...
