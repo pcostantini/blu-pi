@@ -14,12 +14,12 @@ var config = {
   sensors: {
     // refresh times
     lsm303: {
-      acceleration: 1000,
-      axes: 1000,
-      heading: 1000,
+      acceleration: 500,
+      axes: 500,
+      heading: 500,
       temp: 5000
     },
-    temperature: 5000
+    temperature: 2500
   },
   displayDriver: !webDisplay
     ? require('./display/drivers/oled')
@@ -31,7 +31,7 @@ var config = {
 
 // global error handling
 // this is due to some sensor code may throw error in async ways, not making it possible to catch
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', err => {
   console.log('ERROR!: ', {
     err: err.toString(),
     stack: err.stack
