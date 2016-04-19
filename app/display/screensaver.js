@@ -5,20 +5,13 @@ var inherits    = require('util').inherits;
 
 var width = 64;
 var height = 128;
-
 var kmPh = NaN;
-console.log('ScreenDisplay.v1', Date.now());
-inherits(ScreenSaverDisplay, BaseDisplay);
 
-function ScreenSaverDisplay(driver, eventsStream, state) {
+function ScreenSaverDisplay(driver, eventsStream) {
   BaseDisplay.call(this, driver, eventsStream);
 }
 
-ScreenSaverDisplay.prototype.init = function(driver, state) {
-  driver.fillRect(0, 4, 64, 124, false);
-  drawSpeed(driver, kmPh);
-  drawBackground(driver);
-};
+inherits(ScreenSaverDisplay, BaseDisplay);
 
 ScreenSaverDisplay.prototype.heartbeat = function(driver) {
   driver.fillRect(0, 4, 64, 124, false);
@@ -26,21 +19,26 @@ ScreenSaverDisplay.prototype.heartbeat = function(driver) {
   drawBackground(driver);
 }
 
-ScreenSaverDisplay.prototype.processEvent = function(driver, state, e) {
+ScreenSaverDisplay.prototype.processEvent = function(driver, e) {
   switch(e.name) {
 
-    case 'Gps':
+    case 'State':
 
-      var speed = e.value ? e.value.speed : NaN;
-      kmPh = !isNaN(speed) ? mpsTokph(speed) : NaN;
+      var speed = e.value.Gps ? e.value.Gps.speed : NaN;
+      var kmPhState = !isNaN(speed) ? mpsTokph(speed) : NaN;
 
-      drawSpeed(driver, kmPh);
+      if(kmPh !== kmPhState) {
+        kmPh = kmPhState;
+        drawSpeed(driver, kmPh);
+      }
       break;
+
 
     case 'MagnometerHeading':
     case 'Acceleration':
     case 'MagnometerAxis':
       // console.log(e)
+      break;
   }
 }
 
@@ -64,7 +62,7 @@ function drawBackground(driver) {
 const mpsTokph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 function drawSpeed(driver, kmPh) {
   driver.setCursor(10, height - 45);
-  driver.setTextSize(3);
+  driver.setTextSize(2);
   driver.setTextColor(1, 0);
   var sKph = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
   var chars = sKph.split('');

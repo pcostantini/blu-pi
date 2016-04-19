@@ -6,71 +6,36 @@ var SensorsBootstrap = require('./bootstrap_sensors');
 var ReplaySensors = require('./replay_sensors');
 var Persistence  = require('../persistence');
 var Display = require('./display');
+var State = require('./state');
 
 // init
 var config = require('./config');
 console.log('blu-pi!', config);
+
+var input = config.inputDriver();
 
 // sensors
 var sensors = !config.demoMode
   ? SensorsBootstrap(config.sensors)
   : ReplaySensors(config.dbFile);
 
-// persist
+// save
 if(config.persist) {
   var db = Persistence(config.dbFile);
   sensors.subscribe(db.insert);
 }
 
-// TODO:
-// var stateStream = require('./state').CreateFromEventStream(events);
-
 // state
-var state = {
-  distance: 0,
-  gpsPath: []
-};
-
-// take gps events and calculate distance
-var GpsDistance = require('gps-distance');
-var GpsNoiseFilter = require('./gps_noise_filter');
-sensors
-  .filter(s => s.name === 'Gps')
-  .map(s => s.value)
-  .filter(GpsNoiseFilter(GpsNoiseFilter.DefaultSpeedThreshold))
-  .map(gps => [gps.latitude, gps.longitude])
-  .scan((last, curr) => {
-    if(last) {
-      var offset = GpsDistance(last[0], last[1],
-                               curr[0], curr[1]);
-      state.distance += offset;
-    }
-    return curr;
-  }, null)
-  .subscribe();
-
-// take gps events and accumulate path points
-sensors
-  .filter(s => s.name === 'Gps' && s.value && s.value.latitude)
-  .map(s => [s.value.latitude, s.value.longitude])
-  .scan((path, point) => {
-    path.push(point);
-    return path;
-  }, state.gpsPath)
-  .subscribe();
-
-// inputs & ticks
-var clock = sensors.filter(s => s.name === 'Clock');
-var ticks = require('./sensors/ticks')(clock);
-var inputs = config.inputDriver();
-inputs.subscribe(console.log);
+var state = State.FromStream(Rx.Observable.merge(input, sensors));
 
 // all
-var all = Rx.Observable.merge(inputs, sensors, ticks).share();
-// all.subscribe(console.log);
+var stateAndAll = Rx.Observable.merge(input, sensors, state);
+// stateAndAll.subscribe((s) => {
+// 	console.log(JSON.stringify(s, null, null));
+// });
 
 // DISPLAY
-var ui = Display(config.displayDriver, all, state);
+var ui = Display(config.displayDriver, stateAndAll);
 
 // web server + api
 // var server = require('../server')(db);
