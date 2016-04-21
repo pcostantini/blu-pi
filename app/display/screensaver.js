@@ -100,7 +100,7 @@ function Display(driver, eventsStream) {
 
 Display.prototype.dispose = function() {
   if(this.eventsSubscription) {
-    this.eventsSubscription.dispose();
+    this.eventsSubscription.unsubscribe();
   }
 
   if(this.timeout) {

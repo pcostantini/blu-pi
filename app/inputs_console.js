@@ -1,5 +1,5 @@
 var keypress = require('keypress');
-var Rx = require('rx');
+var Rx = require('rxjs');
 
 module.exports = function ConsoleInput() {
   
@@ -22,13 +22,13 @@ module.exports = function ConsoleInput() {
 
     switch(key.name) {
       case 'a':
-        inputBack.onNext({ name: 'Input:Back' });
+        inputBack.next({ name: 'Input:Back' });
         break;
       case 's':
-        inputBack.onNext({ name: 'Input:Next' });
+        inputBack.next({ name: 'Input:Next' });
         break;
       case 'd':
-        inputBack.onNext({ name: 'Input:Ok' });
+        inputBack.next({ name: 'Input:Ok' });
         break;
     }
   });
@@ -36,6 +36,6 @@ module.exports = function ConsoleInput() {
   process.stdin.setRawMode(true);
   process.stdin.resume();
 
-  return Rx.Observable.merge([ inputBack, inputNext, inputOk ])
+  return Rx.Observable.merge(inputBack, inputNext, inputOk)
     .share();
 }

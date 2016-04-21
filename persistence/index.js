@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var Rx = require('rx');
+var Rx = require('rxjs');
 var sqlite3 = require('sqlite3').verbose();
 
 function SessionPersistence(dbFile, readOnly) {
@@ -51,7 +51,7 @@ function SessionPersistence(dbFile, readOnly) {
     var ts = message.timestamp;
     var sensor = message.name;
     var data = JSON.stringify(message.value);
-    inserts.onNext([ts, sensor, data]);
+    inserts.next([ts, sensor, data]);
   }
 
   // query

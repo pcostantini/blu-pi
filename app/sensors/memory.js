@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var Rx = require('rx');
+var Rx = require('rxjs');
 var os = require('os');
 
 var SensorName = 'Memory';
@@ -10,7 +10,7 @@ function Memory() {
     function readAndEmit() {
     	var value = process.memoryUsage();
     	value.freeMem = os.freemem();
-        observer.onNext({ name: SensorName, value: value });
+        observer.next({ name: SensorName, value: value });
     }
 
     setInterval(readAndEmit, 3000);

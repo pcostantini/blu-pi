@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 var Clock = require('./clock');
 
 var sensorName = 'Ticks';
@@ -6,7 +6,7 @@ module.exports = function Ticks(clock) {
 
   var startTick = Date.now();
 
-  return clock.select(function(clock) {
+  return clock.map(function(clock) {
 
     var aMinute = 1000 * 60;
     var anHour = aMinute * 60;

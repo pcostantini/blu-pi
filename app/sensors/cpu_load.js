@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 var os = require('os');
 
 var SensorName = 'CpuLoad';
@@ -8,7 +8,7 @@ function CpuLoad() {
 
   	function readAndEmit() {
   		try {
-      	observer.onNext({ name: SensorName, value: os.loadavg() });
+      	observer.next({ name: SensorName, value: os.loadavg() });
       } catch(err) {
   		  console.log('cpu_load.read.err!', err);
       }

@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 var _ = require('lodash');
 
 module.exports = function bootstrap(sensorsConfig) {
@@ -37,7 +37,7 @@ module.exports = function bootstrap(sensorsConfig) {
   // stamp!
   return sensors
     .filter(() => lastTs !== null)                            // ignore previous events to sync clock with Gps
-    .select(s => _.extend({ timestamp: getTimestamp() }, s)) 
+    .map(s => _.extend({ timestamp: getTimestamp() }, s)) 
     .share();
 
 }

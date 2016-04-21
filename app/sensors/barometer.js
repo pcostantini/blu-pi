@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 var BMP085 = require('bmp085');
 
 function Barometer(delay) {
@@ -8,7 +8,7 @@ function Barometer(delay) {
     function read(sensor) {
       try {
         sensor.read(function (data) {
-          observer.onNext({ name: 'Barometer', value: data });
+          observer.next({ name: 'Barometer', value: data });
         });
       } catch(err) {
         console.log('Barometer.err!', err);
