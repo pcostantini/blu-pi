@@ -45,14 +45,13 @@ function Display(driver, eventsStream, state) {
     renderWholePath(driver, state.gpsPath);
   }
   
-  this.toggleZoom = function() {
+  this.cycle = function() {
+    if(!state || !state.gpsPath || !state.gpsPath.length) return false;
+
     bounds.zoom += 1;
     if(bounds.zoom > 4) bounds.zoom = 1;
-
-    if(state && state.gpsPath) {
-      driver.clear();
-      renderWholePath(driver, state.gpsPath);
-    }
+    driver.clear();
+    renderWholePath(driver, state.gpsPath);
     
     return bounds.zoom !== 1;
   };
@@ -141,10 +140,6 @@ Display.prototype.dispose = function() {
   if(this.timeout) {
     clearTimeout(this.timeout);
   }
-}
-
-Display.prototype.cycle = function() {
-  return this.toggleZoom();
 }
 
 module.exports = Display;

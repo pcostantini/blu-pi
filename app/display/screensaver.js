@@ -8,24 +8,12 @@ function Display(driver, eventsStream) {
 
   driver.clear();
 
-  var bit = false;
   var kmPh = 0;
   this.eventsSubscription = eventsStream.subscribe((s) => {
     try {
       switch(s.name) {
         case 'CpuLoad':
-          
           drawCpu(driver, s.value);
-          break;
-
-        case 'Ticks':
-
-          driver.fillRect(0, 4, 64, 124, false);
-          drawSpeed(driver, kmPh);
-          drawBackground(driver);
-          
-          bit = !bit;
-          drawBit(driver, bit);
           break;
 
         case 'Gps':
@@ -43,7 +31,16 @@ function Display(driver, eventsStream) {
   });
 
   // refresh screen
+  var bit = false;
   (function redraw(self) {
+    driver.fillRect(0, 4, 64, 124, 0);
+    drawSpeed(driver, kmPh);
+    drawBackground(driver);
+    
+    bit = !bit;
+    drawBit(driver, bit);
+
+
     driver.display();
     self.timeout = setTimeout(redraw.bind(null, self), refreshDisplayDelay);
   })(this);
