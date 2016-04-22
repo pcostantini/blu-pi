@@ -3,8 +3,8 @@ var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 
 var Displays = [
 	require('./screensaver'),
-	require('./distance'),
-	require('./map')];
+	require('./map'),
+	require('./distance')];
 
 var width = 128;
 var height = 64;

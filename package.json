@@ -17,6 +17,7 @@
     "lsm303": "git://github.com/praneshkmr/node-lsm303",
     "minimist": "^1.2.0",
     "pi-temperature": "^1.0.0",
+    "replify": "^1.2.0",
     "rpio": "^0.9.10",
     "rxjs": "^5.0.0-beta.6",
     "socket.io": "^1.4.5",

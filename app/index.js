@@ -65,7 +65,7 @@ inputs.subscribe(console.log);
 
 // all
 var all = Rx.Observable.merge(inputs, sensors, ticks).share();
-all.subscribe(console.log);
+// all.subscribe(console.log);
 
 // DISPLAY
 var ui = Display(config.displayDriver, all, state);
@@ -76,3 +76,13 @@ var ui = Display(config.displayDriver, all, state);
 // for debugging leaks
 // require('heapdump'); 
 
+// REPL supportString::NewSymbol("write"),
+initRepl(all);
+function initRepl(app) {
+  var replify = require('replify');
+  replify('pi-blu', app);      
+  console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
+}
+
+
+// ...

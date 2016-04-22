@@ -13,12 +13,12 @@ function ScreenSaverDisplay(driver, eventsStream, state) {
 }
 
 ScreenSaverDisplay.prototype.init = function(driver, state) {
-  driver.fillRect(0, 4, 64, 124, 0);
+  driver.fillRect(0, 4, 64, 124, false);
   drawBackground(driver);
 };
 
 ScreenSaverDisplay.prototype.heartbeat = function(driver) {
-  driver.fillRect(0, 4, 64, 124, 0);
+  driver.fillRect(0, 4, 64, 124, false);
   drawSpeed(driver, kmPh);
   drawBackground(driver);
 }
@@ -42,7 +42,7 @@ ScreenSaverDisplay.prototype.processEvent = function(driver, state, e) {
     case 'MagnometerHeading':
     case 'Acceleration':
     case 'MagnometerAxis':
-      console.log(e)
+      // console.log(e)
   }
 }
 
