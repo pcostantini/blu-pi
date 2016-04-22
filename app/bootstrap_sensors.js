@@ -8,10 +8,6 @@ module.exports = function bootstrap(sensorsConfig) {
   // ... odometer.subscribe(console.log);
 
   var clock = require('./sensors/clock')();
-
-
-  // var sensors = Rx.Observable.merge(clock, cpu);
-
   var sensors = Rx.Observable.merge(
 
     clock,
@@ -23,15 +19,9 @@ module.exports = function bootstrap(sensorsConfig) {
     // sys
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),
     require('./sensors/cpu_load')(),
-    require('./sensors/memory')()
+    require('./sensors/memory')() 
 
     ).share();
-
-
-  // // TODO: handle errors here?
-  // var sensors = Rx.Observable.merge(sensors).share();
-
-  
 
   // current stamp
   var lastTs = null;
@@ -43,7 +33,7 @@ module.exports = function bootstrap(sensorsConfig) {
   
   // stamp!
   return sensors
-    .filter(() => lastTs !== null)                            // ignore events before clock is gps synched
+    .filter(() => lastTs !== null)       // ignore events before clock is gps synched
     .map(o => _.assign(
       { timestamp: getTimestamp() }, o)) 
     .share();
