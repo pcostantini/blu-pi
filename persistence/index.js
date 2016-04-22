@@ -1,85 +1,81 @@
-var sqlite3 = require('sqlite3').verbose();
 var _ = require('lodash');
+var Rx = require('rx');
+var sqlite3 = require('sqlite3').verbose();
 
-module.exports = function(dbFile, readOnly) {
+function SessionPersistence(dbFile, readOnly) {
 
-  var SqlSchemas = require('./schema');
-  var SqlInsertSensor = 'INSERT INTO sensorEvents VALUES (?, ?, ?, ?)';
-  var SqlInsertSession = 'INSERT INTO sessions (startTimestamp, endTimestamp, name) VALUES (?, ?, ?)';
-  var SqlSelectSensor = 'SELECT timestamp, sensor, data FROM sensorEvents ORDER BY timestamp ASC';
+  "use strict";
 
-  // create db conn
-  var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
-  var db = new sqlite3.Database(dbFile, options, !readOnly ? tryCreateSchemas : null);
+  var SqlSchemas = ['CREATE TABLE IF NOT EXISTS SensorEvents (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER, sensor VARCHAR(64), data TEXT)'];
+  var SqlInsertMessage = 'INSERT INTO SensorEvents (timestamp, sensor, data) VALUES (?, ?, ?)';
+  var SqlSelectSensors = 'SELECT timestamp, sensor, data FROM sensorEvents ORDER BY timestamp ASC';  //  ORDER BY id ASC';
 
-  const dispose = () => db.close();
+  // create db
+  var db = null;
+  var dbCreated = new Promise(function(resolve, reject) {
 
-  function tryCreateSchemas() {
-    _.each(SqlSchemas, function(script) {
-      db.run(script);
-    });
+    var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
+    var newDb = new sqlite3.Database(dbFile, options, !readOnly ? tryCreateSchemas : done);
+
+    function done() {
+      resolve(newDb);
+    }
+
+    function tryCreateSchemas() {
+      var i=0;
+      _.each(SqlSchemas, script => {
+        newDb.run(script, () => {
+          i++;
+          if(i == SqlSchemas.length) done();
+        });
+      });
+    }
+  });
+
+  dbCreated.then((newDb) => {
+    db = newDb;
+    insertStatement = db.prepare(SqlInsertMessage);
+  });
+
+  // inserts
+  var insertStatement = null;
+  var inserts = new Rx.Subject();
+  inserts.subscribe(function(event) {
+    if(db === null) return;
+    insertStatement.run(event);
+  });
+
+  function insert(message) {
+    if(readOnly) throw new Error('Db is in ReadOnly mode');
+
+    var ts = message.timestamp;
+    var sensor = message.name;
+    var data = JSON.stringify(message.value);
+    inserts.onNext([ts, sensor, data]);
   }
 
+  // query
   function readSensors() {
     return new Promise(function(res, rej) {
-      db.all(SqlSelectSensor, function(err, rows) {
-        if(err) {
-          return rej(err);
-        }
-
-        res(rows);
+      dbCreated.then(db => {
+        db.all(SqlSelectSensors, function(err, rows) {
+          if(err) return rej(err);
+          res(rows);
+        });
       });
     });
   }
-
-	function insertSession(rowSet, sessionName) {
-
-    return new Promise(function(res, rej) {
-
-      if(readOnly) {
-        rej('Db is in ReadOnly mode');
-      }
-
-      // timeframe
-      var first = _.first(rowSet);
-      var last = _.last(rowSet);
-
-      // add session
-      var sessionCreated = new Promise(function(sessionResolve, sessionReject) {
-        db.run(SqlInsertSession, [first.timestamp, last.timestamp, sessionName], function() {
-          var sessionId = this.lastID;
-          if(sessionId !== undefined) {
-            sessionResolve(sessionId);
-          } else {
-            res({ newSession: false, name: sessionName });
-          }
-        });
-      });
-
-      // add rows
-      sessionCreated.then(function(sessionId) {
-        db.serialize(function() {
-            db.exec("BEGIN");
-            var dbStatement = db.prepare(SqlInsertSensor);
-            _.each(rowSet, function(row) {
-              dbStatement.run(sessionId, row.timestamp, row.sensor, row.data);
-            });
-            db.exec("COMMIT");
-
-            res({ newSession: true, name: sessionName, rowSetLength: rowSet.length });
-        });
-      });
-
-    });
+  
+  function dispose() {
+    if(db) db.close();
   }
 
   return {
-
+    insert: insert,
     readSensors: readSensors,
-    
-    insertSession: insertSession,
-
     dispose: dispose
   };
 
 }
+
+module.exports = SessionPersistence;

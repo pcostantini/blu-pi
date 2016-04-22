@@ -2,8 +2,10 @@
 
 SCREEN_NAME=blu
 
+# TODO: backup last
+
 screen -dmS "$SCREEN_NAME"
 screen -S "$SCREEN_NAME" -X stuff "node --harmony --expose-gc app $(printf \\r)"
 
-printf "Done,  now you can join your screen with :\n"
+printf "Done,  now you can join cat-pi with :\n"
 printf "$ screen -dr -S $SCREEN_NAME\n"

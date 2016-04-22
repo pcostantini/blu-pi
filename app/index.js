@@ -1,7 +1,9 @@
-var _ = require('lodash');
 var Rx = require('rx');
-// for debugging leaks
-// // require('heapdump'); 
+
+var SensorsBootstrap = require('./bootstrap_sensors');
+var ReplaySensors = require('./replay_sensors');
+var Persistence  = require('../persistence');
+var Display = require('./display');
 
 // init
 var config = require('./config');
@@ -9,20 +11,12 @@ console.log('blu-pi!', config);
 
 // sensors
 var sensors = !config.demoMode
-  ? require('./bootstrap_sensors')(config.sensors)
-  : require('./replay_sensors')(config.dbFile);
+  ? SensorsBootstrap(config.sensors)
+  : ReplaySensors(config.dbFile);
 
 // persist
 if(config.persist) {
-  var useBufferedPersistence = config.persistBuffer > 0;
-  var persistence = useBufferedPersistence
-    ? require('../persistence/session_buffered') 
-    : require('../persistence/session');
-
-  var db = useBufferedPersistence
-    ? persistence.OpenDb(config.dbFile, config.persistBuffer)
-    : persistence.OpenDb(config.dbFile);
-
+  var db = Persistence(config.dbFile);
   sensors.subscribe(db.insert);
 }
 
@@ -64,34 +58,21 @@ sensors
   .subscribe();
 
 // inputs & ticks
+var clock = sensors.filter(s => s.name === 'Clock');
+var ticks = require('./sensors/ticks')(clock);
 var inputs = config.inputDriver();
-var all = Rx.Observable.merge(ticks, inputs, sensors).share();
-// all.subscribe(console.log)  
+inputs.subscribe(console.log);
+
+// all
+var all = Rx.Observable.merge(inputs, sensors, ticks).share();
+
 
 // DISPLAY
-var Driver = config.displayDriver;
-var GFX = require('edison-ssd1306/src/Adafruit_GFX');
-var width = 128;
-var height = 64;
-var driver = _.extend(
-  new GFX(height, width),     // invert size since oled is rotated
-  new Driver(width, height));
-
-var Display = require('./display');
-var ui = Display(driver, all, state);
+var ui = Display(config.displayDriver, all, state);
 
 // web server + api
 // var server = require('../server')(db);
 
-// GC COLLECTION - TODO: REVIEW IF REALLY NEEDED
-var gcWaitTime = 60000; // 1'
-(function gc() {
-  if (global.gc) {
-    console.log('...GC!');
-    global.gc();
-    setTimeout(gc, gcWaitTime);
-  } else {
-    console.log('Garbage collection unavailable.  Pass --expose-gc '
-      + 'when launching node to enable forced garbage collection.');
-  }
-})();
+// for debugging leaks
+// require('heapdump'); 
+
