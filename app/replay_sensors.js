@@ -1,5 +1,5 @@
 var Persistence = require('../persistence');
-var Rx = require('rx');
+var Rx = require('rxjs');
 var _ = require('lodash');
 
 var start = new Date();
@@ -25,10 +25,10 @@ function startWithGps(events) {
 function schedule(source) {
   return function(events) {
     events.forEach((t) => {
-      Rx.Scheduler.default.scheduleFuture(
-        null,
+      Rx.Scheduler.async.schedule(
+        (x) => source.next(_.pick(x, ['name', 'value'])),
         t.offset,
-        () => source.onNext(_.pick(t, ['name', 'value'])));
+        t);
     });
   }
 }

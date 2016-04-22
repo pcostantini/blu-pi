@@ -1,8 +1,8 @@
 var gpio = require('./gpios');
-var Rx = require('rx');
+var Rx = require('rxjs');
 
 module.exports = function GpioInputs() {
-  var inputNext = gpio.readPin(17, 0).select(() => ({ name: 'Input:Next' }));
-	return Rx.Observable.merge([ inputNext/*, inputBack, inputOk*/ ])
+  var inputNext = gpio.readPin(17, 0).map(() => ({ name: 'Input:Next' }));
+	return Rx.Observable.merge(inputNext/*, inputBack, inputOk*/)
 		.share();
 }

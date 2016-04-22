@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 var _ = require('lodash');
 
 module.exports = function bootstrap(sensorsConfig) {
@@ -7,37 +7,45 @@ module.exports = function bootstrap(sensorsConfig) {
   // var odometer = require('./sensors/odometer')(odometerPin);
   // ... odometer.subscribe(console.log);
 
-  var clock = require('./sensors/clock')().share();
+  var clock = require('./sensors/clock')();
 
-  var sensors = [
+
+  // var sensors = Rx.Observable.merge(clock, cpu);
+
+  var sensors = Rx.Observable.merge(
+
     clock,
+    
     require('./sensors/gps')(),
     require('./sensors/lsm303')(sensorsConfig.lsm303),
     require('./sensors/barometer')(sensorsConfig.temperature),
+    
     // sys
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),
     require('./sensors/cpu_load')(),
-    require('./sensors/memory')()];
+    require('./sensors/memory')()
+
+    ).share();
 
 
-  // TODO: handle errors here?
-  var sensors = Rx.Observable.merge(sensors).share();
+  // // TODO: handle errors here?
+  // var sensors = Rx.Observable.merge(sensors).share();
+
   
-  // stamp all events
-  // with clock milliseconds
 
   // current stamp
   var lastTs = null;
   const getTimestamp = () => lastTs.gps + (Date.now() - lastTs.cpu);
-  clock.do((s) => lastTs = {
+  clock.do((o) => lastTs = {
             cpu: Date.now(),
-            gps: s.value
+            gps: o.value
           }).subscribe(function() {});
   
   // stamp!
   return sensors
-    .filter(() => lastTs !== null)                            // ignore previous events to sync clock with Gps
-    .select(s => _.extend({ timestamp: getTimestamp() }, s)) 
+    .filter(() => lastTs !== null)                            // ignore events before clock is gps synched
+    .map(o => _.assign(
+      { timestamp: getTimestamp() }, o)) 
     .share();
 
 }

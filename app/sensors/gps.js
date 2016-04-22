@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var Rx = require('rx');
+var Rx = require('rxjs');
 var Bancroft = require('bancroft');
 
 var SensorName = 'Gps';
@@ -20,7 +20,7 @@ function GPS() {
         cleanLocation.point = location.geometries.coordinates;
       }
 
-      observer.onNext({ name: SensorName, value: cleanLocation });
+      observer.next({ name: SensorName, value: cleanLocation });
     });
 
   });

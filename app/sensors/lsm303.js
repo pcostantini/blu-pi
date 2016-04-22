@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 var LSM303 = require('lsm303');
 
 // TODO: READ FAST!!!
@@ -9,7 +9,7 @@ function LSM303_Observable(waitTimes) {
     function handleRead(callback, sensorName, wait) {
       return function(err, sensorData) {
         var value = sensorData || err;
-        observer.onNext({ name: sensorName, value: value });
+        observer.next({ name: sensorName, value: value });
         setTimeout(callback, wait);
 
       };

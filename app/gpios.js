@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 var rpio = require('rpio');
 
 rpio.init({ mapping: 'gpio' });
@@ -18,7 +18,7 @@ function readPin(gpioPin, respondOnState) {
       rpio.poll(gpioPin, () => {
         var state = rpio.read(gpioPin) ? 0 : 1;
         if(state === respondOnState) {
-          observer.onNext({ 'pin': gpioPin, 'value': state });
+          observer.next({ 'pin': gpioPin, 'value': state });
         }
       });
     } catch(err) {

@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 
 function CpuTemperature(delay) {
   if(!delay) delay = 5000;
@@ -15,7 +15,7 @@ function CpuTemperature(delay) {
           }
 
           lastTemp = value;
-          observer.onNext({ name: 'CpuTemperature', value: value });
+          observer.next({ name: 'CpuTemperature', value: value });
         });
       } catch(err) {
         console.log('temp.err!', err);

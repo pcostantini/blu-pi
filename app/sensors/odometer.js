@@ -1,5 +1,5 @@
 var GPIO = require('onoff').Gpio;
-var Rx = require('rx');
+var Rx = require('rxjs');
 
 function OdometerObservable(gpioPin) {
   return Rx.Observable.create(function (observer) {
@@ -36,7 +36,7 @@ function OdometerObservable(gpioPin) {
         timestamp: new Date()
       };
 
-      observer.onNext( { name: 'Odometer', value: event } );
+      observer.next( { name: 'Odometer', value: event } );
 
       // emit
       // observer....

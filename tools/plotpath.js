@@ -1,5 +1,4 @@
 var Persistence = require('../persistence');
-var Rx = require('rx');
 var _ = require('lodash');
 
 var dbFilePath = process.argv[2];

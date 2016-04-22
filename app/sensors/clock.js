@@ -1,5 +1,5 @@
+var Rx = require('rxjs');
 var net = require('net');
-var Rx = require('rx');
 
 var SensorName = 'Clock';
 
@@ -45,7 +45,7 @@ function GpsClock() {
               // self.emit('time', timestamp);
               // EMIT!
 
-              observer.onNext({ name: SensorName, value: timestamp });
+              observer.next({ name: SensorName, value: timestamp });
             }
           } else if (data.class === 'ERROR') {
             // self.emit('error', data);

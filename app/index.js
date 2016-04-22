@@ -1,4 +1,4 @@
-var Rx = require('rx');
+var Rx = require('rxjs');
 
 var SensorsBootstrap = require('./bootstrap_sensors');
 var ReplaySensors = require('./replay_sensors');
@@ -34,9 +34,9 @@ var GpsDistance = require('gps-distance');
 var GpsNoiseFilter = require('./gps_noise_filter');
 sensors
   .filter(s => s.name === 'Gps')
-  .select(s => s.value)
+  .map(s => s.value)
   .filter(GpsNoiseFilter(GpsNoiseFilter.DefaultSpeedThreshold))
-  .select(gps => [gps.latitude, gps.longitude])
+  .map(gps => [gps.latitude, gps.longitude])
   .scan((last, curr) => {
     if(last) {
       var offset = GpsDistance(last[0], last[1],
@@ -50,7 +50,7 @@ sensors
 // take gps events and accumulate path points
 sensors
   .filter(s => s.name === 'Gps' && s.value && s.value.latitude)
-  .select(s => [s.value.latitude, s.value.longitude])
+  .map(s => [s.value.latitude, s.value.longitude])
   .scan((path, point) => {
     path.push(point);
     return path;
@@ -65,7 +65,7 @@ inputs.subscribe(console.log);
 
 // all
 var all = Rx.Observable.merge(inputs, sensors, ticks).share();
-
+all.subscribe(console.log);
 
 // DISPLAY
 var ui = Display(config.displayDriver, all, state);
