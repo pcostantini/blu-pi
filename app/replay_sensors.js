@@ -2,7 +2,9 @@ var Persistence = require('../persistence');
 var Rx = require('rxjs');
 var _ = require('lodash');
 
-var start = new Date();
+var clock = Rx.Observable.timer(0, 1000)
+  .map(() => ({ name: 'Clock', value: Date.now() }));
+
 
 function ReplayFromDb(dbFilePath) {
   var source = new Rx.Subject();
@@ -13,7 +15,8 @@ function ReplayFromDb(dbFilePath) {
     .then(toEvents)
     .then(schedule(source));
 
-  return source.share();
+  return Rx.Observable.merge(clock, source)
+    .share();
 }
 
 function startWithGps(events) {
