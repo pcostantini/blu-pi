@@ -4,22 +4,11 @@ var BMP085 = require('bmp085');
 function Barometer(delay) {
   if(!delay) delay = 5000;
 
-  var refErr = 0;
-
   return Rx.Observable.create(function (observer) {
     function read(sensor) {
-      try {
-        sensor.read(function (data) {
-          observer.next({ name: 'Barometer', value: data });
-        });
-      } catch(err) {
-      	refErr++;
-        console.log('Barometer.err!', err);
-      }
-
-      if(refErr < 10) {
-      	setTimeout(() => read(sensor), delay);
-      }
+      sensor.read(function (data) {
+        observer.next({ name: 'Barometer', value: data });
+      });
     }
 
     var sensor = new BMP085();
