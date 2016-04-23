@@ -12,7 +12,7 @@ module.exports = function Ticks(clock) {
     var anHour = aMinute * 60;
     var aQuarter = 15;
     
-    var ticksSinceStart = clock.value - startTick;
+    var ticksSinceStart = Date.now() - startTick;
     var hours = Math.floor(ticksSinceStart / anHour);
     var minutes = Math.floor(ticksSinceStart / aMinute);
     var quarters = Math.floor(minutes / aQuarter);
