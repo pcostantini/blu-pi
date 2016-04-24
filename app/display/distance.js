@@ -1,4 +1,4 @@
-const SpeedThreshold = require('../gps_noise_filter').DefaultSpeedThreshold;
+module.change_mode = 1;
 
 var refreshDisplayDelay = 1000;
 var width = 64;
@@ -19,9 +19,6 @@ function DistanceDisplay(driver, eventsStream, state) {
   this.eventsSubscription = eventsStream.subscribe((s) => {
     try {
       switch(s.name) {
-        case 'CpuLoad':
-          drawCpu(driver, s.value);
-          break;
 
         case 'Ticks':
           displayState.ticks = s.value[0];    // wait for gps to draw time
@@ -37,7 +34,6 @@ function DistanceDisplay(driver, eventsStream, state) {
 
           // speed
           var speed = s.value ? s.value.speed : '-';
-          if(!isNaN(speed) && speed < SpeedThreshold) speed = 0;
           displayState.speed = speed;
   
           // altitude
@@ -108,14 +104,6 @@ function DistanceDisplay(driver, eventsStream, state) {
     driver.setCursor(4, height - 22);
     driver.setTextSize(1);
     write(driver, formatTime(elapsed));
-  }
-
-  var maxBarWidth = width - 2;
-  function drawCpu(driver, cpuState) {
-    driver.fillRect(0, 0, height, 4, true);
-    var cpu = cpuState[0] < 2 ? cpuState[0] : 2;
-    var cpuWidth = Math.round((maxBarWidth / 2) * (cpu));
-    driver.fillRect(cpuWidth + 1, 1, maxBarWidth - cpuWidth - 1, 2, false);
   }
 
   function write(driver, string) {
