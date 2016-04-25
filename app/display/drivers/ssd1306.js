@@ -153,6 +153,10 @@ OLED.prototype.display = function() {
   }
 }
 
+OLED.prototype.setBuffer = function(newBuffer) {
+  buffer = newBuffer;
+}
+
 OLED.prototype.clear = function()
 {
 	for(var i in buffer)

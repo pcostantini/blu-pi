@@ -14,7 +14,7 @@ var pathDone = db
                     .map(getCoordinate));
 
 // inputs
-var inputs = require('../app/inputs_console')();
+var inputs = require('../app/inputs')();
 inputs.subscribe(console.log);
 
 // ui
@@ -33,7 +33,8 @@ pathDone.then(path => {
       gpsPath: path
     };
     var Display = require('../app/display/map');
-    var ui = Display(driver, inputs, state);
+    var ui = new Display(driver, inputs, state);
+inputs.subscribe(() => ui.cycle());
   } catch(err) {
     console.log('INIT.ERR!', {
       err: err,

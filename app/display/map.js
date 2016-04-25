@@ -83,6 +83,7 @@ function renderWholePath(driver, path) {
   bounds.latBottomDegree = latitude * Math.PI / 180;
 
   path.forEach(coord => drawPathCoordinate(driver, coord, bounds));
+return this
 }
 
 // graph functions
