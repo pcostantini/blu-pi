@@ -8,7 +8,7 @@ function SessionPersistence(dbFile, readOnly) {
 
   var SqlSchemas = ['CREATE TABLE IF NOT EXISTS SensorEvents (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER, sensor VARCHAR(64), data TEXT)'];
   var SqlInsertMessage = 'INSERT INTO SensorEvents (timestamp, sensor, data) VALUES (?, ?, ?)';
-  var SqlSelectSensors = 'SELECT timestamp, sensor, data FROM sensorEvents ORDER BY timestamp ASC';  //  ORDER BY id ASC';
+  var SqlSelectSensors = 'SELECT timestamp, sensor, data FROM sensorEvents'; // ORDER BY timestamp ASC';  //  ORDER BY id ASC';
 
   // create db
   var db = null;
@@ -17,9 +17,10 @@ function SessionPersistence(dbFile, readOnly) {
     var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
     var newDb = new sqlite3.Database(dbFile, options, !readOnly ? tryCreateSchemas : done);
 
-    function done() {
-      resolve(newDb);
-    }
+    var done = () => resolve(newDb);
+    // function done() {
+    //   resolve(newDb);
+    // }
 
     function tryCreateSchemas() {
       var i=0;

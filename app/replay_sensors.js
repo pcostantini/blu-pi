@@ -66,6 +66,3 @@ function mapWithOffset(events) {
 
   return events.map(withOffset(offset));
 }
-
-
-

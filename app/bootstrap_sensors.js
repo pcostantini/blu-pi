@@ -1,7 +1,7 @@
 var Rx = require('rxjs');
 var _ = require('lodash');
 
-module.exports = function bootstrap(sensorsConfig) {
+module.exports = function bootstrap(config) {
   
   // var odometerPin = 25 //2;
   // var odometer = require('./sensors/odometer')(odometerPin);
@@ -9,15 +9,13 @@ module.exports = function bootstrap(sensorsConfig) {
 
   var clock = require('./sensors/clock')();
   var sensors = Rx.Observable.merge(
-
     clock,
-    
     safeRequire('./sensors/gps')(),
     safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
     safeRequire('./sensors/barometer')(sensorsConfig.temperature),
     
     // sys
-    require('./sensors/cpu_temperature')(sensorsConfig.temperature),
+    // require('./sensors/cpu_temperature')(config.temperature),
     require('./sensors/cpu_load')(),
     require('./sensors/memory')() 
 

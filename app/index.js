@@ -34,8 +34,10 @@ var ticks = Ticks(clock);
 var inputsAndSensors = Rx.Observable.merge(input, sensors);
 var state = State.FromStream(inputsAndSensors);
 
+
 // all
 var stateAndAll = Rx.Observable.merge(input, sensors, ticks, state)
+
 
 // DISPLAY
 var ui = Display(config.displayDriver, stateAndAll);
@@ -43,4 +45,6 @@ var ui = Display(config.displayDriver, stateAndAll);
 // web server + api
 // var server = require('../server')(db);
 
+
 // ...
+
