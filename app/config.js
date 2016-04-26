@@ -6,6 +6,7 @@ var consoleInput = argv.console || argv.c;
 
 var config = {
   demoMode: demoMode,
+  logState: demoMode,
   persist: !demoMode,
   persistBuffer: 0,
   dbFile: !demoMode

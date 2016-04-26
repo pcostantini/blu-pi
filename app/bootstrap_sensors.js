@@ -32,8 +32,7 @@ module.exports = function bootstrap(config) {
   // stamp!
   return sensors
     .filter(() => lastTs !== null)       // ignore events before clock is gps synched
-    .map(o => _.assign(
-      { timestamp: getTimestamp() }, o)) 
+    .map(o => _.assign({ timestamp: getTimestamp() }, o)) 
     .share();
 
 }

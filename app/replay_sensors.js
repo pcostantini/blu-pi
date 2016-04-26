@@ -35,6 +35,7 @@ function ReplayFromDb(dbFilePath) {
 
 function schedule(source) {
   return function(events) {
+    console.log('scheduling events', events.length);
     events.forEach((t) => {
       Rx.Scheduler.async.schedule(
         () => source.next(_.pick(t, ['name', 'value'])),
@@ -47,22 +48,27 @@ function schedule(source) {
 function startWithGps(events) {
   var firstGps = _.findIndex(events, e => e.sensor === 'Gps' && e.data !== 'null');
   if(firstGps == -1) return [];
+
   return events.slice(firstGps);
 }
 
 function mapWithOffset(events) {
-  function withOffset(offset) {
-    return function(event) {
-      return {
-        offset: event.timestamp - offset,
-        name: event.sensor,
-        value: JSON.parse(event.data)
+  try {
+    function withOffset(offset) {
+      return function(event) {
+        return {
+          offset: event.timestamp - offset,
+          name: event.sensor,
+          value: JSON.parse(event.data)
+        };
       };
-    };
+    }
+
+    if(events.length === 0) return [];
+    var offset = events[0].timestamp;
+
+    return events.map(withOffset(offset));
+  } catch(err) {
+    console.log('mapping err!', err);
   }
-
-  if(events.length === 0) return [];
-  var offset = events[0].timestamp;
-
-  return events.map(withOffset(offset));
 }

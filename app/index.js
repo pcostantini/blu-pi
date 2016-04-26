@@ -33,7 +33,11 @@ var ticks = Ticks(clock);
 // state
 var inputsAndSensors = Rx.Observable.merge(input, sensors);
 var state = State.FromStream(inputsAndSensors);
-
+if(config.logState) {
+  state
+    .throttle(ev => Rx.Observable.interval(1000))
+    .subscribe(console.log);
+}
 
 // all
 var stateAndAll = Rx.Observable.merge(input, sensors, ticks, state)

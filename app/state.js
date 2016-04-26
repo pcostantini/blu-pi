@@ -21,7 +21,8 @@ module.exports.FromStream = function FromStream(events) {
       state[e.name] = e.value;
       return state;
     }, state)
-    .map((state) => ({ 'name': 'State', 'value': state }));
+    .map((state) => ({ 'name': 'State', 'value': state }))
+    .share();
 
   // combine single reduced values and state
   return Rx.Observable.merge(
@@ -55,9 +56,8 @@ function PathReducer (gpsEvents) {
   return gpsEvents
     .map(gps => [gps.latitude, gps.longitude])
     .filter(point => {
-      if(lastPoint[0] === point[0] && lastPoint[1] === point[1]) {
-        return false;
-      }
+      if(lastPoint[0] === point[0] &&
+         lastPoint[1] === point[1]) return false;
       lastPoint = point;
       return true;
     })
