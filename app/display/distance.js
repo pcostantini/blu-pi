@@ -1,141 +1,124 @@
-module.change_mode = 1;
+module.change_code = 1;
 
-var refreshDisplayDelay = 1000;
+var BaseDisplay = require('./base-display');
+var inherits    = require('util').inherits;
+
 var width = 64;
 var height = 128;
 
-function DistanceDisplay(driver, eventsStream, state) {
+function DistanceDisplay(driver, events) {
+  BaseDisplay.call(this, driver, events);
 
-  driver.clear();
+  driver.setTextColor(1, 0);
 
-  var displayState = {
-    bit: false,
-    distance: 0,
-    speed: NaN,
+  this.state = {
+    duration: '--:--',
+    distance: NaN,
     altitude: NaN,
-    ticks: 0
-  };
-
-  this.eventsSubscription = eventsStream.subscribe((s) => {
-    try {
-      switch(s.name) {
-
-        case 'Ticks':
-          displayState.ticks = s.value[0];    // wait for gps to draw time
-          displayState.bit = !displayState.bit;
-          drawTime(driver, displayState.ticks);
-          drawBit(driver, displayState.bit);
-          break;
-
-        case 'Gps':
-
-          // distance
-          displayState.distance = state.distance;
-
-          // speed
-          var speed = s.value ? s.value.speed : '-';
-          displayState.speed = speed;
-  
-          // altitude
-          displayState.altitude = s.value ? s.value.altitude : '-';
-
-          drawLocation(driver, displayState);
-
-          break;
-      }
-    } catch(e) {
-      console.log('driver.draw.err!', { err: e.toString, stack: e.stack });
-    }
-  });
-
-
-  // initial state
-  if(state) {
-    displayState.distance = state.distance;
-    drawLocation(driver, displayState);
-    drawTime(driver, displayState.ticks);
-  }
-
-  // refresh screen
-  (function redraw(self) {
-    driver.display();
-    self.timeout = setTimeout(redraw.bind(null, self), refreshDisplayDelay);
-  })(this);
-
-  // graph functions
-  function drawLocation(driver, values) {
-    console.log('render', values);
-
-    driver.fillRect(0, 6, width, 26, 0);
-
-    // speed
-    driver.setTextColor(1, 0);
-    driver.setCursor(4, 6);
-    driver.setTextSize(2);
-    var speed = values.speed;
-    if(isNaN(speed)) {
-      write(driver, '--');
-    } else {
-      write(driver, toFixed(mpsToKph(speed), 1));
-    }
-
-    // altitude
-    driver.setTextColor(1, 0);
-    driver.setCursor(4, 24);
-    driver.setTextSize(1);
-    var altText = !isNaN(values.altitude) ? (toFixed(values.altitude, 1)  + ' m') : '-';
-    write(driver, 'A:' + altText);
-
-    // distance
-    driver.setTextColor(1, 0);
-    driver.setCursor(4, height - 12);
-    driver.setTextSize(1);
-    write(driver, toFixed(values.distance, 1) + ' km');
-  }
-
-  function drawBit(driver, bit) {
-    driver.fillRect(0, 124, 4, 4, bit ? 1 : 0);
-  }
-
-  function drawTime(driver, ticks) {
-    // time
-    var elapsed = Math.round(ticks / 1000);
-    driver.setTextColor(1, 0);
-    driver.setCursor(4, height - 22);
-    driver.setTextSize(1);
-    write(driver, formatTime(elapsed));
-  }
-
-  function write(driver, string) {
-    var chars = string.split('');
-    chars.forEach((c) => {
-      driver.write(c.charCodeAt(0));
-    });
-  }
-
-  function toFixed(value, precision) {
-    var precision = precision || 0,
-        power = Math.pow(10, precision),
-        absValue = Math.abs(Math.round(value * power)),
-        result = (value < 0 ? '-' : '') + String(Math.floor(absValue / power));
-
-    if (precision > 0) {
-      var fraction = String(absValue % power),
-          padding = new Array(Math.max(precision - fraction.length, 0) + 1).join('0');
-      result += '.' + padding + fraction;
-    }
-    return result;
+    speed: NaN
   }
 }
 
-DistanceDisplay.prototype.dispose = function() {
-  if(this.eventsSubscription) {
-    this.eventsSubscription.unsubscribe();
-  }
+inherits(DistanceDisplay, BaseDisplay);
 
-  if(this.timeout) {
-    clearTimeout(this.timeout);
+DistanceDisplay.prototype.processEvent = function(driver, e) {
+
+  var state = this.state;
+
+  switch(e.name) {
+    case 'State':
+
+      // distance
+      if(e.value.Distance !== state.distance) {
+        state.distance = e.value.Distance;
+        drawDistance(driver, state.distance);
+      }
+
+      break;
+    case 'Gps':
+
+      var speed = e.value ? e.value.speed : NaN;
+      if(state.speed !== speed) {
+        state.speed = speed;
+        drawSpeed(driver, state.speed);
+      }
+
+      var altitude = e.value ? e.value.altitude : NaN;
+      if(state.altitude !== altitude) {
+        state.altitude = altitude;
+        drawAltitude(driver, state.altitude);
+      }
+
+      break;
+    case 'Ticks':
+
+      var ticks = e.value[0];
+      var elapsed = Math.round(ticks / 1000);
+      var duration = formatTime(elapsed);
+      if(state.duration !== duration) {
+        state.duration = duration;
+        drawTime(driver, duration);
+      }
+
+      break;
   }
+};
+
+module.exports = DistanceDisplay;
+
+function drawSpeed(driver, speed) {
+  driver.setCursor(4, 6);
+  driver.setTextSize(2);
+
+  if(isNaN(speed)) {
+    write(driver, '-.-');
+  } else {
+    var s = toFixed(mpsToKph(speed), 1);
+    write(driver, s);
+  }
+}
+
+function drawAltitude(driver, altitude) {
+  driver.setCursor(4, 24);
+  driver.setTextSize(1);
+
+  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
+  write(driver, 'A:' + altText);
+}
+
+function drawTime(driver, sTime) {
+  driver.setTextColor(1, 0);
+  driver.setCursor(4, height - 22);
+  driver.setTextSize(1);
+  write(driver, sTime);
+}
+
+function drawDistance(driver, distance) {
+  driver.setTextColor(1, 0);
+  driver.setCursor(4, height - 12);
+  driver.setTextSize(1);
+  write(driver, toFixed(distance, 1) + ' km');
+}
+
+function write(driver, string) {
+  var chars = string.split('');
+  chars.forEach((c) => {
+    driver.write(c.charCodeAt(0));
+  });
+}
+
+function toFixed(value, precision) {
+  var precision = precision || 0,
+      power = Math.pow(10, precision),
+      absValue = Math.abs(Math.round(value * power)),
+      result = (value < 0 ? '-' : '') + String(Math.floor(absValue / power));
+
+  if (precision > 0) {
+    var fraction = String(absValue % power),
+        padding = new Array(Math.max(precision - fraction.length, 0) + 1).join('0');
+    result += '.' + padding + fraction;
+  }
+  return result;
 }
 
 const mpsToKph = (mps) => Math.round(mps * 3.6 * 100) / 100;
@@ -151,5 +134,3 @@ function pad(n, width) {
   var n = n + '';
   return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
 }
-
-module.exports = DistanceDisplay;

@@ -50,18 +50,10 @@
       var socket = io(window.location.origin);
       socket.on('buffer', function (buffer) {
         // draw
-        var i = 0;
         for(var y = 0; y < buffer.length; y++) {
           for(var x = 0; x < buffer[y].length; x++) {
             var bit = buffer[y][x];
-
-            // if(x % 2 == 0 && y % 2 ==0) {
-            // if(x % 2 == 0 || y % 2 ==0) {
-            // if(++i % 2 == 0) {
-            var c = (x + y) % 2 == 0
-            if(c) {
-              drawBit(x, y, bit);
-            }
+            drawBit(x, y, bit);
           }
         }
 

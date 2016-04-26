@@ -21,6 +21,7 @@ function DisplayBootstrap(Driver, events) {
 		.filter(s => s.name === 'Input:Next')
 		.subscribe(cycle);
 
+	// recycle on module change
 	hotswap.on('swap', () => {
 		current = NewCurrent();
 	});
@@ -32,7 +33,10 @@ function DisplayBootstrap(Driver, events) {
 	function NewCurrent() {
 		if(current)
 			current.dispose();
-		var current =  new Displays[currentIx](driver, events);
+		
+		var DisplayType = Displays[currentIx];
+		console.log('Cycling Screen', currentIx);
+		current =  new DisplayType(driver, events);
 		currentIx++;
 		if(currentIx > Displays.length - 1) currentIx = 0;
 
@@ -42,7 +46,7 @@ function DisplayBootstrap(Driver, events) {
 	// cycle screen
 	function cycle() {
 		if(current) {
-			var isSubscreen = current.cycle && current.cycle();
+			var isSubscreen = !!(current.cycle && current.cycle());
 			if(isSubscreen) {
 				console.log('Cycling SubScreen');
 				return;
@@ -50,7 +54,6 @@ function DisplayBootstrap(Driver, events) {
 		}
 		
 		current = NewCurrent();
-		console.log('Cycling Screen', current.toString());
 	}
 
 	// give some time for the OLED reset proc.

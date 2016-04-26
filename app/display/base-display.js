@@ -2,14 +2,11 @@ module.change_mode = 1;
 
 function BaseDisplay(driver, all) {
   var self = this;
+
+  self.driver = driver;
   
   self.eventsSubscription = all.subscribe((e) => {
     try {
-
-      if(e.name === 'CpuLoad') {
-        console.log('cpu', e.value);
-        drawCpu(driver, e.value);
-      }
 
       self.processEvent(driver, e);
 
@@ -19,7 +16,13 @@ function BaseDisplay(driver, all) {
         stack: err.stack
       });
     }
+
+    if(e.name === 'CpuLoad') {
+      drawCpu(driver, e.value);
+    }
   });
+
+  driver.clear();
 
   // refresh screen
   var bit = true;
@@ -41,6 +44,7 @@ function BaseDisplay(driver, all) {
 BaseDisplay.prototype.heartbeat = function() { }
 BaseDisplay.prototype.processEvent = function() { }
 BaseDisplay.prototype.dispose = function() {
+  console.log('disposed..')
   if(this.eventsSubscription) {
     this.eventsSubscription.unsubscribe();
   }
