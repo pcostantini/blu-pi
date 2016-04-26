@@ -1,13 +1,12 @@
 var Rx = require('rxjs');
 var os = require('os');
 
-var SensorName = 'CpuLoad';
 function CpuLoad() {
 
   return Rx.Observable.create(function (observer) {
 
   	function readAndEmit() {
-    	observer.next({ name: SensorName, value: os.loadavg() });
+    	observer.next({ name: 'CpuLoad', value: os.loadavg() });
     }
 
     setInterval(readAndEmit, 3000);
