@@ -1,8 +1,9 @@
 module.change_mode = 1;
 
 var _ = require('lodash');
+var inherits    = require('util').inherits;
+var BaseDisplay = require('./base-display');
 
-var refreshDisplayDelay = 1000;
 var width = 64;
 var height = 128;
 
@@ -10,56 +11,70 @@ var bounds = {
   width: width,
   height: height,
   zoom: 1
+  // TODO:save lower and upper bound as 'size to fit'
 };
 
-function Display(driver, eventsStream, state) {
-
-  driver.clear();
-
-  var bit = false;
-  this.eventsSubscription = eventsStream.subscribe((s) => {
-    try {
-      switch(s.name) {
-
-        case 'Gps':
-          if(!(s.value && s.value.latitude)) return;
-
-          var coord = [s.value.latitude, s.value.longitude];
-          if(!bounds.lonLeft) {
-            initBounds(bounds, coord);
-          }
-
-          drawPathCoordinate(driver, coord, bounds);
-
-          break;
-      }
-    } catch(err) {
-      console.log('driver.draw.err!', { err: err, stack: err.stack });
-    }
-  });
-
-  // render current path
-  if(state && state.gpsPath) {
-    renderWholePath(driver, state.gpsPath);
-  }
-  
-  this.cycle = function() {
-    if(!state || !state.gpsPath || !state.gpsPath.length) return false;
-
-    bounds.zoom += 1;
-    if(bounds.zoom > 4) bounds.zoom = 1;
-    driver.clear();
-    renderWholePath(driver, state.gpsPath);
-    
-    return bounds.zoom !== 1;
-  };
-  
-  // refresh screen
-  (function redraw(self) {
-    driver.display();
-    self.timeout = setTimeout(redraw.bind(null, self), refreshDisplayDelay);
-  })(this);
+function MapDisplay(driver, events) {
+  BaseDisplay.call(this, driver, events);
+  this.shouldRedrawWholePath = true;
 }
+
+inherits(MapDisplay, BaseDisplay);
+
+MapDisplay.prototype.processEvent = function(driver, e) {
+  switch(e.name) {
+
+    case 'Path':
+      var pathPoints = e.value.points;
+      this.path = pathPoints;
+
+      if(this.shouldRedrawWholePath && pathPoints.length > 1 && eventHasChanged(e, 'Path')) {
+        var initialCoord = pathPoints[0];
+        initBounds(bounds, initialCoord);
+        renderWholePath(driver, pathPoints);
+        this.shouldRedrawWholePath = false;
+      }
+
+      break;
+
+    case 'Gps':
+      if(!(e.value && e.value.latitude)) return;
+
+      var coord = [e.value.latitude, e.value.longitude];
+      if(!bounds.lonLeft) {
+        initBounds(bounds, coord);
+      }
+
+      drawPathCoordinate(driver, coord, bounds);
+
+      break;
+  }
+}
+
+var lastKnownStateMap = {};
+function eventHasChanged(s, key) {
+  if(s.name === key &&
+     lastKnownStateMap[key] !== s.value)
+  {
+    lastKnownStateMap[key] = s.value;
+    return true;
+  }
+
+  return false;
+}
+
+MapDisplay.prototype.cycle = function() {
+
+  // abort/return false if path is unexistint
+
+  bounds.zoom += 1;
+  if(bounds.zoom > 4) bounds.zoom = 1;
+  this.driver.clear();
+  renderWholePath(this.driver, this.path);
+  
+  return bounds.zoom !== 1;
+};
+
 
 function renderWholePath(driver, path) {
   if(!path || path.length == 0) return;
@@ -82,8 +97,9 @@ function renderWholePath(driver, path) {
   bounds.lonDelta        = lonDelta;
   bounds.latBottomDegree = latitude * Math.PI / 180;
 
-  path.forEach(coord => drawPathCoordinate(driver, coord, bounds));
-return this
+  path.forEach((coord) => {
+    drawPathCoordinate(driver, coord, bounds)
+  });
 }
 
 // graph functions
@@ -99,7 +115,6 @@ function drawPathCoordinate(driver, coord, bounds) {
 
   var x = Math.round(point.x);
   var y = Math.round(point.y);
-  
   driver.drawPixel(x, y, 1);
 }
 
@@ -121,24 +136,14 @@ function convertGeoToPixel(latitude, longitude ,
                            mapLonDelta , // in degrees (mapLonRight - mapLonLeft);
                            mapLatBottomDegree) // in Radians
 {
-    var x = (longitude - mapLonLeft) * (mapWidth / mapLonDelta);
+  var x = (longitude - mapLonLeft) * (mapWidth / mapLonDelta);
 
-    latitude = latitude * Math.PI / 180;
-    var worldMapWidth = ((mapWidth / mapLonDelta) * 360) / (2 * Math.PI);
-    var mapOffsetY = (worldMapWidth / 2 * Math.log((1 + Math.sin(mapLatBottomDegree)) / (1 - Math.sin(mapLatBottomDegree))));
-    var y = mapHeight - ((worldMapWidth / 2 * Math.log((1 + Math.sin(latitude)) / (1 - Math.sin(latitude)))) - mapOffsetY);
+  latitude = latitude * Math.PI / 180;
+  var worldMapWidth = ((mapWidth / mapLonDelta) * 360) / (2 * Math.PI);
+  var mapOffsetY = (worldMapWidth / 2 * Math.log((1 + Math.sin(mapLatBottomDegree)) / (1 - Math.sin(mapLatBottomDegree))));
+  var y = mapHeight - ((worldMapWidth / 2 * Math.log((1 + Math.sin(latitude)) / (1 - Math.sin(latitude)))) - mapOffsetY);
 
-    return { x: x, y: y };
+  return { x: x, y: y };
 }
 
-Display.prototype.dispose = function() {
-  if(this.eventsSubscription) {
-    this.eventsSubscription.unsubscribe();
-  }
-
-  if(this.timeout) {
-    clearTimeout(this.timeout);
-  }
-}
-
-module.exports = Display;
+module.exports = MapDisplay;

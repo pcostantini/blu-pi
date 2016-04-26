@@ -12,9 +12,9 @@ module.exports = function bootstrap(sensorsConfig) {
 
     clock,
     
-    require('./sensors/gps')(),
-    require('./sensors/lsm303')(sensorsConfig.lsm303),
-    require('./sensors/barometer')(sensorsConfig.temperature),
+    safeRequire('./sensors/gps')(),
+    safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
+    safeRequire('./sensors/barometer')(sensorsConfig.temperature),
     
     // sys
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),
@@ -37,5 +37,17 @@ module.exports = function bootstrap(sensorsConfig) {
     .map(o => _.assign(
       { timestamp: getTimestamp() }, o)) 
     .share();
+
+}
+
+function safeRequire(moduleName) {
+
+  try {
+    return require(moduleName)
+  } catch(err) {
+    console.log(moduleName + '.err!', err);
+
+    return () => Rx.Observable.empty();
+  }
 
 }

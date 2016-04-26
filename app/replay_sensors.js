@@ -2,18 +2,22 @@ var Persistence = require('../persistence');
 var Rx = require('rxjs');
 var _ = require('lodash');
 
-var clock = Rx.Observable.timer(0, 1000)
-  .map(() => ({ name: 'Clock', value: Date.now() }));
-
-
 function ReplayFromDb(dbFilePath) {
-  var source = new Rx.Subject();
-  
+  // mock clock using current time
+  var clock = Rx.Observable.interval(1000)
+    .map(() => ({ name: 'Clock', value: Date.now() }));
+
+  // read events
   var db = Persistence(dbFilePath, true);
-  db.readSensors()
+  var events = db
+    .readSensors()
     .then(startWithGps)
-    .then(toEvents)
-    .then(schedule(source));
+    .then(toEvents);
+
+  // schedule and emit
+  var source = Rx.Observable.create(function (observer) {
+    events.then(schedule(observer));
+  });
 
   return Rx.Observable.merge(clock, source)
     .share();
@@ -29,7 +33,7 @@ function schedule(source) {
   return function(events) {
     events.forEach((t) => {
       Rx.Scheduler.async.schedule(
-        (x) => source.next(_.pick(x, ['name', 'value'])),
+        () => source.next(_.pick(t, ['name', 'value'])),
         t.offset,
         t);
     });
@@ -40,8 +44,6 @@ function toEvents(events) {
   if(events.length === 0) return [];
   var first = events[0];
   var offset = first.timestamp;
-
-  console.log('REPLAY OFFSET', offset)
 
   return events.map(toEvent(offset));
 }

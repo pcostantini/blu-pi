@@ -1,12 +1,11 @@
 var Rx = require('rxjs');
-var Clock = require('./clock');
 
-var sensorName = 'Ticks';
 module.exports = function Ticks(clock) {
 
   var startTick = Date.now();
 
-  return clock.map(function(clock) {
+  return clock
+    .map(() => {
 
     var aMinute = 1000 * 60;
     var anHour = aMinute * 60;
@@ -18,7 +17,7 @@ module.exports = function Ticks(clock) {
     var quarters = Math.floor(minutes / aQuarter);
 
     return {
-      name: sensorName,
+      name: 'Ticks',
       value: [
         ticksSinceStart,
         minutes,
