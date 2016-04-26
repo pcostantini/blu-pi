@@ -34,7 +34,7 @@ var config = {
 process.on('uncaughtException', err => {
   console.log('ERROR!: ', {
     err: err.toString(),
-    stack: err.stack
+    stack: err.stack.replace(/\n/g,'$1\n') // SO!: console.log('foo!bar!baz!'.replace(/([!.?])/g,'$1\n'));
   });
 });
 
