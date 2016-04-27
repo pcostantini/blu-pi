@@ -1,10 +1,11 @@
 module.change_mode = 1;
 
-function BaseDisplay(driver, eventsStream, state) {
+function BaseDisplay(driver, all) {
   var self = this;
-  self.init(driver, state);
+
+  self.heartbeat(driver);
   
-  self.eventsSubscription = eventsStream.subscribe((e) => {
+  self.eventsSubscription = all.subscribe((e) => {
     try {
 
       if(e.name === 'CpuLoad') {
@@ -12,7 +13,7 @@ function BaseDisplay(driver, eventsStream, state) {
         drawCpu(driver, e.value);
       }
 
-      self.processEvent(driver, state, e);
+      self.processEvent(driver, e);
 
     } catch(err) {
       console.log('Display.processEvent.err!', {
