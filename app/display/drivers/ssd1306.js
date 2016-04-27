@@ -212,6 +212,11 @@ OLED.prototype.drawPixel = function(x, y, color) {
   if ((x < 0) || (x >= SSD1306.LCDWIDTH) || (y < 0) || (y >= SSD1306.LCDHEIGHT))
     return;
 
+  // grid 'filter'
+  var c = (x + y) % 2 == 0
+  if(!c)
+    return;
+
   // x is which column
   if (color == SSD1306.WHITE) {
     buffer[x+ (y/8>>0)*SSD1306.LCDWIDTH] |= (1 << (y&7)); //(a/b>>0) is Inter divison
