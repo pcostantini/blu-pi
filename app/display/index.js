@@ -10,25 +10,36 @@ var Displays = [
 var width = 128;
 var height = 64;
 
-function Init(Driver, eventsStream, state) {
+function DisplayBootstrap(Driver, events) {
 
 	var driver = _.extend(
 	  new GFX(height, width),     // invert size since oled is rotated 90'C
 	  new Driver(width, height));
 
 	// cycle screen when Next is pressed
-	eventsStream
+	events
 		.filter(s => s.name === 'Input:Next')
 		.subscribe(cycle);
 
 	hotswap.on('swap', () => {
-		current.dispose();
-		current = new Displays[currentIx](driver, eventsStream, state);
+		current = NewCurrent();
 	});
 
-	// cycle screen
+
+	// get new screen proc (dispose previous)
 	var current = null;
 	var currentIx = 0;
+	function NewCurrent() {
+		if(current)
+			current.dispose();
+		var current =  new Displays[currentIx](driver, events);
+		currentIx++;
+		if(currentIx > Displays.length - 1) currentIx = 0;
+
+		return current;
+	}
+
+	// cycle screen
 	function cycle() {
 		if(current) {
 			var isSubscreen = current.cycle && current.cycle();
@@ -36,13 +47,10 @@ function Init(Driver, eventsStream, state) {
 				console.log('Cycling SubScreen');
 				return;
 			}
-			current.dispose();
 		}
 		
-		console.log('Cycling Screen');
-		current = new Displays[currentIx](driver, eventsStream, state);
-		currentIx++;
-		if(currentIx > Displays.length - 1) currentIx = 0;
+		current = NewCurrent();
+		console.log('Cycling Screen', current.toString());
 	}
 
 	// give some time for the OLED reset proc.
@@ -50,4 +58,4 @@ function Init(Driver, eventsStream, state) {
 
 }
 
-module.exports = Init;
+module.exports = DisplayBootstrap;

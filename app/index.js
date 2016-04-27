@@ -27,11 +27,12 @@ if(config.persist) {
 
 // state
 var state = State.FromStream(Rx.Observable.merge(input, sensors));
-state = state.do(console.log);
 
 // all
 var stateAndAll = Rx.Observable.merge(input, sensors, state);
-// stateAndAll.subscribe(console.log);
+// stateAndAll.subscribe((s) => {
+// 	console.log(JSON.stringify(s, null, null));
+// });
 
 // DISPLAY
 var ui = Display(config.displayDriver, stateAndAll);

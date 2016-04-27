@@ -2,8 +2,6 @@ module.change_mode = 1;
 
 function BaseDisplay(driver, all) {
   var self = this;
-
-  self.heartbeat(driver);
   
   self.eventsSubscription = all.subscribe((e) => {
     try {
@@ -23,7 +21,6 @@ function BaseDisplay(driver, all) {
     }
   });
 
-
   // refresh screen
   var bit = true;
   (function redraw(self) {
@@ -35,6 +32,7 @@ function BaseDisplay(driver, all) {
 
     // update and repeat
     driver.display();
+
     self.timeout = setTimeout(redraw.bind(null, self), self.refreshDisplayDelay);
 
   })(self);
