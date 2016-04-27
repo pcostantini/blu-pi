@@ -7,13 +7,14 @@ function Barometer(delay) {
   return Rx.Observable.create(function (observer) {
     function read(sensor) {
       sensor.read(function (data) {
+        setTimeout(() => read(sensor), delay);
         observer.next({ name: 'Barometer', value: data });
       });
     }
 
     var sensor = new BMP085();
     read(sensor);
-  });
+  }).do(console.log);
 }
 
 module.exports = Barometer;
