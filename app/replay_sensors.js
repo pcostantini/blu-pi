@@ -6,9 +6,6 @@ module.exports = ReplayFromDb;
 
 function ReplayFromDb(dbFilePath) {
 
-  // mock clock using current time
-  var clock = Rx.Observable.interval(1000)
-    .map(() => ({ name: 'Clock', value: Date.now() }));
 
   // read events
   var db = Persistence(dbFilePath, true);
@@ -16,16 +13,19 @@ function ReplayFromDb(dbFilePath) {
     .readSensors()
     .then(startWithGps)
     .then(mapWithOffset)
-    // filter out cpu!
     .then((events) => events.filter((s) => s.name !== 'CpuLoad'));
 
   // CURRENT CPU!
-  var cpu = require('./sensors/cpu_load')();
 
   // schedule and emit
   // ...?
   var stream = new Rx.Subject();
   events.then(schedule(stream));
+
+  // unmock clock and cpu using current values
+  var clock = Rx.Observable.interval(1000)
+    .map(() => ({ name: 'Clock', value: Date.now() }));
+  var cpu = require('./sensors/cpu_load')();
 
   return Rx.Observable
     .merge(clock, cpu, stream)
