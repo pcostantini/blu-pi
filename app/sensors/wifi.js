@@ -14,7 +14,7 @@ function Wifi(readInterval) {
         if (err) console.log("Wifi.err!", err);
 
         if (data) {
-          observer.next({ name: 'Wifi', value: data });
+          observer.next({ name: 'Wifi', value: { length: data.length, nodes: data } });
         }
 
         setTimeout(read, readInterval);

@@ -1,12 +1,11 @@
 var Rx = require('rxjs');
-
-require('hotswap');
+var hotswap = require('hotswap');
 
 var SensorsBootstrap = require('./bootstrap_sensors');
 var ReplaySensors = require('./replay_sensors');
 var Persistence  = require('../persistence');
 var Display = require('./display');
-var State = require('./state');
+var StateReducer = require('./state');
 var Ticks = require('./sensors/ticks');
 
 // init
@@ -32,7 +31,7 @@ var ticks = Ticks(clock);
 
 // state
 var inputsAndSensors = Rx.Observable.merge(input, sensors);
-var state = State.FromStream(inputsAndSensors);
+var state = StateReducer.FromStream(inputsAndSensors);
 if(config.logState) {
   state
     .throttle(ev => Rx.Observable.interval(1000))

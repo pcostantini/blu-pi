@@ -14,7 +14,7 @@ function Barometer(delay) {
 
     var sensor = new BMP085();
     read(sensor);
-  }).do(console.log);
+  });
 }
 
 module.exports = Barometer;

@@ -1,9 +1,10 @@
 var minimist = require('minimist');
 var argv = minimist(process.argv.slice(2));
+
 var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
 var webDisplay = argv.webDisplay || argv.wd;
-var consoleInput = argv.console || argv.c;
+var consoleInput = argv.consoleInput || argv.c;
 
 if(!demoFile) {
   // https://www.strava.com/activities/508017565
@@ -11,16 +12,20 @@ if(!demoFile) {
 }
 
 var config = {
+  logState: true,
   demoMode: demoMode,
-  logState: demoMode,
   persist: !demoMode,
   persistBuffer: 0,
   dbFile: !demoMode
     ? './data/current.sqlite3'
     : demoFile,   
   sensors: {
+    
+    // indiscreet: {
+    //   wifi: 5000
+    // },
+    
     // refresh times
-    wifi: 5000,
     lsm303: {
       acceleration: 500,
       axes: 500,
@@ -29,9 +34,11 @@ var config = {
     },
     temperature: 2500
   },
+  
   displayDriver: !webDisplay
     ? require('./display/drivers/oled')
     : require('./display/drivers/web'),
+  
   inputDriver: !consoleInput
     ? require('./inputs')
     : require('./inputs_console')
