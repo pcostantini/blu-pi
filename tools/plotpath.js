@@ -30,8 +30,8 @@ var inputs = require('../app/inputs')();
 inputs.subscribe(console.log);
 
 // ui
-// var Driver = require('../app/display/drivers/oled');
-var Driver = require('../app/display/drivers/web');
+ var Driver = require('../app/display/drivers/oled');
+//var Driver = require('../app/display/drivers/web');
 var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 var width = 128;
 var height = 64;
