@@ -7,9 +7,8 @@ module.exports = function bootstrap(sensorsConfig) {
   // var odometer = require('./sensors/odometer')(odometerPin);
   // ... odometer.subscribe(console.log);
 
-  // TODO: use CPU clock when GPS clock is not available
+  var clock = require('./sensors/clock')().share();
 
-  var clock = require('./sensors/clock')();
   var sensors = Rx.Observable.merge(
     clock,
     safeRequire('./sensors/gps')(),
@@ -41,7 +40,6 @@ module.exports = function bootstrap(sensorsConfig) {
     .filter(() => lastTs !== null)
     .map(o => _.assign({ timestamp: getTimestamp() }, o)) 
     .share();
-
 }
 
 function safeRequire(moduleName) {

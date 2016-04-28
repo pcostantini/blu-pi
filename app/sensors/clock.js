@@ -14,7 +14,7 @@ function GpsClock() {
 
     var serviceSocket = new net.Socket();
     serviceSocket.setEncoding('ascii');
-    serviceSocket.on("data", function (payload) {
+    serviceSocket.on('data', function (payload) {
       var info = payload.split('\n');
       for ( var index = 0; index < info.length; index++) {
         if (info[index]) {
@@ -62,12 +62,20 @@ function GpsClock() {
       serviceSocket.write('?WATCH={"enable":true,"json":true}\n');
     });
 
+    var cpuClockInited = false;
     serviceSocket.on('error', function (error) {
-      // if (error.code === 'ECONNREFUSED') {
-      //   self.emit('error.connection');
-      // } else {
-      //   self.emit('error', error);
-      // }
+      if (error.code === 'ECONNREFUSED') {
+        // use timer clock if cannot connect to GPSD
+        console.log('clock.socket.REFUSED!', error);
+
+        if(cpuClockInited) return;
+        cpuClockInited = true;
+
+        console.log('clock: defaulting to cpu clock');
+        Rx.Observable.interval(1000)
+          .map(() => ({ name: SensorName, value: Date.now() }))
+          .subscribe((s) => observer.next(s));
+      }
     });
 
     serviceSocket.connect(opts.port, opts.hostname);
