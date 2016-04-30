@@ -7,8 +7,8 @@ var width = 64;
 var height = 128;
 var kmPh = NaN;
 
-function ScreenSaverDisplay(driver, eventsStream) {
-  BaseDisplay.call(this, driver, eventsStream);
+function ScreenSaverDisplay(driver, events) {
+  BaseDisplay.call(this, driver, events);
 }
 
 inherits(ScreenSaverDisplay, BaseDisplay);
@@ -24,6 +24,9 @@ ScreenSaverDisplay.prototype.processEvent = function(driver, e) {
 
     case 'State':
 
+    // TODO: reduce speed
+
+      // e.value.speed = double (KmsPerHour). eg: 0.1
       var speed = e.value.Gps ? e.value.Gps.speed : NaN;
       var kmPhState = !isNaN(speed) ? mpsTokph(speed) : NaN;
 

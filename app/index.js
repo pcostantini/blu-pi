@@ -7,6 +7,7 @@ var ReplaySensors = require('./replay_sensors');
 var Persistence  = require('../persistence');
 var Display = require('./display');
 var State = require('./state');
+var Ticks = require('./sensors/ticks');
 
 // init
 var config = require('./config');
@@ -28,8 +29,12 @@ if(config.persist) {
 // state
 var state = State.FromStream(Rx.Observable.merge(input, sensors));
 
+// clock & ticks
+var clock = sensors.filter(s => s.name === 'Clock');
+var ticks = Ticks(clock);
+
 // all
-var stateAndAll = Rx.Observable.merge(input, sensors, state);
+var stateAndAll = Rx.Observable.merge(input, sensors, state, ticks);
 // stateAndAll.subscribe((s) => {
 // 	console.log(JSON.stringify(s, null, null));
 // });

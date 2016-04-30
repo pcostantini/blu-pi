@@ -7,7 +7,9 @@ module.exports.FromStream = function FromStream(events) {
   var gpsEvents = events
     .filter(s => s.name === 'Gps')
     .map(s => s.value);
-
+  
+  // reducers
+  // TODO: redux ?
   var distance = DistanceReducer(gpsEvents);
   var path = PathReducer(gpsEvents);
 
@@ -21,9 +23,7 @@ module.exports.FromStream = function FromStream(events) {
     }, state)
     .map((state) => ({ 'name': 'State', 'value': state }));
 
-  return stateStream;
-
-  // redux ?
+  return stateStream.share();
 }
 
 function DistanceReducer (gpsEvents) {
