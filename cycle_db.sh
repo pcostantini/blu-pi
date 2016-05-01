@@ -1,2 +1,2 @@
-timestamp=$(date +%s)
-mv ./data/current.sqlite3 ./data/session-closed-$timestamp.sqlite3
+timestamp=$(date +"%Y-%m-%d-%H%M")
+mv ./data/current.sqlite3 ./data/session-$timestamp.sqlite3
