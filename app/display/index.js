@@ -31,7 +31,7 @@ function Init(Driver, eventsStream, state) {
 	var currentIx = 0;
 	function cycle() {
 		if(current) {
-			var isSubscreen = current.cycle && current.cycle();
+			var isSubscreen = !!(current.cycle && current.cycle());
 			if(isSubscreen) {
 				console.log('Cycling SubScreen');
 				return;

@@ -43,11 +43,13 @@ function Display(driver, eventsStream, state) {
     renderWholePath(driver, state.gpsPath);
   }
   
+  var maxZoom = 4;
   this.cycle = function() {
     if(!state || !state.gpsPath || !state.gpsPath.length) return false;
 
     bounds.zoom += 1;
-    if(bounds.zoom > 4) bounds.zoom = 1;
+    if(bounds.zoom > maxZoom) bounds.zoom = 1;
+    
     driver.clear();
     renderWholePath(driver, state.gpsPath);
     
