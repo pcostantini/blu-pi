@@ -1,24 +1,37 @@
 var Persistence = require('../persistence');
+var GpxParse = require("gpx-parse");
+var Promise = require('bluebird');
 var _ = require('lodash');
 
-var dbFilePath = process.argv[2];
-if(!dbFilePath) throw new Error('no path to .sqlite!');
+var filePath = process.argv[2];
+if(!filePath) throw new Error('no path to .sqlite or .gpx!');
 
-// load path
-var db = Persistence(dbFilePath, true);
-var pathDone = db
-  .readSensors()
-  .then(evts => evts.filter(isGps)
-                    .map(asTrackEvent)
-                    .filter(e => !!e.data)
-                    .map(getCoordinate));
+var pathDone;
+
+if(_.last(filePath.toLowerCase().split('.')) === 'gpx') {
+  // load path from GPX
+  var readGpx = Promise.promisify(GpxParse.parseGpxFromFile);
+  pathDone = readGpx(filePath)
+    .then((o) => o.tracks[0].segments[0]
+                  .map((waypoint) => [waypoint.lat, waypoint.lon, waypoint.elevation]));
+} else {
+  // load path from Db
+  var db = Persistence(filePath, true);
+  pathDone = db
+    .readSensors()
+    .then(evts => evts.filter(isGps)
+                      .map(asTrackEvent)
+                      .filter(e => !!e.data)
+                      .map(getCoordinate));
+}
 
 // inputs
 var inputs = require('../app/inputs_console')();
 inputs.subscribe(console.log);
 
 // ui
-var Driver = require('../app/display/drivers/oled');
+// var Driver = require('../app/display/drivers/oled');
+var Driver = require('../app/display/drivers/web');
 var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 var width = 128;
 var height = 64;
@@ -33,7 +46,13 @@ pathDone.then(path => {
       gpsPath: path
     };
     var Display = require('../app/display/map');
-    var ui = Display(driver, inputs, state);
+    var ui = new Display(driver, inputs, state);
+
+    inputs.filter((e) => e.name === 'Input:Next')
+          .subscribe(() => ui.cycle());
+
+    console.log('ready!');
+
   } catch(err) {
     console.log('INIT.ERR!', {
       err: err,
@@ -51,4 +70,4 @@ const asTrackEvent = (s) => ({
     data: JSON.parse(s.data)
   });
 
-const getCoordinate = (s) => ([s.data.latitude, s.data.longitude]);
+const getCoordinate = (s) => ([s.data.latitude, s.data.longitude, s.data.altitude]);

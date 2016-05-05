@@ -5,10 +5,12 @@
   "main": "main.js",
   "dependencies": {
     "bancroft": "0.0.12",
+    "bluebird": "^3.3.5",
     "bmp085": "^0.3.2",
     "edison-ssd1306": "git://github.com/wballard/edisonedison-ssd1306",
     "exit-hook": "^1.1.1",
     "gps-distance": "0.0.4",
+    "gpx-parse": "^0.10.4",
     "hapi": "^13.0.0",
     "hotswap": "^1.1.0",
     "i2c": "^0.2.1",
