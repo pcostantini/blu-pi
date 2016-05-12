@@ -2,6 +2,8 @@ module.change_mode = 1;
 
 function BaseDisplay(driver, all) {
   var self = this;
+
+  self.driver = driver;
   
   self.eventsSubscription = all.subscribe((e) => {
     try {
