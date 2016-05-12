@@ -31,7 +31,7 @@ DistanceDisplay.prototype.processEvent = function(driver, e) {
       // distance
       if(e.value.Distance !== state.distance) {
         state.distance = e.value.Distance;
-        // drawDistance(driver, state.distance);
+        drawDistance(driver, state.distance);
       }
 
       break;
@@ -91,6 +91,13 @@ function drawTime(driver, sTime) {
   driver.setCursor(4, height - 22);
   driver.setTextSize(1);
   write(driver, sTime);
+}
+
+function drawDistance(driver, distance) {
+  driver.setTextColor(1, 0);
+  driver.setCursor(4, height - 12);
+  driver.setTextSize(1);
+  write(driver, toFixed(distance, 1) + ' km');
 }
 
 function write(driver, string) {
