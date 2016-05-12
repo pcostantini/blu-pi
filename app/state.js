@@ -3,27 +3,30 @@ module.change_mode = 1;
 var Rx = require('rxjs');
 
 module.exports.FromStream = function FromStream(events) {
-  
   var gpsEvents = events
     .filter(s => s.name === 'Gps')
     .map(s => s.value);
   
-  // reducers
-  // TODO: redux ?
-  var distance = DistanceReducer(gpsEvents);
-  var path = PathReducer(gpsEvents);
+  // calculate and reduce main stream of events
+  // into new (reduced) values
+  var reducers = Rx.Observable.merge(
+    PathReducer(gpsEvents),
+    DistanceReducer(gpsEvents)).share();
 
-  var all = Rx.Observable.merge(events, distance, path);
-
+  // merge each sendor and reduced values
+  // into state and generate new 'state' event stream
   var state = {};
-  var stateStream = all
+  var stateStream = Rx.Observable.merge(events, reducers)
     .scan((state, e) => {
       state[e.name] = e.value;
       return state;
     }, state)
     .map((state) => ({ 'name': 'State', 'value': state }));
 
-  return stateStream.share();
+  // combine single reduced values and state
+  return Rx.Observable.merge(
+    reducers,
+    stateStream).share();
 }
 
 function DistanceReducer (gpsEvents) {
@@ -47,9 +50,17 @@ function DistanceReducer (gpsEvents) {
     .map(() => ({ name: 'Distance', value: distance }));
 }
 
+var lastPoint = [0,0];
 function PathReducer (gpsEvents) {
   return gpsEvents
     .map(gps => [gps.latitude, gps.longitude])
+    .filter(point => {
+      if(lastPoint[0] === point[0] && lastPoint[1] === point[1]) {
+        return false;
+      }
+      lastPoint = point;
+      return true;
+    })
     .scan((path, point) => {
       path.push(point);
       return path;

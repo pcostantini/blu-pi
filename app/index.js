@@ -26,35 +26,21 @@ if(config.persist) {
   sensors.subscribe(db.insert);
 }
 
-// state
-var state = State.FromStream(Rx.Observable.merge(input, sensors));
-
 // clock & ticks
 var clock = sensors.filter(s => s.name === 'Clock');
 var ticks = Ticks(clock);
 
+// state
+var inputsAndSensors = Rx.Observable.merge(input, sensors);
+var state = State.FromStream(inputsAndSensors);
+
 // all
-var stateAndAll = Rx.Observable.merge(input, sensors, state, ticks);
-// stateAndAll.subscribe((s) => {
-// 	console.log(JSON.stringify(s, null, null));
-// });
+var stateAndAll = Rx.Observable.merge(input, sensors, ticks, state)
 
 // DISPLAY
 var ui = Display(config.displayDriver, stateAndAll);
 
 // web server + api
 // var server = require('../server')(db);
-
-// for debugging leaks
-// require('heapdump'); 
-
-// REPL supportString::NewSymbol("write"),
-// initRepl(all);
-// function initRepl(app) {
-//   var replify = require('replify');
-//   replify('pi-blu', app);      
-//   console.log('REPL READY!: nc -U /tmp/repl/pi-blu.sock');
-// }
-
 
 // ...

@@ -31,6 +31,7 @@ DistanceDisplay.prototype.processEvent = function(driver, e) {
       // distance
       if(e.value.Distance !== state.distance) {
         state.distance = e.value.Distance;
+        // drawDistance(driver, state.distance);
       }
 
       break;
