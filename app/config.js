@@ -1,8 +1,14 @@
 var minimist = require('minimist');
 var argv = minimist(process.argv.slice(2));
-var demoMode = argv.demo || argv.d;
+var demoFile = argv.demoFile;
+var demoMode = argv.demo || argv.d || !!demoFile;
 var webDisplay = argv.webDisplay || argv.wd;
 var consoleInput = argv.console || argv.c;
+
+if(!demoFile) {
+  // https://www.strava.com/activities/508017565
+  demoFile = './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3'
+}
 
 var config = {
   demoMode: demoMode,
@@ -11,7 +17,7 @@ var config = {
   persistBuffer: 0,
   dbFile: !demoMode
     ? './data/current.sqlite3'
-    : './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3',   // https://www.strava.com/activities/508017565
+    : demoFile,   
   sensors: {
     // refresh times
     lsm303: {
