@@ -1,7 +1,7 @@
 var Rx = require('rxjs');
 var _ = require('lodash');
 
-module.exports = function bootstrap(config) {
+module.exports = function bootstrap(sensorsConfig) {
   
   // var odometerPin = 25 //2;
   // var odometer = require('./sensors/odometer')(odometerPin);
@@ -13,9 +13,11 @@ module.exports = function bootstrap(config) {
     safeRequire('./sensors/gps')(),
     safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
     safeRequire('./sensors/barometer')(sensorsConfig.temperature),
-    
+
+    require('./sensors/wifi')(sensorsConfig.wifi),
+        
     // sys
-    // require('./sensors/cpu_temperature')(config.temperature),
+    // require('./sensors/cpu_temperature')(sensorsConfig.temperature),
     require('./sensors/cpu_load')(),
     require('./sensors/memory')() 
 
