@@ -24,12 +24,11 @@ function ReplayFromDb(dbFilePath) {
 
   // schedule and emit
   // ...?
-  var source = Rx.Observable.create(function (observer) {
-    events.then(schedule(observer));
-  });
+  var stream = new Rx.Subject();
+  events.then(schedule(stream));
 
   return Rx.Observable
-    .merge(clock, cpu, source)
+    .merge(clock, cpu, stream)
     .share();
 }
 

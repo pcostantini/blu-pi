@@ -1,6 +1,6 @@
-const DefaultSpeedThreshold = 4;
-
-module.exports = function CreateGpsNoiseFilter(threshold) {
+CreateGpsNoiseFilter.DefaultSpeedThreshold = 4;
+function CreateGpsNoiseFilter(threshold) {
+  threshold = threshold || CreateGpsNoiseFilter.DefaultSpeedThreshold;
   var last = null;
   return function(gps) {
     var previous = last;
@@ -23,4 +23,5 @@ module.exports = function CreateGpsNoiseFilter(threshold) {
   }
 }
 
-module.exports.DefaultSpeedThreshold = DefaultSpeedThreshold;
+
+module.exports = CreateGpsNoiseFilter;
