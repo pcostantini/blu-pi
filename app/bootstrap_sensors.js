@@ -7,6 +7,8 @@ module.exports = function bootstrap(config) {
   // var odometer = require('./sensors/odometer')(odometerPin);
   // ... odometer.subscribe(console.log);
 
+  // TODO: use CPU clock when GPS clock is not available
+
   var clock = require('./sensors/clock')();
   var sensors = Rx.Observable.merge(
     clock,
