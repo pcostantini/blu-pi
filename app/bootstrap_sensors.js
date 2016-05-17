@@ -16,7 +16,9 @@ module.exports = function bootstrap(sensorsConfig) {
     safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
     safeRequire('./sensors/barometer')(sensorsConfig.temperature),
 
-    require('./sensors/wifi')(sensorsConfig.wifi),
+    (sensorsConfig.indiscreet)
+      ? require('./sensors/wifi')(sensorsConfig.indiscreet.wifi)
+      : Rx.Observable.empty(),
         
     // sys
     // require('./sensors/cpu_temperature')(sensorsConfig.temperature),
@@ -35,20 +37,20 @@ module.exports = function bootstrap(sensorsConfig) {
   
   // stamp!
   return sensors
-    .filter(() => lastTs !== null)       // ignore events before clock is gps synched
+    // ignore events before clock is gps synched
+    .filter(() => lastTs !== null)
     .map(o => _.assign({ timestamp: getTimestamp() }, o)) 
     .share();
 
 }
 
 function safeRequire(moduleName) {
-
   try {
-    return require(moduleName)
+    var dontCrashPlease = require(moduleName);
+    var didntCrash = dontCrashPlease;
+    return didntCrash;
   } catch(err) {
-    console.log(moduleName + '.err!', err);
-
+    console.log('Sensor.' + moduleName + '.err!', err);
     return () => Rx.Observable.empty();
   }
-
 }
