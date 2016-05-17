@@ -20,6 +20,7 @@ var config = {
     : demoFile,   
   sensors: {
     // refresh times
+    wifi: 5000,
     lsm303: {
       acceleration: 500,
       axes: 500,

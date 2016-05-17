@@ -6,6 +6,7 @@ var inherits    = require('util').inherits;
 var width = 64;
 var height = 128;
 var kmPh = NaN;
+var wifi = 0;
 
 function ScreenSaverDisplay(driver, events) {
   BaseDisplay.call(this, driver, events);
@@ -17,6 +18,7 @@ ScreenSaverDisplay.prototype.heartbeat = function(driver) {
   driver.fillRect(0, 4, 64, 124, false);
   drawSpeed(driver, kmPh);
   drawBackground(driver);
+  drawWifi(driver, wifi);
 }
 
 ScreenSaverDisplay.prototype.processEvent = function(driver, e) {
@@ -36,6 +38,11 @@ ScreenSaverDisplay.prototype.processEvent = function(driver, e) {
       }
       break;
 
+    case 'Wifi':
+      wifi = e.value.length;
+      drawWifi(driver, wifi);
+
+      break;
 
     case 'MagnometerHeading':
     case 'Acceleration':
@@ -68,11 +75,22 @@ function drawSpeed(driver, kmPh) {
   driver.setTextSize(2);
   driver.setTextColor(1, 0);
   var sKph = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
-  var chars = sKph.split('');
+  write(driver, sKph)
+}
+
+function drawWifi(driver, count) {
+  driver.setCursor(10, height - 10);
+  driver.setTextSize(1);
+  driver.setTextColor(1, 0);
+  var string = 'wifi:' + count;
+  write(driver, string);
+}
+
+function write(driver, string) {
+  var chars = string.split('');
   chars.forEach((c) => {
     driver.write(c.charCodeAt(0));
   });
-
 }
 
 var r0 = Math.PI * Math.PI;
