@@ -12,7 +12,8 @@ var Ticks = require('./sensors/ticks');
 var config = require('./config');
 console.log('blu-pi!', config);
 
-var input = config.inputDriver();
+var input = config.inputDriver()
+				  .map((s) => ({ name: s.name, value: Date.now() }));
 
 // sensors
 var sensors = !config.demoMode
