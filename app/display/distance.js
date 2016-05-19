@@ -6,65 +6,43 @@ var inherits    = require('util').inherits;
 var width = 64;
 var height = 128;
 
-function DistanceDisplay(driver, events) {
-  BaseDisplay.call(this, driver, events);
-
-  driver.setTextColor(1, 0);
-
-  this.state = {
-    duration: '--:--',
-    distance: NaN,
-    altitude: NaN,
-    speed: NaN
-  }
+function DistanceDisplay(driver, events, stateStore) {
+  BaseDisplay.call(this, driver, events, stateStore);
 }
 
 inherits(DistanceDisplay, BaseDisplay);
 
-DistanceDisplay.prototype.processEvent = function(driver, e) {
+DistanceDisplay.prototype.init = function(driver, stateStore) {
+  drawAll(driver, stateStore.getState());
+}
 
-  var state = this.state;
-
+DistanceDisplay.prototype.processEvent = function(driver, e, stateStore) {
   switch(e.name) {
-    case 'State':
-
-      // distance
-      if(e.value.Distance !== state.distance) {
-        state.distance = e.value.Distance;
-        drawDistance(driver, state.distance);
-      }
-
+    case 'Distance':
+      drawDistance(driver, e.value);
       break;
+
     case 'Gps':
-
-      var speed = e.value ? e.value.speed : NaN;
-      if(state.speed !== speed) {
-        state.speed = speed;
-        drawSpeed(driver, state.speed);
-      }
-
-      var altitude = e.value ? e.value.altitude : NaN;
-      if(state.altitude !== altitude) {
-        state.altitude = altitude;
-        drawAltitude(driver, state.altitude);
-      }
-
+      drawSpeed(driver, e.value ? e.value.speed : NaN);
+      drawAltitude(driver, e.value ? e.value.altitude : NaN);
       break;
+
     case 'Ticks':
-
       var ticks = e.value[0];
-      var elapsed = Math.round(ticks / 1000);
-      var duration = formatTime(elapsed);
-      if(state.duration !== duration) {
-        state.duration = duration;
-        drawTime(driver, duration);
-      }
-
+      drawTime(driver, ticks);
       break;
   }
 };
 
 module.exports = DistanceDisplay;
+
+function drawAll(driver, state) {
+  if(!state) return;
+  drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
+  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
+  drawDistance(driver, state.Distance);
+  drawTime(driver, state.Ticks[0]);
+}
 
 function drawSpeed(driver, speed) {
   driver.setCursor(4, 6);
@@ -79,14 +57,17 @@ function drawSpeed(driver, speed) {
 }
 
 function drawAltitude(driver, altitude) {
+  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
   driver.setCursor(4, 24);
   driver.setTextSize(1);
-
-  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
   write(driver, 'A:' + altText);
 }
 
-function drawTime(driver, sTime) {
+function drawTime(driver, ticks) {
+  ticks = ticks || 0;
+  var elapsed = Math.round(ticks / 1000);
+  var sTime = formatTime(elapsed);
+
   driver.setTextColor(1, 0);
   driver.setCursor(4, height - 22);
   driver.setTextSize(1);
@@ -94,6 +75,7 @@ function drawTime(driver, sTime) {
 }
 
 function drawDistance(driver, distance) {
+  distance = distance || 0;
   driver.setTextColor(1, 0);
   driver.setCursor(4, height - 12);
   driver.setTextSize(1);
@@ -124,6 +106,7 @@ function toFixed(value, precision) {
 const mpsToKph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 
 function formatTime(ticks) {
+  if(isNaN(ticks)) return '--:--';
   var hh = Math.floor(ticks / 3600);
   var mm = Math.floor((ticks % 3600) / 60);
 

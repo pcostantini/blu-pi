@@ -5,37 +5,26 @@ var inherits    = require('util').inherits;
 
 var width = 64;
 var height = 128;
-var kmPh = NaN;
-var wifi = 0;
 
-function ScreenSaverDisplay(driver, events) {
-  BaseDisplay.call(this, driver, events);
+function ScreenSaverDisplay(driver, events, stateStore) {
+  BaseDisplay.call(this, driver, events, stateStore);
 }
-
 inherits(ScreenSaverDisplay, BaseDisplay);
 
-ScreenSaverDisplay.prototype.heartbeat = function(driver) {
-  driver.fillRect(0, 4, 64, 124, false);
-  drawSpeed(driver, kmPh);
-  drawBackground(driver);
-  drawWifi(driver, wifi);
+ScreenSaverDisplay.prototype.init = function(driver, stateStore) {
+  drawAll(driver, stateStore.getState());
 }
 
-ScreenSaverDisplay.prototype.processEvent = function(driver, e) {
+ScreenSaverDisplay.prototype.processEvent = function(driver, e, stateStore) {
   switch(e.name) {
 
-    case 'State':
+    case 'Ticks':
+      drawAll(driver, stateStore.getState());
+      break;
 
-    // TODO: reduce speed
-
-      // e.value.speed = double (KmsPerHour). eg: 0.1
-      var speed = e.value.Gps ? e.value.Gps.speed : NaN;
-      var kmPhState = !isNaN(speed) ? mpsTokph(speed) : NaN;
-
-      if(kmPh !== kmPhState) {
-        kmPh = kmPhState;
-        drawSpeed(driver, kmPh);
-      }
+    case 'Gps':
+      var speed = e.value ? e.value.speed : NaN;
+      drawSpeed(driver, speed);
       break;
 
     case 'Wifi':
@@ -44,18 +33,26 @@ ScreenSaverDisplay.prototype.processEvent = function(driver, e) {
 
       break;
 
-    case 'MagnometerHeading':
-    case 'Acceleration':
-    case 'MagnometerAxis':
-      // console.log(e)
-      break;
+    // case 'MagnometerHeading':
+    // case 'Acceleration':
+    // case 'MagnometerAxis':
+    //   console.log(e)
+    //   break;
   }
 }
 
 module.exports = ScreenSaverDisplay;
 
+function drawAll(driver, state) {
+  if(!state) return;
+  var speed = state.Gps ? state.Gps.speed : NaN;
+  var wifi = state.Wifi ? state.Wifi.length : 0;
 
-// graph functions
+  driver.fillRect(0, 4, 64, 124, false);
+  drawSpeed(driver, speed, true);
+  drawBackground(driver);
+  drawWifi(driver, wifi, true);
+};
 
 function drawBackground(driver) {
   driver.drawCircle(width/2, 92, getRandomArbitrary(), true);
@@ -65,25 +62,36 @@ function drawBackground(driver) {
   x2 += (Math.random() * (1 - 9) + 9) / 2;
   x1 -= (Math.random() * (1 - 9) + 9) / 2;
 
-  driver.drawLine(x1, 2, x2, 127, true);
+  driver.drawLine(x1, 4, x2, 127, true);
   // driver.drawLine(getRandomArbitrary(), 4, getRandomArbitrary(), 127, true);
 }
 
+var currentSpeed = NaN;
 const mpsTokph = (mps) => Math.round(mps * 3.6 * 100) / 100;
-function drawSpeed(driver, kmPh) {
+function drawSpeed(driver, speed, force) {
+  if(!force && speed === currentSpeed) return;
+  currentSpeed = speed;
+
+  var kmPh = !isNaN(speed) ? mpsTokph(speed) : NaN;
   driver.setCursor(10, height - 45);
   driver.setTextSize(2);
   driver.setTextColor(1, 0);
-  var sKph = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
-  write(driver, sKph)
+  var sKmPh = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
+  write(driver, sKmPh)
 }
 
-function drawWifi(driver, count) {
-  driver.setCursor(10, height - 10);
-  driver.setTextSize(1);
-  driver.setTextColor(1, 0);
-  var string = 'wifi:' + count;
-  write(driver, string);
+var currentWifi = 0;
+function drawWifi(driver, count, force) {
+  if(!force && currentWifi === count) return;
+  currentWifi = count;
+
+  if(currentWifi > 0) {
+    driver.setCursor(10, height - 10);
+    driver.setTextSize(1);
+    driver.setTextColor(1, 0);
+    var string = 'wifi:' + count;
+    write(driver, string);
+  }
 }
 
 function write(driver, string) {

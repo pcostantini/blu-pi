@@ -29,9 +29,7 @@ if(config.persist) {
 var clock = sensors.filter(s => s.name === 'Clock');
 var ticks = Ticks(clock);
 
-// state
-var inputsAndSensors = Rx.Observable.merge(input, sensors);
-var state = StateReducer.FromStream(inputsAndSensors);
+var state = StateReducer.FromStream(Rx.Observable.merge(input, sensors, ticks));
 if(config.logState) {
   state
     .throttle(ev => Rx.Observable.interval(1000))
@@ -39,11 +37,19 @@ if(config.logState) {
 }
 
 // all
-var stateAndAll = Rx.Observable.merge(input, sensors, ticks, state)
+var all = Rx.Observable.merge(input, sensors, ticks, state);
 
+// state store =)
+var stateStored = null;
+all.filter((s) => s.name === 'State')
+   .subscribe((s) => stateStored = s.value);
+
+var stateStore = {
+	getState: () => stateStored
+};
 
 // DISPLAY
-var ui = Display(config.displayDriver, stateAndAll);
+var ui = Display(config.displayDriver, all, stateStore);
 
 // web server + api
 // var server = require('../server')(db);

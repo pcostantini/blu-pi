@@ -14,29 +14,24 @@ var bounds = {
   // TODO:save lower and upper bound as 'size to fit'
 };
 
-function MapDisplay(driver, events) {
-  BaseDisplay.call(this, driver, events);
-  this.shouldRedrawWholePath = true;
+function MapDisplay(driver, events, stateStore) {
+  BaseDisplay.call(this, driver, events, stateStore);
 }
 
 inherits(MapDisplay, BaseDisplay);
 
+MapDisplay.prototype.init = function(driver, stateStore) {
+  var state = stateStore.getState();
+  if(state && state.Path && state.Path.points) {
+    var pathPoints = state.Path.points;
+    var initialCoord = pathPoints[0];
+    initBounds(bounds, initialCoord);
+    renderWholePath(driver, pathPoints);
+  }
+}
+
 MapDisplay.prototype.processEvent = function(driver, e) {
   switch(e.name) {
-
-    case 'Path':
-      var pathPoints = e.value.points;
-      this.path = pathPoints;
-
-      if(this.shouldRedrawWholePath && pathPoints.length > 1 && eventHasChanged(e, 'Path')) {
-        var initialCoord = pathPoints[0];
-        initBounds(bounds, initialCoord);
-        renderWholePath(driver, pathPoints);
-        this.shouldRedrawWholePath = false;
-      }
-
-      break;
-
     case 'Gps':
       if(!(e.value && e.value.latitude)) return;
 
@@ -51,28 +46,20 @@ MapDisplay.prototype.processEvent = function(driver, e) {
   }
 }
 
-var lastKnownStateMap = {};
-function eventHasChanged(s, key) {
-  if(s.name === key &&
-     lastKnownStateMap[key] !== s.value)
-  {
-    lastKnownStateMap[key] = s.value;
-    return true;
+MapDisplay.prototype.cycle = function(driver, stateStore) {
+  // abort/return false if path is unexistint
+  var state = stateStore.getState();
+  if(state && state.Path && state.Path.points) {
+    bounds.zoom += 1;
+    if(bounds.zoom > 4) bounds.zoom = 1;
+
+    driver.clear();
+    renderWholePath(driver, state.Path.points);
+    
+    return bounds.zoom !== 1;
   }
 
-  return false;
-}
-
-MapDisplay.prototype.cycle = function() {
-
-  // abort/return false if path is unexistint
-
-  bounds.zoom += 1;
-  if(bounds.zoom > 4) bounds.zoom = 1;
-  this.driver.clear();
-  renderWholePath(this.driver, this.path);
-  
-  return bounds.zoom !== 1;
+  return false; // no state or path ready
 };
 
 
@@ -97,6 +84,8 @@ function renderWholePath(driver, path) {
   bounds.lonDelta        = lonDelta;
   bounds.latBottomDegree = latitude * Math.PI / 180;
 
+  // TODO: prioritize and delay rendering of each point
+  // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
   path.forEach((coord) => {
     drawPathCoordinate(driver, coord, bounds)
   });
@@ -123,10 +112,6 @@ function initBounds(bounds, initialCoord) {
   bounds.lonLeft         = initialCoord[1] - 0.01;
   bounds.lonDelta        = 0.02;
   bounds.latBottomDegree = (initialCoord[0] - 0.02) * Math.PI / 180;
-}
-
-function drawBit(driver, bit) {
-  driver.fillRect(0, 124, 4, 4, bit ? 1 : 0);
 }
 
 function convertGeoToPixel(latitude, longitude ,

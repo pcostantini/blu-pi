@@ -1,14 +1,12 @@
 module.change_mode = 1;
 
-function BaseDisplay(driver, all) {
+function BaseDisplay(driver, events, stateStore) {
   var self = this;
-
-  self.driver = driver;
   
-  self.eventsSubscription = all.subscribe((e) => {
+  self.eventsSubscription = events.subscribe((e) => {
     try {
 
-      self.processEvent(driver, e);
+      self.processEvent(driver, e, stateStore);
 
     } catch(err) {
       console.log('Display.processEvent.err!', {
@@ -24,11 +22,24 @@ function BaseDisplay(driver, all) {
 
   driver.clear();
 
+  try {
+    self.init(driver, stateStore);
+  } catch(err) {
+    console.log('Display.init.err!', {
+      err: err.toString(),
+      stack: err.stack
+    });
+  }
+
+  // first time, draw cpu
+  var state = stateStore.getState();
+  if(state && state.CpuLoad) {
+    drawCpu(driver, state.CpuLoad);
+  }
+
   // refresh screen
   var bit = true;
   (function redraw(self) {
-
-    self.heartbeat(driver);
 
     bit = !bit;
     drawBit(driver, bit);
@@ -36,13 +47,14 @@ function BaseDisplay(driver, all) {
     // update and repeat
     driver.display();
 
-    self.timeout = setTimeout(redraw.bind(null, self), self.refreshDisplayDelay);
+    self.timeout = setTimeout(
+      redraw.bind(null, self),
+      self.refreshDisplayDelay);
 
   })(self);
 
 }
-BaseDisplay.prototype.heartbeat = function() { }
-BaseDisplay.prototype.processEvent = function() { }
+BaseDisplay.prototype.processEvent = function(driver, e) { }
 BaseDisplay.prototype.dispose = function() {
   console.log('disposed..')
   if(this.eventsSubscription) {
