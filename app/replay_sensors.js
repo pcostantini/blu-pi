@@ -12,7 +12,9 @@ function ReplayFromDb(dbFilePath) {
     .readSensors()
     .then(startWithGps)
     .then(mapWithOffset)
-    .then((events) => events.filter((s) => s.name !== 'CpuLoad'));
+    .then((events) => events.filter(
+      (s) => s.name !== 'CpuLoad' &&
+             s.name !== 'Clock'));
 
   // schedule and emit
   var stream = new Rx.Subject();

@@ -5,7 +5,8 @@ var Rx = require('rxjs');
 module.exports.FromStream = function FromStream(events) {
   var gpsEvents = events
     .filter(s => s.name === 'Gps')
-    .map(s => s.value);
+    .map(s => s.value)
+    .share();
   
   // calculate and reduce main stream of events
   // into new (reduced) values
