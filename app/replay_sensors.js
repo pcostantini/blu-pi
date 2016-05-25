@@ -4,7 +4,7 @@ var _ = require('lodash');
 
 module.exports = ReplayFromDb;
 
-function ReplayFromDb(dbFilePath) {
+function ReplayFromDb(dbFilePath, scheduled) {
 
   // read events
   var db = Persistence(dbFilePath, true);
@@ -16,9 +16,17 @@ function ReplayFromDb(dbFilePath) {
       (s) => s.name !== 'CpuLoad' &&
              s.name !== 'Clock'));
 
-  // schedule and emit
   var stream = new Rx.Subject();
-  events.then(schedule(stream));
+
+  if(scheduled) {
+    // schedule and emit
+    events.then(schedule(stream));
+  } else {
+    events.then((events) => {
+      events.forEach((e) => 
+        stream.next(_.pick(e, ['name', 'value'])));
+    });
+  }
 
   // unmock clock and cpu
   var clock = Rx.Observable.interval(1000)
