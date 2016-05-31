@@ -26,7 +26,7 @@
     "lsm303": "git://github.com/praneshkmr/node-lsm303",
     "edison-ssd1306": "git://github.com/wballard/edisonedison-ssd1306",
     "pi-temperature": "^1.0.0",
-    "rpio": "^0.9.10"
+    "rpio": "^0.9.12"
   },
   "devDependencies": {},
   "scripts": {
