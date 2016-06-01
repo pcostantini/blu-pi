@@ -16,16 +16,16 @@ var config = {
   demoMode: demoMode,
   persist: !demoMode,
   persistBuffer: 0,
-  dbFile: !demoMode
-    ? './data/current.sqlite3'
-    : demoFile,   
+  dbFile:
+    demoMode ?
+	demoFile :
+    	'./data/current.sqlite3',
   sensors: {
-    
-    // indiscreet: {
-    //   wifi: 5000
-    // },
-    
     // refresh times
+
+    //indiscreet: {
+    // wifi: 5000
+    //},
     lsm303: {
       acceleration: 500,
       axes: 500,

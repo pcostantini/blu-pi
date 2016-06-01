@@ -1,2 +1,2 @@
-var inputs = require('../app/inputs_console')();
+var inputs = require('../app/inputs')();
 inputs.subscribe(console.log);

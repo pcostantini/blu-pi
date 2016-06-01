@@ -20,13 +20,12 @@ module.exports = function bootstrap(sensorsConfig) {
       : Rx.Observable.empty(),
         
     // sys
-    // require('./sensors/cpu_temperature')(sensorsConfig.temperature),
+    require('./sensors/cpu_temperature')(sensorsConfig.temperature),
     require('./sensors/cpu_load')(),
-    require('./sensors/memory')() 
+    require('./sensors/memory')())
+  .share();
 
-    ).share();
-
-  // current stamp
+  // current stamp // TODO: make as sensor! each 'click' is an event... elmiiate tickeducer?
   var lastTs = null;
   const getTimestamp = () => lastTs.gps + (Date.now() - lastTs.cpu);
   clock.do((o) => lastTs = {
