@@ -18,7 +18,7 @@ function DisplayBootstrap(Driver, events, stateStore) {
 
 	// cycle screen when Next is pressed
 	events
-		.filter(s => s.name === 'Input:Next')
+		.filter(s => s.name === 'Input:Ok')
 		.subscribe(cycle);
 
 	// recycle on module change
