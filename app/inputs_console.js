@@ -22,13 +22,13 @@ module.exports = function ConsoleInput() {
 
     switch(key.name) {
       case 'a':
-        inputBack.next({ name: 'Input:Back' });
+        inputBack.next({ name: 'Input:Display' });
         break;
       case 's':
         inputBack.next({ name: 'Input:Next' });
         break;
       case 'd':
-        inputBack.next({ name: 'Input:Ok' });
+        inputBack.next({ name: 'Input:Accept' });
         break;
     }
   });

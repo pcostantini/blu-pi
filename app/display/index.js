@@ -5,7 +5,8 @@ var hotswap = require('hotswap');
 var Displays = [
 	require('./screensaver'),
 	require('./map'),
-	require('./distance')];
+	require('./distance'),
+	require('./menu')];
 
 var width = 128;
 var height = 64;
@@ -16,6 +17,8 @@ function DisplayBootstrap(Driver, events, stateStore) {
 	  new GFX(height, width),     // invert size since oled is rotated 90'C
 	  new Driver(width, height));
 
+	driver._drawPixel = driver.drawPixel;
+
 	// cycle screen when Next is pressed
 	events
 		.filter(s => s.name === 'Input:Next')
@@ -24,20 +27,21 @@ function DisplayBootstrap(Driver, events, stateStore) {
 	// recycle on module change
 	hotswap.on('swap', () => {
 		currentIx--;
-		current = NewCurrent();
+		current = nextScreen();
 	});
 
 
 	// get new screen proc (dispose previous)
 	var current = null; 
 	var currentIx = 0;
-	function NewCurrent() {
-		if(current)
+	function nextScreen() {
+		if(current) 
 			current.dispose();
 		
 		if(currentIx < 0 || currentIx > Displays.length - 1) currentIx = 0;
 		var DisplayType = Displays[currentIx];
 		console.log('Cycling Screen', currentIx);
+		driver.drawPixel = driver._drawPixel;
 		current =  new DisplayType(driver, events, stateStore);
 		currentIx++;
 
@@ -46,8 +50,7 @@ function DisplayBootstrap(Driver, events, stateStore) {
 
 	// cycle screen
 	function cycle() {
-		
-		current = NewCurrent();
+		current = nextScreen();
 	}
 
 	// give some time for the OLED reset proc.

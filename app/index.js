@@ -18,7 +18,7 @@ var input = config.inputDriver()
 // sensors
 var sensors = !config.demoMode
   ? SensorsBootstrap(config.sensors)
-  : ReplaySensors(config.dbFile);
+  : ReplaySensors(config.dbFile, config.demoScheduled);
 
 // save
 if(config.persist) {

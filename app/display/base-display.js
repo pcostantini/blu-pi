@@ -5,9 +5,7 @@ function BaseDisplay(driver, events, stateStore) {
   
   self.eventsSubscription = events.subscribe((e) => {
     try {
-
       self.processEvent(driver, e, stateStore);
-
     } catch(err) {
       console.log('Display.processEvent.err!', {
         err: err.toString(),
@@ -41,19 +39,24 @@ function BaseDisplay(driver, events, stateStore) {
   var bit = true;
   (function redraw(self) {
 
+    self.preFlush(driver, stateStore);
+
     bit = !bit;
     drawBit(driver, bit);
 
     // update and repeat
     driver.display();
 
-    self.timeout = setTimeout(
-      redraw.bind(null, self),
-      self.refreshDisplayDelay);
+    if(self.refreshDisplayDelay) {
+      self.timeout = setTimeout(
+        redraw.bind(null, self),
+        self.refreshDisplayDelay);
+    }
 
   })(self);
 
 }
+BaseDisplay.prototype.preFlush = function(driver, stateStore) { }
 BaseDisplay.prototype.processEvent = function(driver, e) { }
 BaseDisplay.prototype.dispose = function() {
   console.log('disposed..')
@@ -74,7 +77,7 @@ module.exports = BaseDisplay;
 
 // helpers
 function drawBit(driver, bit) {
-  driver.fillRect(0, 124, 4, 4, bit ? 1 : 0);
+  driver.fillRect(0, 0, 4, 4, bit ? 1 : 0);
 }
 
 function drawCpu(driver, cpuState) {
