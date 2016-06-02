@@ -31,6 +31,8 @@ var clock = sensors.filter(s => s.name === 'Clock');
 var ticks = Ticks(clock);
 
 var state = StateReducer.FromStream(Rx.Observable.merge(input, sensors, ticks));
+
+// TODO: read from console and on key was toggled, do console.log
 if(config.logState) {
   state
     .throttle(ev => Rx.Observable.interval(1000))
@@ -40,7 +42,7 @@ if(config.logState) {
 // all
 var all = Rx.Observable.merge(input, sensors, ticks, state);
 
-// state store =)
+// state store // TODO: dump?
 var stateStored = null;
 all.filter((s) => s.name === 'State')
    .subscribe((s) => stateStored = s.value);
@@ -54,7 +56,5 @@ var ui = Display(config.displayDriver, all, stateStore);
 
 // web server + api
 // var server = require('../server')(db);
-
-
 // ...
 
