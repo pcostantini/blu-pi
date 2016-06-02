@@ -18,7 +18,7 @@ function DisplayBootstrap(Driver, events, stateStore) {
 
 	// cycle screen when Next is pressed
 	events
-		.filter(s => s.name === 'Input:Ok')
+		.filter(s => s.name === 'Input:Next')
 		.subscribe(cycle);
 
 	// recycle on module change
@@ -46,13 +46,6 @@ function DisplayBootstrap(Driver, events, stateStore) {
 
 	// cycle screen
 	function cycle() {
-		if(current) {
-			var isSubscreen = !!(current.cycle && current.cycle(driver, stateStore));
-			if(isSubscreen) {
-				console.log('Cycling SubScreen');
-				return;
-			}
-		}
 		
 		current = NewCurrent();
 	}

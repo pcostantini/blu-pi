@@ -21,7 +21,8 @@ function MapDisplay(driver, events, stateStore) {
 inherits(MapDisplay, BaseDisplay);
 
 MapDisplay.prototype.init = function(driver, stateStore) {
-  var state = stateStore.getState();
+  this.stateStore = stateStore;
+  var state = this.stateStore.getState();
   if(state && state.Path && state.Path.points) {
     var pathPoints = state.Path.points;
     var initialCoord = pathPoints[0];
@@ -41,7 +42,10 @@ MapDisplay.prototype.processEvent = function(driver, e) {
       }
 
       drawPathCoordinate(driver, coord, bounds);
+      break;
 
+    case 'Input:Ok':
+      this.cycle(driver, this.stateStore);
       break;
   }
 }
