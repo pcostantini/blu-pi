@@ -13,6 +13,10 @@ var menu = [
     data: 'sudo ifdown wlan0\n' +
           'sudo ifup wlan0' 
   }, {
+    name: 'tetris',
+    type: 'module',
+    data: 'tetris'
+  }, {
     name: 'shutdown',
     type: 'bash',
     data: 'sudo shutdown -h -H -t 0 0'

@@ -10,15 +10,15 @@ var height = 128;
 var speedAccumulator = [];
 
 function ScreenSaverDisplay(driver, events, stateStore) {
-  noisyFilter(driver);
+  // noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 inherits(ScreenSaverDisplay, BaseDisplay);
 
 ScreenSaverDisplay.prototype.init = function (driver, stateStore) {
+  this.refreshDisplayDelay = 100;
   drawAll(driver, stateStore.getState());
 }
-// ScreenSaverDisplay.prototype.refreshDisplayDelay = 222;
 ScreenSaverDisplay.prototype.preFlush = function (driver, stateStore) {
   drawAll(driver, stateStore.getState());
 }
@@ -93,18 +93,15 @@ function drawBackground(driver, state) {
   var previousSpeedAvg = mpsTokph(average(previous));
   var currentSpeedAvg = mpsTokph(average(lastN));
 
-  console.log({
-    prev: previous.join(','),
-    last: lastN.join(',') ,
-    prevAvg: previousSpeedAvg,
-    lastAvg: currentSpeedAvg
-  });
+  // console.log({
+  //   prev: previous.join(','),
+  //   last: lastN.join(',') ,
+  //   prevAvg: previousSpeedAvg,
+  //   lastAvg: currentSpeedAvg
+  // });
 
   var modifier = 1.95;
   driver.drawLine(previousSpeedAvg * modifier, 4, currentSpeedAvg * modifier, 127, true);
-
-  // driver.drawLine(x1 + offsetX, 4, x2 + offsetX, 127, true);
-  // driver.drawLine(getRandomArbitrary(), 4, getRandomArbitrary(), 127, true);
 }
 
 var currentSpeed = NaN;

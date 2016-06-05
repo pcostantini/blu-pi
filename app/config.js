@@ -5,7 +5,8 @@ var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
 var webDisplay = argv.webDisplay || argv.wd;
 var consoleInput = argv.consoleInput || argv.c;
-var demoScheduled = argv.demoScheduled !== 'false';
+var demoScheduled = argv.demoScheduled !== 'false'; // ?? document!
+var logState = argv.log || argv.consoleLog;
 
 if(!demoFile) {
   // https://www.strava.com/activities/508017565
@@ -13,7 +14,7 @@ if(!demoFile) {
 }
 
 var config = {
-  logState: true,
+  logState: logState,
   demoMode: demoMode,
   demoScheduled: demoScheduled,
   persist: !demoMode,
@@ -28,13 +29,16 @@ var config = {
     //indiscreet: {
     // wifi: 5000
     //},
+
     lsm303: {
-      acceleration: 500,
-      axes: 500,
+      acceleration: 0,
+      axes: 0,
       heading: 500,
-      temp: 5000
+      temp: 3000
     },
-    temperature: 2500
+    cpu: 3000,
+    temperature: 3000,
+    memory: 15000
   },
   
   displayDriver: !webDisplay

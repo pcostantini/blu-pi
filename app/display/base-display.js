@@ -72,12 +72,14 @@ BaseDisplay.prototype.dispose = function() {
 BaseDisplay.prototype.refreshDisplayDelay = 1000;
 BaseDisplay.prototype.width = 64;
 BaseDisplay.prototype.height = 128;
+BaseDisplay.prototype.rerouteInput = false;
 
 module.exports = BaseDisplay;
 
 // helpers
 function drawBit(driver, bit) {
-  driver.fillRect(0, 0, 4, 4, bit ? 1 : 0);
+  driver.fillRect(1, 0, 4, 4, bit ? 1 : 0);
+  // driver.fillRect(1, 1, 3, 3, bit ? 0 : 1);
 }
 
 function drawCpu(driver, cpuState) {

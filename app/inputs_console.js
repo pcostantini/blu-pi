@@ -2,7 +2,7 @@ var keypress = require('keypress');
 var Rx = require('rxjs');
 
 module.exports = function ConsoleInput() {
-  
+
   var inputBack = new Rx.Subject();
   var inputNext = new Rx.Subject();
   var inputOk = new Rx.Subject();
@@ -18,18 +18,26 @@ module.exports = function ConsoleInput() {
       process.exit();
     }
 
-    if(!key) return;
+    if (!key) return;
 
-    switch(key.name) {
+    switch (key.name) {
       case 'a':
-        inputBack.next({ name: 'Input:Display' });
+        inputBack.next({ name: 'Input:A' });
         break;
       case 's':
-        inputBack.next({ name: 'Input:Next' });
+        inputBack.next({ name: 'Input:B' });
         break;
       case 'd':
-        inputBack.next({ name: 'Input:Accept' });
+        inputBack.next({ name: 'Input:C' });
         break;
+      case 'q':
+        inputBack.next({ name: 'Input:LongA' });
+      case 'w':
+        inputBack.next({ name: 'Input:LongB' });
+      case 'e':
+        inputBack.next({ name: 'Input:LongC' });
+      case 'space':
+        inputBack.next({ name: 'Input:Shake' });
     }
   });
 

@@ -21,26 +21,34 @@ function LSM303_Observable(waitTimes) {
       var accelerometer = ls.accelerometer();
       var magnetometer = ls.magnetometer();
 
-      (function accel() {
-        accelerometer.readAxes(handleRead(accel, 
-          'Acceleration', waitTimes.acceleration));
-      })();
+      if(waitTimes.acceleration) {
+        (function accel() {
+          accelerometer.readAxes(handleRead(accel, 
+            'Acceleration', waitTimes.acceleration));
+        })();
+      }
 
-      (function axis() {
-        magnetometer.readAxes(handleRead(axis, 
-          'MagnometerAxis', waitTimes.axes));
-      })();
+      if(waitTimes.axes) {
+        (function axis() {
+          magnetometer.readAxes(handleRead(axis, 
+            'MagnometerAxis', waitTimes.axes));
+        })();
+      }
 
-      (function heading() {
-        magnetometer.readHeading(handleRead(heading, 
-          'MagnometerHeading', waitTimes.heading));
-      })();
+      if(waitTimes.heading) {
+        (function heading() {
+          magnetometer.readHeading(handleRead(heading, 
+            'MagnometerHeading', waitTimes.heading));
+        })();
+      }
 
       // useless... due to lsm303 being inside box. temperature will be highier
-      (function temp() {
-        magnetometer.readTemp(handleRead(temp, 
-          'MagnometerTemperature', waitTimes.temp));
-      })();
+      if(waitTimes.temp) {
+        (function temp() {
+          magnetometer.readTemp(handleRead(temp, 
+            'MagnometerTemperature', waitTimes.temp));
+        })();
+      }
 
     } catch(err) {
       console.log('lsm303.initErr!', err);

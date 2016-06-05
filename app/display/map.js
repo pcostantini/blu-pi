@@ -16,7 +16,7 @@ var bounds = {
 };
 
 function MapDisplay(driver, events, stateStore) {
-  noisyFilter(driver);
+  // noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 
@@ -56,13 +56,9 @@ MapDisplay.prototype.processEvent = function(driver, e, stateStore) {
         renderWholePath(driver, state.Path.points);
       }
 
-    case 'Input:Ok':
+    case 'Input:B':
       this.cycle(driver, this.stateStore);
       break;
-
-    case 'Input:Next':
-    case 'Input:Accept':
-      this.cycle(driver, stateStore);
   }
 }
 
