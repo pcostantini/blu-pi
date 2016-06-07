@@ -1,13 +1,15 @@
 var _ = require('lodash');
-var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 var hotswap = require('hotswap');
 
+// TODO: DOCUMENT and credit!
+var GFX = require('edison-ssd1306/src/Adafruit_GFX');
+
 var Displays = [
-	require('./tetris'),
-	require('./screensaver'),
-	require('./map'),
 	require('./distance'),
-	require('./menu')];
+	require('./map'),
+	require('./menu'),
+	require('./screensaver')];
+	// require('./off')!];
 
 var width = 128;
 var height = 64;
@@ -15,7 +17,7 @@ var height = 64;
 function DisplayBootstrap(Driver, events, stateStore) {
 
 	var driver = _.extend(
-		new GFX(height, width),     // invert size since oled is rotated 90'C
+		new GFX(height, width),     // rotate the 'glib' lib
 		new Driver(width, height));
 
 	driver._drawPixel = driver.drawPixel;
@@ -47,11 +49,9 @@ function DisplayBootstrap(Driver, events, stateStore) {
 
 		var DisplayType = Displays[ix];
 		console.log('Cycling Screen', ix);
-		driver.drawPixel = driver._drawPixel;
+		driver.drawPixel = driver._drawPixel;	// cant remember what's this for?
 		current = new DisplayType(driver, events, stateStore);
-
-		console.log('rerouting input?', current.rerouteInput)
-
+		console.log('\tinput rerouting?', current.rerouteInput)
 		return current;
 	}
 

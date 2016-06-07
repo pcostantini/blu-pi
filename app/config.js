@@ -3,6 +3,7 @@ var argv = minimist(process.argv.slice(2));
 
 var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
+var persist = !demoMode; //false
 var webDisplay = argv.webDisplay || argv.wd;
 var consoleInput = argv.consoleInput || argv.c;
 var demoScheduled = argv.demoScheduled !== 'false'; // ?? document!
@@ -17,12 +18,11 @@ var config = {
   logState: logState,
   demoMode: demoMode,
   demoScheduled: demoScheduled,
-  persist: !demoMode,
+  persist: persist,
   persistBuffer: 0,
   dbFile:
-    demoMode ?
-	demoFile :
-    	'./data/current.sqlite3',
+    demoMode ? demoFile
+    : './data/current.sqlite3',
   sensors: {
     // refresh times
 
@@ -40,15 +40,17 @@ var config = {
     temperature: 3000,
     memory: 15000
   },
-  
-  displayDriver: !webDisplay
-    ? require('./display/drivers/oled')
-    : require('./display/drivers/web'),
-  
-  inputDriver: !consoleInput
-    ? require('./inputs')
-    : require('./inputs_console')
 };
+
+console.log('\t', config)
+
+config.displayDriver = !webDisplay
+    ? require('./display/drivers/oled')
+    : require('./display/drivers/web');
+  
+config.inputDriver = !consoleInput
+    ? require('./inputs')
+    : require('./inputs_console');
 
 // global error handling
 // this is due to some sensor code may throw error in async ways, not making it possible to catch

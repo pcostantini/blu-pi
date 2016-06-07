@@ -12,7 +12,7 @@ module.exports = function bootstrap(sensorsConfig) {
   var sensors = Rx.Observable.merge(
     clock,
     safeRequire('./sensors/gps')(),
-    // safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
+    safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
     safeRequire('./sensors/barometer')(sensorsConfig.temperature),
 
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),

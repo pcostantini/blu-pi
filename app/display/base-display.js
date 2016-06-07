@@ -1,4 +1,4 @@
-module.change_mode = 1;
+module.change_code = 1;
 
 function BaseDisplay(driver, events, stateStore) {
   var self = this;

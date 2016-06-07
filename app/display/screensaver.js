@@ -10,13 +10,13 @@ var height = 128;
 var speedAccumulator = [];
 
 function ScreenSaverDisplay(driver, events, stateStore) {
-  // noisyFilter(driver);
+  noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 inherits(ScreenSaverDisplay, BaseDisplay);
 
 ScreenSaverDisplay.prototype.init = function (driver, stateStore) {
-  this.refreshDisplayDelay = 100;
+  this.refreshDisplayDelay = 333;
   drawAll(driver, stateStore.getState());
 }
 ScreenSaverDisplay.prototype.preFlush = function (driver, stateStore) {
@@ -110,7 +110,7 @@ function drawSpeed(driver, speed, force) {
   currentSpeed = speed;
 
   var kmPh = !isNaN(speed) ? mpsTokph(speed) : NaN;
-  driver.setCursor(11, height - 45 + offsetY);
+  driver.setCursor(11, height - 50 + offsetY);
   driver.setTextSize(2);
   driver.setTextColor(1, 0);
   var sKmPh = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';

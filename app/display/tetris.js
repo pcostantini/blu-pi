@@ -6,7 +6,8 @@ var tetrisGame = require('tetris/lib/tetris-game');
 
 var width = 64;
 var height = 128;
-var tetrisDelay = 333;
+
+module.exports = TetrisDisplay;
 
 function TetrisDisplay(driver, events, stateStore) {
     BaseDisplay.call(this, driver, events, stateStore);
@@ -16,11 +17,11 @@ inherits(TetrisDisplay, BaseDisplay);
 TetrisDisplay.prototype.refreshDisplayDelay = 999999;
 TetrisDisplay.prototype.rerouteInput = true;
 TetrisDisplay.prototype.init = function (driver, stateStore) {
-    //   drawMenu(driver, menu, state);
-    tetrisGame.start(tetrisDelay);
-    // tetrisGame.stop();
+    console.log('.TetrisDisplay:init');
+    tetrisGame.start();
+    // tetrisGame.pause();
     tetrisGame.on('board_updated', () => drawBoard(driver, tetrisGame));
-    this.paused = false;
+    this.pauseReroute = false;
 }
 
 TetrisDisplay.prototype.processEvent = function (driver, e, stateStore) {
@@ -28,25 +29,26 @@ TetrisDisplay.prototype.processEvent = function (driver, e, stateStore) {
     if (!move) return;
 
     if (move === 'Pause') {
-        this.paused = !this.paused;
-        this.rerouteInput = !this.paused;
-        if (this.paused) {
-            tetrisGame.stop();
+        this.pauseReroute = !this.pauseReroute;
+        this.rerouteInput = !this.pauseReroute;
+        if (this.pauseReroute) {
+            console.log('.TetrisDisplay:pause');
+            tetrisGame.pause();
         } else {
-            tetrisGame.start(tetrisDelay);
+            tetrisGame.start();
         }
         return;
     }
 
-    if(this.paused) return;
 
-    // console.log('tetris', move);
+    if (this.pauseReroute) return;
+
     var over = tetrisGame.tryMove(move);
-    // drawBoard(driver, tetrisGame);
+    // tetrisGame.unpause();
 
     if (over || tetrisGame.getState() === tetrisGame.States.OVER) {
-        console.log(' :( ', new Date().getTime())
-        tetrisGame.start(tetrisDelay);
+        console.log('.TetrisDisplay :(')
+        tetrisGame.start();
     }
 }
 
@@ -66,8 +68,6 @@ function getMovement(evtName) {
             return null;
     }
 }
-
-module.exports = TetrisDisplay;
 
 function drawBoard(driver, game) {
 
@@ -89,6 +89,7 @@ function drawBoard(driver, game) {
             drawPixel(x, y, bit);
         }
     }
-    // driver.drawPixel(pixel.x, pixel.y, 1);
+
+    // update buffer
     driver.display();
 };

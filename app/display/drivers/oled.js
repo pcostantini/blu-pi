@@ -5,10 +5,10 @@ var exitHook = require('exit-hook');
 var resetPins = [4, 24];
 
 function Oled(width, height) {
-
+  console.log('.OledDriver:initing')
   // Reset oled through pin
   resetPins.forEach((resetPin) => {
-    console.log('reseting oled @ pin ' + resetPin);
+    console.log('..reseting oled @ pin ' + resetPin);
     var reset = new GPIO(resetPin, 'out');
     reset.setDirection('high');
     setTimeout(() => reset.setDirection('low'), 20);
@@ -20,7 +20,7 @@ function Oled(width, height) {
   setTimeout(() => oled.init(), 100);
 
   exitHook(function () {
-    console.log('OLED:CLEANUP');
+    console.log('.OledDriver:Cleanup');
     oled.clear();
     oled.display();
   });
