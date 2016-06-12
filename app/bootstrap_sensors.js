@@ -13,14 +13,16 @@ module.exports = function bootstrap(sensorsConfig) {
     clock,
     safeRequire('./sensors/gps')(),
     
-    // safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
-    // require('./sensors/shake')(),
+    safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
+    require('./sensors/shake')(),
 
-    // safeRequire('./sensors/barometer')(sensorsConfig.temperature),
+    safeRequire('./sensors/barometer')(sensorsConfig.temperature),
 
-    // (sensorsConfig.indiscreet)
-    //   ? require('./sensors/wifi')(sensorsConfig.indiscreet.wifi)
-    //   : Rx.Observable.empty(),
+    // wifi scanner
+    (sensorsConfig.indiscreet)
+      ? require('./sensors/wifi')(sensorsConfig.indiscreet.wifi)
+      : Rx.Observable.empty(),
+    
     // sys
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),
     require('./sensors/cpu_load')(sensorsConfig.cpu),

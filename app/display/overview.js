@@ -55,7 +55,7 @@ function drawAll(driver, state) {
   drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
   drawDistance(driver, state.Distance);
-  drawTime(driver, state.Ticks[0]);
+  drawTime(driver, state.Ticks);
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, barometer.pressure);
 }
@@ -170,8 +170,8 @@ function drawAltitude(driver, altitude) {
 }
 
 function drawTime(driver, ticks) {
-  ticks = ticks || 0;
-  var elapsed = Math.round(ticks / 1000);
+  var lastTick = (ticks && ticks.length) ? ticks[0] : 0;
+  var elapsed = Math.round(lastTick / 1000);
   var sTime = formatTime(elapsed);
 
   driver.setTextColor(1, 0);
