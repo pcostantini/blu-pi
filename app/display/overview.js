@@ -32,8 +32,7 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       break;
 
     case 'Ticks':
-      var ticks = e.value[0];
-      drawTime(driver, ticks);
+      drawTime(driver, e.value);
       break;
 
     case 'Barometer':
@@ -170,8 +169,8 @@ function drawAltitude(driver, altitude) {
 }
 
 function drawTime(driver, ticks) {
-  var lastTick = (ticks && ticks.length) ? ticks[0] : 0;
-  var elapsed = Math.round(lastTick / 1000);
+  var totalTicks = ticks && ticks.length ? ticks[0] : 0;
+  var elapsed = Math.round(totalTicks / 1000);
   var sTime = formatTime(elapsed);
 
   driver.setTextColor(1, 0);
