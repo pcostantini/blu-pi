@@ -11,13 +11,16 @@ function Oled(width, height) {
     console.log('..reseting oled @ pin ' + resetPin);
     var reset = new GPIO(resetPin, 'out');
     reset.setDirection('high');
-    setTimeout(() => reset.setDirection('low'), 20);
-    setTimeout(() => reset.setDirection('high'), 50);
+    setTimeout(() => reset.setDirection('low'), 10);
+    setTimeout(() => reset.setDirection('high'), 30);
   });
 
   var oled = new SSD1306();
-  // oled.init();
-  setTimeout(() => oled.init(), 100);
+  setTimeout(() => {
+    oled.init();
+    oled.clear();
+    oled.inited = true;
+  }, 50);
 
   exitHook(function () {
     console.log('.OledDriver:Cleanup');
