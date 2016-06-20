@@ -5,7 +5,8 @@ var hotswap = require('hotswap');
 var Displays = [
 	require('./screensaver'),
 	require('./map'),
-	require('./distance')];
+	require('./distance'),
+	require('./menu')];
 
 var width = 128;
 var height = 64;
@@ -18,7 +19,7 @@ function DisplayBootstrap(Driver, events, stateStore) {
 
 	// cycle screen when Next is pressed
 	events
-		.filter(s => s.name === 'Input:Next')
+		.filter(s => s.name === 'Input:Display')
 		.subscribe(cycle);
 
 	// recycle on module change
@@ -46,13 +47,13 @@ function DisplayBootstrap(Driver, events, stateStore) {
 
 	// cycle screen
 	function cycle() {
-		if(current) {
-			var isSubscreen = !!(current.cycle && current.cycle(driver, stateStore));
-			if(isSubscreen) {
-				console.log('Cycling SubScreen');
-				return;
-			}
-		}
+		// if(current) {
+		// 	var isSubscreen = !!(current.cycle && current.cycle(driver, stateStore));
+		// 	if(isSubscreen) {
+		// 		console.log('Cycling SubScreen');
+		// 		return;
+		// 	}
+		// }
 		
 		current = NewCurrent();
 	}

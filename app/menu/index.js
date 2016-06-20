@@ -1,32 +1,34 @@
 var exec = require('child_process').exec;
-
+var _ = require('lodash');
 
 var menu = [
-    {
-      name: 'kill_leds',
-      type: 'bash',
-      data: 'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
-            'sudo echo 0 >/sys/class/leds/led1/brightness'
-    }, {
-      name: 'wifi_reset',
-      type: 'bash',
-      data: 'sudo ifdown wlan0\n' +
-            'sudo ifup wlan0' 
-    }, {
-      name: 'shutdown',
-      type: 'bash',
-      data: 'sudo shutdown -h -H -t 0 0'
-    }, {
-      name: 'reboot',
-      type: 'bash',
-      data: 'sudo reboot'
-    }
+  {
+    name: 'kill_leds',
+    type: 'bash',
+    data: 'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
+          'sudo echo 0 >/sys/class/leds/led1/brightness'
+  }, {
+    name: 'wifi_reset',
+    type: 'bash',
+    data: 'sudo ifdown wlan0\n' +
+          'sudo ifup wlan0' 
+  }, {
+    name: 'shutdown',
+    type: 'bash',
+    data: 'sudo shutdown -h -H -t 0 0'
+  }, {
+    name: 'reboot',
+    type: 'bash',
+    data: 'sudo reboot'
+  }
 ];
 
-// test:
-executeItem(menu[1]);
+menu = menu.map(m => _.extend(
+  {
+    run: () => executeItem(m)
+  }, m));
 
-// todo: build 'display class'
+module.exports = menu;
 
 function executeItem(menuItem) {
   console.log('running menuItem', menuItem);

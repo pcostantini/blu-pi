@@ -30,7 +30,7 @@ MapDisplay.prototype.init = function(driver, stateStore) {
   }
 }
 
-MapDisplay.prototype.processEvent = function(driver, e) {
+MapDisplay.prototype.processEvent = function(driver, e, stateStore) {
   switch(e.name) {
     case 'Gps':
       if(!(e.value && e.value.latitude)) return;
@@ -43,6 +43,10 @@ MapDisplay.prototype.processEvent = function(driver, e) {
       drawPathCoordinate(driver, coord, bounds);
 
       break;
+
+    case 'Input:Next':
+    case 'Input:Accept':
+      this.cycle(driver, stateStore);
   }
 }
 
