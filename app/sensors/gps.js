@@ -19,7 +19,7 @@ function GPS() {
       observer.next({ name: SensorName, value: cleanLocation });
     });
 
-  });
+  }).share();
 }
 
 module.exports = GPS;

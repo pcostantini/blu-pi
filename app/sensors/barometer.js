@@ -7,6 +7,7 @@ function Barometer(delay) {
   return Rx.Observable.create(function (observer) {
     function read(sensor) {
       sensor.read(function (data) {
+        // TODO: circuit braker on error threshold reached
         setTimeout(() => read(sensor), delay);
         observer.next({ name: 'Barometer', value: data });
       });

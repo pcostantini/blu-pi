@@ -60,10 +60,8 @@ function getMovement(evtName) {
             return tetrisGame.Moves.MoveRight;
         case 'Input:B':
             return tetrisGame.Moves.RotClock;
-        case 'Input:Shake':
-            return tetrisGame.Moves.MoveDown;
-        case 'Input:LongB':
-            return 'Pause';
+        case 'Input:LongB'
+            return tetrisGame.Moves.Drop;
         default:
             return null;
     }

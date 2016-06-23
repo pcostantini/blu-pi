@@ -80,7 +80,7 @@ function GpsClock() {
 
     serviceSocket.connect(opts.port, opts.hostname);
 
-  });
+  }).share();
 
 };
 
