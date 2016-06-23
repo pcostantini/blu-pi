@@ -1,8 +1,8 @@
-var inputs = require('../app/inputs');
-var shake = require('../app/sensors/shake');
+console.log('.')
+var inputs = require('../app/inputs_gpio');
+console.log('.')
 
 inputs()
-    .merge(shake())
     .subscribe(console.log);
 
 console.log('listening!...')

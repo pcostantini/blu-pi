@@ -4,24 +4,36 @@ var argv = minimist(process.argv.slice(2));
 var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
 var persist = !demoMode; //false
-var webDisplay = argv.webDisplay || argv.wd;
-var consoleInput = argv.consoleInput || argv.c;
 var demoScheduled = argv.demoScheduled !== 'false'; // ?? document!
 var logState = argv.log || argv.consoleLog;
 
-if(!demoFile) {
+if (!demoFile) {
   // https://www.strava.com/activities/508017565
   demoFile = './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3'
 }
 
+var size = {
+  width: 128,
+  height: 64
+};
+
 var config = {
+  size: size,
   logState: logState,
   demoMode: demoMode,
   demoScheduled: demoScheduled,
   persist: persist,
   persistBuffer: 0,
+  inputDrivers: [
+    './inputs_gpio',
+    './inputs_console'
+  ],
+  displayDrivers: [
+    './display/drivers/oled',
+    './display/drivers/web'
+  ],
   dbFile:
-    demoMode ? demoFile
+  demoMode ? demoFile
     : './data/current.sqlite3',
   sensors: {
     // refresh times
@@ -41,24 +53,5 @@ var config = {
     memory: 15000
   },
 };
-
-console.log('\t', config)
-
-config.displayDriver = !webDisplay
-    ? require('./display/drivers/oled')
-    : require('./display/drivers/web');
-  
-config.inputDriver = !consoleInput
-    ? require('./inputs')
-    : require('./inputs_console');
-
-// global error handling
-// this is due to some sensor code may throw error in async ways, not making it possible to catch
-process.on('uncaughtException', err => {
-  console.log('ERROR!: ', {
-    err: err.toString(),
-    stack: err.stack.replace(/\n/g,'$1\n') // SO!: console.log('foo!bar!baz!'.replace(/([!.?])/g,'$1\n'));
-  });
-});
 
 module.exports = config;

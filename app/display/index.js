@@ -11,14 +11,13 @@ var Displays = [
 	require('./screensaver')];
 	// require('./off')!];
 
-var width = 128;
-var height = 64;
 
-function DisplayBootstrap(Driver, events, stateStore) {
+function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 
+	// to the driver, add GFX stuff for eas use
 	var driver = _.extend(
-		new GFX(height, width),     // rotate the 'glib' lib
-		new Driver(width, height));
+		new GFX(size.height, size.width),     // rotate the 'glib' lib
+		nativeDriver);
 
 	// cycle screen when Next is pressed
 	events

@@ -37,7 +37,7 @@ module.exports = function ConsoleInput() {
       case 'e':
         inputBack.next({ name: 'Input:LongC' });
       case 'space':
-        inputBack.next({ name: 'Input:Shake' });
+        inputBack.next({ name: 'Input:Space' });
     }
   });
 

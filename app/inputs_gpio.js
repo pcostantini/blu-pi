@@ -1,6 +1,5 @@
 var Rx = require('rxjs');
 var gpio = require('./gpios');
-var shake = require('./sensors/shake');
 
 function GpioInputs() {
 
@@ -11,9 +10,9 @@ function GpioInputs() {
   var longPressDelay = 500;
 
   // REDEFINE:
-  // A: Prev
+  // A: Cycle Prev
   // B: Ok, LongOk
-  // C: Next
+  // C: Cycle Next
 
   var inputA = mapInput('A', gpio.observe(gpioA).share());
   var inputB = mapInput('B', gpio.observe(gpioB).share());
@@ -26,7 +25,7 @@ function GpioInputs() {
       var delay = new Date().getTime() - evs[evs.length - 1].timestamp;
       return (delay > longPressDelay ? 'Long' : '') + inputName;
     }
-    
+
     return gpioObservable
       .timestamp()                                                // add ts
       .buffer(gpioObservable.filter(e => e.value === 'up'))        // take until botton is released
@@ -37,10 +36,9 @@ function GpioInputs() {
   // merge
   return Rx.Observable
     .merge(
-        // shake(),
-        inputA,
-        inputB,
-        inputC)
+      inputA,
+      inputB,
+      inputC)
     .share();
 }
 

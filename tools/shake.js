@@ -1,11 +1,5 @@
 var lsm303 = require('../app/sensors/lsm303');
 
-var lsm303_stream = lsm303({
-    acceleration: 10,
-    //   axes: 100,
-    //   heading: 500
-    //temp: 5000
-});
 
 var options = {
     threshold: Math.PI * 2,
@@ -62,6 +56,14 @@ function deviceMotion(e) {
 }
 
 
+var lsm303_stream = lsm303({
+    acceleration: 10,
+    //   axes: 100,
+    //   heading: 500
+    //temp: 5000
+});
 
 lsm303_stream.subscribe(deviceMotion);
+
+
 console.log('ready?...');
