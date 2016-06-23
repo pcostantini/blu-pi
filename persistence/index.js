@@ -6,33 +6,38 @@ function SessionPersistence(dbFile, readOnly) {
 
   "use strict";
 
-  var SqlSchemas = ['CREATE TABLE IF NOT EXISTS SensorEvents (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER, sensor VARCHAR(64), data TEXT)'];
-  var SqlInsertMessage = 'INSERT INTO SensorEvents (timestamp, sensor, data) VALUES (?, ?, ?)';
-  var SqlSelectSensors = 'SELECT timestamp, sensor, data FROM sensorEvents'; // ORDER BY timestamp ASC';  //  ORDER BY id ASC';
+  var SqlSchemas = [
+    'CREATE TABLE IF NOT EXISTS SensorEvents (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp INTEGER, sensor VARCHAR(64), data TEXT)'];
+  var SqlInsertMessage =
+    'INSERT INTO SensorEvents (timestamp, sensor, data) VALUES (?, ?, ?)';
+  var SqlSelectSensors =
+    'SELECT timestamp, sensor, data FROM sensorEvents'; // ORDER BY timestamp ASC';  //  ORDER BY id ASC';
+  var SqlSelectSensorsWhere =
+    'SELECT timestamp, sensor, data FROM sensorEvents WHERE sensor = ?'; // ORDER BY timestamp ASC';  //  ORDER BY id ASC';
 
   // create db
   var db = null;
-  var dbCreated = new Promise(function(resolve, reject) {
+  var dbCreated = new Promise(function (resolve, reject) {
 
     var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
     var newDb = new sqlite3.Database(dbFile, options, !readOnly ? tryCreateSchemas : done);
 
     function done(err) {
-      if(err) {
+      if (err) {
         console.log('Persistence.Err!', err);
         return;
       }
 
-      console.log('Persistence.Inited')
+      console.log('Persistence.dbCreated');
       resolve(newDb);
     }
 
     function tryCreateSchemas() {
-      var i=0;
+      var i = 0;
       _.each(SqlSchemas, script => {
         newDb.run(script, () => {
           i++;
-          if(i == SqlSchemas.length) done();
+          if (i == SqlSchemas.length) done();
         });
       });
     }
@@ -46,13 +51,13 @@ function SessionPersistence(dbFile, readOnly) {
   // inserts
   var insertStatement = null;
   var inserts = new Rx.Subject();
-  inserts.subscribe(function(event) {
-    if(db === null) return;
+  inserts.subscribe(function (event) {
+    if (db === null) return;
     insertStatement.run(event);
   });
 
   function insert(message) {
-    if(readOnly) throw new Error('Db is in ReadOnly mode');
+    if (readOnly) throw new Error('Db is in ReadOnly mode');
 
     var ts = message.timestamp;
     var sensor = message.name;
@@ -61,19 +66,28 @@ function SessionPersistence(dbFile, readOnly) {
   }
 
   // query
-  function readSensors() {
-    return new Promise(function(res, rej) {
+  function readSensors(sensorName) {
+    console.log('readSensors', sensorName)
+    // var parameters = [];
+    // var query = SqlSelectSensors;
+    var query = !sensorName ? SqlSelectSensors : SqlSelectSensorsWhere
+    // if (sensorName) {
+    //   query = SqlSelectSensorsWhere;
+    //   parameters.push(sensorName);
+    // }
+    console.log('Pesistence.readSensors', [query, sensorName]);
+    return new Promise(function (res, rej) {
       dbCreated.then(db => {
-        db.all(SqlSelectSensors, function(err, rows) {
-          if(err) return rej(err);
+        db.all(query, [sensorName], function (err, rows) {
+          if (err) return rej(err);
           res(rows);
         });
       });
     });
   }
-  
+
   function dispose() {
-    if(db) db.close();
+    if (db) db.close();
   }
 
   return {

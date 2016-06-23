@@ -56,8 +56,9 @@ var lastPoint = [0,0];
 function PathReducer (gpsEvents) {
   return gpsEvents
     .map(gps => [gps.latitude, gps.longitude])
-    .filter(point => lastPoint[0] !== point[0] ||
-                     lastPoint[1] !== point[1])
+    .filter(point => point[0] && point[1] &&
+                     (lastPoint[0] !== point[0] ||
+                      lastPoint[1] !== point[1]))
     .scan((path, point) => {
       lastPoint = point;
       path.push(point);

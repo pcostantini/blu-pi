@@ -2,19 +2,14 @@ var Persistence = require('../persistence');
 var Rx = require('rxjs');
 var _ = require('lodash');
 
-module.exports = ReplayFromDb;
-
-function ReplayFromDb(dbFilePath, scheduled) {
-
-  // read events
-  var db = Persistence(dbFilePath, true);
-  var events = db
-    .readSensors()
+function ReplayFromDb(queryPromise, scheduled) {
+  var events = queryPromise
     .then(startWithGps)
-    .then(mapWithOffset)
     .then((events) => events.filter(
       (s) => s.name !== 'CpuLoad' &&
-             s.name !== 'Clock'));
+             s.name !== 'Clock' &&
+             s.data !== 'null'))
+    .then(mapWithOffset);
 
   var stream = new Rx.Subject();
 
@@ -22,40 +17,21 @@ function ReplayFromDb(dbFilePath, scheduled) {
     // schedule and emit
     events.then(schedule(stream));
   } else {
+    // no schedule, run everything now
     events.then((events) => {
       events.forEach((e) => 
         stream.next(_.pick(e, ['name', 'value'])));
     });
   }
 
-  // unmock clock and cpu
-  var clock = Rx.Observable.interval(1000)
-    .map(() => ({ name: 'Clock', value: Date.now() }));
-  var cpu = require('./sensors/cpu_load')();
-
-  // merge
-  return Rx.Observable
-    .merge(clock, cpu, stream)
-    .share();
-}
-
-function schedule(source) {
-  return function(events) {
-    console.log('scheduling events', events.length);
-    events.forEach((t) => {
-      Rx.Scheduler.async.schedule(
-        () => source.next(_.pick(t, ['name', 'value'])),
-        t.offset,
-        t);
-    });
-  }
+  return stream;
 }
 
 function startWithGps(events) {
   var firstGps = _.findIndex(events, e => e.sensor === 'Gps' && e.data !== 'null');
   if(firstGps == -1) return [];
 
-  return events.slice(firstGps);
+  return events.slice(firstGps+1);
 }
 
 function mapWithOffset(events) {
@@ -78,3 +54,17 @@ function mapWithOffset(events) {
     console.log('mapping err!', err);
   }
 }
+
+function schedule(source) {
+  return function(events) {
+    console.log('ReplaceSensors:scheduling events:', events.length);
+    events.forEach((t) => {
+      Rx.Scheduler.async.schedule(
+        () => source.next(_.pick(t, ['name', 'value'])),
+        t.offset / 10,
+        t);
+    });
+  }
+}
+
+module.exports = ReplayFromDb;
