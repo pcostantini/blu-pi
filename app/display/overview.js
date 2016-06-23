@@ -4,6 +4,7 @@ var _ = require('lodash');
 var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
 var DottedFilter = require('./dotted-filter');
+var NoisyFilter = require('./noisy-filter');
 
 var width = 64;
 var height = 128;
@@ -15,9 +16,14 @@ function OverviewDisplay(driver, events, stateStore) {
 inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
-  this.refreshDisplayDelay = 333;
+  this.refreshDisplayDelay = 1000;
   drawAll(driver, stateStore.getState());
 }
+
+// OverviewDisplay.prototype.dispose = function() {
+//   this.noiseFilter.dispose();
+//   BaseDisplay.prototype.dispose.call(this);
+// }
 
 OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
   switch (e.name) {
@@ -29,6 +35,9 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       drawSpeed(driver, e.value ? e.value.speed : NaN);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
       drawMapPoint(driver, e.value, stateStore);
+
+      // todo: draw altidudes
+
       break;
 
     case 'Ticks':
@@ -50,11 +59,13 @@ module.exports = OverviewDisplay;
 
 function drawAll(driver, state) {
   state = state || {};
-  drawMap(driver, state.Path || { points: [] });
+
   drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
-  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
-  drawDistance(driver, state.Distance);
   drawTime(driver, state.Ticks);
+  drawMap(driver, state.Path || { points: [] });
+  drawDistance(driver, state.Distance);
+  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
+
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, barometer.pressure);
 }
@@ -68,6 +79,30 @@ var bounds = {
   zoom: 1
 };
 
+var drawMapDebounced = _.debounce(drawMap, 1000);
+
+function drawMap(driver, path) {
+  console.log('OverviewDisplay:drawMap');
+  drawMapCanvas(driver);
+  if (!path || !path.points || path.points.length === 0) {
+    // empty
+    var lineSize = 14;
+    var x1 = mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2;
+    var y1 = mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2;
+    driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
+    // driver.drawLine(x1, y1 + lineSize, x1 + lineSize, y1, 1);
+    // driver.fillRect(x1 + lineSize / 4, y1 + lineSize / 4, lineSize / 2 + 1, lineSize / 2 + 1, 0);
+    driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, lineSize / 2, 1);
+    return;
+  }
+
+  var pathPoints = path.points;
+  var initialCoord = pathPoints[0];
+  initBounds(bounds, initialCoord);
+
+  renderWholePath(driver, pathPoints, mapOffsets);
+}
+
 function drawMapCanvas(driver) {
   driver.fillRect(0, mapOffsetY - 1, mapSize[0], mapSize[1] + 2, 0);
   var filter = DottedFilter(driver);
@@ -75,29 +110,9 @@ function drawMapCanvas(driver) {
   filter.dispose();
 }
 
-function drawMap(driver, path) {
-
-  drawMapCanvas(driver);
-
-  if (!path || !path.points || path.points.length === 0) {
-    // empty
-    var lineSize = 8;
-    var x1 = mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2;
-    var y1 = mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2;
-    driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
-    driver.drawLine(x1, y1 + lineSize, x1 + lineSize, y1, 1);
-    driver.fillRect(x1 + lineSize / 4, y1 + lineSize / 4, lineSize / 2 + 1, lineSize / 2 + 1, 0);
-    return;
-  }
-
-  var pathPoints = path.points;
-  var initialCoord = pathPoints[0];
-  initBounds(bounds, initialCoord);
-  renderWholePath(driver, pathPoints, mapOffsets);
-}
-
 var outCounter = 0;
 function drawMapPoint(driver, value, stateStore) {
+
   var coord = [value.latitude, value.longitude];
   if (!bounds.lonLeft) {
     initBounds(bounds, coord);
@@ -108,29 +123,26 @@ function drawMapPoint(driver, value, stateStore) {
     pixel.x > mapSize[0] || pixel.y > mapSize[1] ||
     pixel.x < 0 || pixel.y < 0) {
     // relocate
-    console.log('..out!')
+    // console.log('..out!')
     outCounter++;
     if (outCounter > 5) {
       outCounter = 0;
-
-      console.log('..redraw')
       var state = stateStore.getState();
-
-      //...
-      // driver.clear();
-      //...
-
-      drawMapCanvas(driver);
-      renderWholePath(driver, state.Path.points, mapOffsets);
+      drawMapDebounced(driver, state.Path);
+      // drawMapCanvas(driver);
+      // renderWholePath(driver, state.Path.points, mapOffsets);
     }
 
     return;
   }
 
+
+  // var filter = NoisyFilter(driver);
   driver.drawPixel(
     pixel.x + mapOffsets[0],
     pixel.y + mapOffsets[1],
     1);
+  // filter.dispose();
 
 }
 
@@ -157,7 +169,8 @@ function drawTemp(driver, temp, pressure) {
 
   if (pressure) {
     driver.setCursor(0, 33);
-    write(driver, Math.round(pressure * 10) / 10 + ' Pa');
+    var pressureLabel = (Math.round(pressure * 10) / 10) + ' Pa';
+    write(driver, pressureLabel);
   }
 }
 
@@ -256,6 +269,7 @@ function renderWholePath(driver, path, offsets) {
 
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
+  // var filter = NoisyFilter(driver);  
   path.forEach((coord) => {
     var pixel = getPixelCoordinate(coord, bounds);
 
@@ -268,6 +282,7 @@ function renderWholePath(driver, path, offsets) {
 
     driver.drawPixel(pixel.x + offsets[0], pixel.y + offsets[1], 1);
   });
+  // filter.dispose();
 }
 
 // graph functions
