@@ -45,7 +45,7 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       break;
 
     case 'Barometer':
-      drawTemp(driver, e.value.temperature, e.value.pressure);
+      drawTemp(driver, e.value.temperature, e.value.pressure, stateStore.getState().CpuTemperature);
       break;
 
     case 'Input:B':
@@ -67,7 +67,7 @@ function drawAll(driver, state) {
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 
   var barometer = state.Barometer || {};
-  drawTemp(driver, barometer.temperature, barometer.pressure);
+  drawTemp(driver, barometer.temperature, barometer.pressure, state.CpuTemperature);
 }
 
 var mapSize = [64, 75];
@@ -158,13 +158,16 @@ function drawSpeed(driver, speed) {
   }
 }
 
-function drawTemp(driver, temp, pressure) {
+function drawTemp(driver, temp, pressure, cpuTemp) {
   driver.fillRect(0, 24, 64, 18, 0);
 
   driver.setTextSize(1);
-  if (temp) {
+  if (temp || cpuTemp) {
+    temp = temp || '?';
+    cpuTemp = cpuTemp || '?';
+    var sTemp = temp + '/' + cpuTemp;
     driver.setCursor(0, 24);
-    write(driver, temp + ' C');
+    write(driver, sTemp + ' C');
   }
 
   if (pressure) {
