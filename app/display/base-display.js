@@ -47,9 +47,11 @@ function BaseDisplay(driver, events, stateStore) {
     // update and repeat
     driver.display();
 
-    self.timeout = setTimeout(
-      redraw.bind(null, self),
-      self.refreshDisplayDelay);
+    if(self.refreshDisplayDelay) {
+      self.timeout = setTimeout(
+        redraw.bind(null, self),
+        self.refreshDisplayDelay);
+    }
 
   })(self);
 
