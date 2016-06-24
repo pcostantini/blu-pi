@@ -9,5 +9,5 @@ SCREEN_NAME=blu
 screen -dmS "$SCREEN_NAME"
 screen -S "$SCREEN_NAME" -X stuff "node --harmony app $(printf \\r)"
 
-printf "Done,  now you can join cat-pi with :\n"
+printf "Starting... now you can view blu-pi with :\n"
 printf "$ screen -dr -S $SCREEN_NAME\n"
