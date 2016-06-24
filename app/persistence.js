@@ -22,7 +22,8 @@ function Persistence(dbFile, readOnly) {
 
     this.readOnly = readOnly;
 
-    this.precompiledStatements = {};
+    this.precompiledStatements = {}
+    var precompiledStatements = this.precompiledStatements;
 
     this.dbPromise = new Promise((resolve, reject) => {
 
@@ -33,18 +34,20 @@ function Persistence(dbFile, readOnly) {
                 return;
             }
 
-            prepareStatements(this.db, this.precompiledStatements);
+            prepareStatements(this.db, precompiledStatements);
 
             console.log('Persistence.dbCreated');
             resolve(this.db);
         };
 
+        var db = null;
         var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
         var onReady = !readOnly
-            ? () => tryCreateSchemas(this.db, done)
+            ? () => tryCreateSchemas(db, done)
             : done;
 
-        this.db = new sqlite3.Database(dbFile, options, onReady);
+        this.db = db = new sqlite3.Database(dbFile, options, onReady);
+        
     });
 }
 
@@ -59,12 +62,14 @@ Persistence.prototype.insert = function (message) {
         throw new Error('Db in ReadOnly mode');
     }
 
-    var data = [
-        message.timestamp,
-        message.name,
-        JSON.stringify(message.value)];
-        
-    this.precompiledStatements.insertStatement.run(data);
+    dbPromise.then(db => {
+        var data = [
+            message.timestamp,
+            message.name,
+            JSON.stringify(message.value)];
+            
+        this.precompiledStatements.insertStatement.run(data);
+    });
 }
 
 Persistence.prototype.getRanges = function () {
