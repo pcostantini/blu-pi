@@ -1,7 +1,7 @@
 module.change_code = 1;
 
 var BaseDisplay = require('./base-display');
-var inherits    = require('util').inherits;
+var inherits = require('util').inherits;
 var menu = require('../menu');
 
 var width = 64;
@@ -15,17 +15,19 @@ function MenuDisplay(driver, events, stateStore) {
 
 inherits(MenuDisplay, BaseDisplay);
 MenuDisplay.prototype.refreshDisplayDelay = 9999999;
-MenuDisplay.prototype.init = function(driver, stateStore) {
+MenuDisplay.prototype.init = function (driver, stateStore) {
   drawMenu(driver, menu, state);
 }
 
-MenuDisplay.prototype.processEvent = function(driver, e, stateStore) {
-  switch(e.name) {
+MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
+  switch (e.name) {
     case 'Input:B':
+      clearSelection(driver, menu, state);
       state.executing = false;
       state.position++;
-      if(state.position >= menu.length) state.position = 0;
-      drawMenu(driver, menu, state);
+      if (state.position >= menu.length) state.position = 0;
+      drawSelection(driver, menu, state);
+      // drawMenu(driver, menu, state);
 
       break;
 
@@ -49,6 +51,11 @@ MenuDisplay.prototype.processEvent = function(driver, e, stateStore) {
 
 module.exports = MenuDisplay;
 
+function clearSelection(driver, menu, state) {
+  var y = 10 + state.position * lineHeight;
+  driver.fillRect(2, y + 3, 4, 4, false);
+}
+
 function drawSelection(driver, menu, state) {
   menu
     .map((m, ix) => ({
@@ -67,7 +74,7 @@ function drawMenu(driver, menu, state) {
   driver.setTextSize(1);
   driver.setTextColor(1, 0);
   driver.setTextWrap(false);
-  
+
   menu.map((m, ix) => ({
     text: m.name,
     y: 10 + (ix * lineHeight),
@@ -82,8 +89,8 @@ function drawMenuItem(driver, item, state) {
   driver.setCursor(8, item.y);
   write(driver, item.text);
 
-  if(item.selected) {
-    if(state.executing) {
+  if (item.selected) {
+    if (state.executing) {
       driver.fillRect(2, item.y + 3, 4, 4, true);
     } else {
       driver.fillRect(2, item.y + 3, 4, 4, false);
