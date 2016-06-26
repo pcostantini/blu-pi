@@ -17,6 +17,7 @@ inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
   this.refreshDisplayDelay = 1000;
+  this.lastTimeString = '';
   drawAll(driver, stateStore.getState());
 }
 
@@ -41,7 +42,12 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       break;
 
     case 'Ticks':
-      drawTime(driver, e.value);
+      var sTime = getTimeString(e.value);
+      if (this.lastTimeString !== sTime) {
+        this.lastTimeString = sTime;
+        drawTime(driver, sTime);
+      }
+
       break;
 
     case 'Barometer':
@@ -61,7 +67,7 @@ function drawAll(driver, state) {
   state = state || {};
 
   drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
-  drawTime(driver, state.Ticks);
+  drawTime(driver, getTimeString(state.Ticks));
   drawMap(driver, state.Path || { points: [] });
   drawDistance(driver, state.Distance);
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
@@ -105,7 +111,7 @@ function drawMap(driver, path) {
 
 function drawMapCanvas(driver) {
   driver.fillRect(0, mapOffsetY - 1, mapSize[0], mapSize[1] + 2, 0);
-  var filter = DottedFilter(driver);
+  var filter = NoisyFilter(driver);
   driver.drawRect(0, mapOffsetY - 1, mapSize[0], mapSize[1] + 2, 1);
   filter.dispose();
 }
@@ -137,17 +143,17 @@ function drawMapPoint(driver, value, stateStore) {
   }
 
 
-  // var filter = NoisyFilter(driver);
+  var filter = NoisyFilter(driver);
   driver.drawPixel(
     pixel.x + mapOffsets[0],
     pixel.y + mapOffsets[1],
     1);
-  // filter.dispose();
+  filter.dispose();
 
 }
 
 function drawSpeed(driver, speed) {
-  driver.setCursor(0, 6);
+  driver.setCursor(4, 4);
   driver.setTextSize(2);
 
   if (isNaN(speed)) {
@@ -159,15 +165,17 @@ function drawSpeed(driver, speed) {
 }
 
 function drawTemp(driver, temp, pressure, cpuTemp) {
-  driver.fillRect(0, 24, 64, 18, 0);
+  // driver.fillRect(0, 24, 64, 18, 0);
 
   driver.setTextSize(1);
   if (temp || cpuTemp) {
-    temp = temp || '?';
-    cpuTemp = cpuTemp || '?';
-    var sTemp = temp + '/' + cpuTemp;
+    var getValue = (temp) => temp ? temp.toFixed(1) : '?';
+    temp = getValue(temp);
+    cpuTemp = getValue(cpuTemp);
+
+    var sTemp = temp + 'c ' + cpuTemp  + 'c';
     driver.setCursor(0, 24);
-    write(driver, sTemp + ' C');
+    write(driver, sTemp);
   }
 
   if (pressure) {
@@ -184,29 +192,32 @@ function drawAltitude(driver, altitude) {
   // write(driver, 'A:' + altText);
 }
 
-function drawTime(driver, ticks) {
+function getTimeString(ticks) {
   var totalTicks = ticks && ticks.length ? ticks[0] : 0;
   var elapsed = Math.round(totalTicks / 1000);
-  var sTime = formatTime(elapsed);
+  return formatTime(elapsed);
+}
 
-  driver.setTextColor(1, 0);
-  driver.setCursor(0, height - 8);
-  driver.setTextSize(1);
-  write(driver, sTime);
+function drawTime(driver, sTime) {
+    driver.setTextColor(1, 0);
+    driver.setTextSize(1);
+
+    // right align
+    var minX = 34;
+    var x = mapSize[1] - ((sTime.length - 1) * 10 + 5);
+    x = x < minX ? minX : x;
+    driver.setCursor(x, height - 8);
+
+    write(driver, sTime);
 }
 
 function drawDistance(driver, distance) {
   distance = distance || 0;
-  driver.setTextColor(1, 0);
   var text = toFixed(distance, 2);
 
-  // right align
-  var minX = 34;
-  var x = mapSize[1] - ((text.length - 1) * 10 + 5);
-  x = x < minX ? minX : x;
-  driver.setCursor(x, height - 8);
-
+  driver.setTextColor(1, 0);
   driver.setTextSize(1);
+  driver.setCursor(0, height - 8);
   write(driver, text);
 }
 
@@ -337,7 +348,6 @@ function zoom(driver, stateStore) {
     bounds.zoom += 1;
     if (bounds.zoom > 5) bounds.zoom = 1;
 
-    // driver.clear();
     drawMapCanvas(driver);
     renderWholePath(driver, state.Path.points, mapOffsets);
   }
