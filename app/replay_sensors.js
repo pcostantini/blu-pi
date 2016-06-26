@@ -18,12 +18,16 @@ function ReplayFromDb(queryPromise, scheduled) {
   } else {
     // no schedule, run everything now
     events.then((events) => {
+      console.log('dispatching %d events', events.length);
       events.forEach((e) => 
         stream.next(_.pick(e, ['name', 'value'])));
+
+      // send replay complete event
+      stream.next({ name: 'ReplayComplete', value: new Date().getTime() });
     });
   }
 
-  return stream;
+  return stream.share();
 }
 
 function startWithGps(events) {

@@ -1,25 +1,24 @@
-log('!1. reading config...');
-var config = require('./config');
-console.log('\tblu-pi!', config);
-
-
 // global error handling
-// this is due to some sensor code may throw error in async ways, not making it possible to catch
 process.on('uncaughtException', function (err) {
   console.log('ERROR!:');
   console.log('!\t' + err.toString());
   console.log('!\t', err.stack);
 });
 
+// read config
+log('!1. reading config...');
+var config = require('./config');
+console.log('\tblu-pi!', config);
 
 // display drivers
 console.log('!2. driver displays');
-var displayDrivers = config.displayDrivers.map((driverName) => {
-  console.log('..instantiating: ' + driverName);
-  var driverCtor = require(driverName);
-  var driverInstance = new driverCtor(config.size.width, config.size.height);
-  return driverInstance;
-});
+var displayDrivers = config.displayDrivers
+  .map((driverName) => {
+    console.log('..instantiating: ' + driverName);
+    var driverCtor = require(driverName);
+    var driverInstance = new driverCtor(config.size.width, config.size.height);
+    return driverInstance;
+  });
 
 var unifiedDisplayDriver = {
   inited: () => (displayDrivers.filter((d, ix) => d.inited).length) === displayDrivers.length,
@@ -31,10 +30,9 @@ var unifiedDisplayDriver = {
 };
 
 // continue app init after display drivers are started
-setTimeout(startApp, 250);
-
-function startApp() {
+delay(333, function () {
   log('!3. importing stuff...');
+  var _ = require('lodash');
   var Rx = require('rxjs');
   var hotswap = require('hotswap');
   log('!3. importing more stuff...');
@@ -63,40 +61,48 @@ function startApp() {
   log('!5. persistence', config.persist);
   var db = new Persistence(config.dbFile);
 
-  // sensors
-  log('!6. sensors init in ' + (config.demoMode ? 'REPLAY!' : 'device') + 'mode');
-  var sensors = config.demoMode
-    ? Rx.Observable.merge(
-        ReplaySensors(db.readSensors('Gps'), config.demoScheduled),
-        SensorsBootstrap(config.sensors, true))
-    : SensorsBootstrap(config.sensors);
+  // continue previous session
+  log('!6. reading previous session');
+  var replay = ReplaySensors(db.readSensors(), false);
+  var replayComplete = replay.first(s => s.name === 'ReplayComplete');
 
+  // sensors, do not activate the stream until replay is complete
+  log('!6. sensors init');
+  var sensors = SensorsBootstrap(config.sensors)
+    .skipUntil(replayComplete).share();
+  
+  // persist
   if (config.persist) {
     sensors.subscribe((event) => db.insert(event));
   }
 
   // clock, ticks and input
-  log('!7. state reducers', config.persist);
+  var sensorsAndReplay = Rx.Observable.merge(replay, sensors);
   var clock = sensors.filter(s => s.name === 'Clock');
   var ticks = Ticks(clock);
-  var all = Rx.Observable.merge(input, sensors, ticks)
+  var all = Rx.Observable.merge(input, sensorsAndReplay, ticks)
+    .share();
+
+  // state store or snapshot of latest events // defeats the purpuse!
+  log('!7. state reducers');
   var state = StateReducer.FromStream(all);
   var allPlusState = Rx.Observable.merge(all, state);
 
-  // state store or snapshot of latest events // defeats the purpuse!
+  
   var stateStored = null;
-  allPlusState.filter((s) => s.name === 'State')
-    .subscribe((s) => stateStored = s.value);
   var stateStore = {
     getState: () => stateStored
   };
-
+  allPlusState
+    .filter((s) => s.name === 'State')
+    .subscribe((s) => stateStored = s.value);
+  
   // DISPLAY
-  console.log('!8. init displays')
-  var ui = Display(unifiedDisplayDriver, config.size, allPlusState, stateStore);
-
-  console.log('.');
-  console.log('.');
+  var ui = null;
+  replayComplete.subscribe(() => {
+    log('!8. init displays');
+    ui = Display(unifiedDisplayDriver, config.size, allPlusState, stateStore);
+  });
 
   // STATE LOG
   if (config.logState) {
@@ -105,17 +111,24 @@ function startApp() {
       .subscribe(console.log);
   }
   input.filter((e) => e.name === 'Input:Space')
-       .subscribe(() => console.log(stateStore.getState()));
+       .subscribe(() =>
+          console.log('State.Current:', _.omit(stateStore.getState(), 'Path')));
 
+  log('!9. =)');
 
   // web server + api
   // var server = require('../server')(db);
   // ...
-}
+});
 
 var y = 6;
-function log(msg) {
-  console.log(msg);
+function log(msg, arg) {
+  if(typeof arg !== 'undefined') {
+    console.log(msg, arg);
+  } else {
+    console.log(msg);
+  }
+  
   if (unifiedDisplayDriver && unifiedDisplayDriver.inited()) {
     var x = 6;
     y = y + 6;
@@ -125,4 +138,8 @@ function log(msg) {
     unifiedDisplayDriver.drawPixel(x + 1, y, 1);
     unifiedDisplayDriver.display();
   }
+}
+
+function delay(time, func) {
+  setTimeout(func, time);
 }
