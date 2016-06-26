@@ -32,12 +32,16 @@ module.exports = function ConsoleInput() {
         break;
       case 'q':
         inputBack.next({ name: 'Input:LongA' });
+        break;
       case 'w':
         inputBack.next({ name: 'Input:LongB' });
+        break;
       case 'e':
         inputBack.next({ name: 'Input:LongC' });
+        break;
       case 'space':
         inputBack.next({ name: 'Input:Space' });
+        break;
     }
   });
 
