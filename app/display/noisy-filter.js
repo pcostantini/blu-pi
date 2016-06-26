@@ -38,6 +38,8 @@ function Noisy(driver) {
 
 
 function randOffset(x, y) {
+  x = x || 0;
+  y = y || 0;
   var min = -3;
   var max = 3;
   return {

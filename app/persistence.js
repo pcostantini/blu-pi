@@ -1,6 +1,6 @@
 const _ = require('lodash')
-const Promise = require('bluebird');
 const Rx = require('rxjs');
+const Promise = require('bluebird');
 const sqlite3 = require('sqlite3').verbose();
 
 'use strict';
@@ -62,13 +62,14 @@ Persistence.prototype.insert = function (message) {
         throw new Error('Db in ReadOnly mode');
     }
 
-    dbPromise.then(db => {
+    var precompiledStatements = this.precompiledStatements;
+    this.dbPromise.then(db => {
         var data = [
             message.timestamp,
             message.name,
             JSON.stringify(message.value)];
             
-        this.precompiledStatements.insertStatement.run(data);
+        precompiledStatements.insertStatement.run(data);
     });
 }
 
@@ -77,7 +78,7 @@ Persistence.prototype.getRanges = function () {
 };
 
 Persistence.prototype.readSensors = function (sensorName) {
-    console.log('Persistence.readSensors:', sensorName)
+    console.log('Persistence.readSensors:', sensorName || '*');
     var parameters = {};
     var query = SqlGetAll;
     var query = !sensorName ? SqlGetAll : SqlGetSensor
@@ -86,7 +87,7 @@ Persistence.prototype.readSensors = function (sensorName) {
         parameters['1'] = sensorName;
     }
     return runQuery(this.dbPromise, query, parameters)
-}
+};
 
 module.exports = Persistence;
 

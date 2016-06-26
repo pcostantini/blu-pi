@@ -27,8 +27,6 @@ function OledMock(width, height) {
     });
   });
 
-
-
   // open socket server
   var self = this;
   var io = SocketIo.listen(server);
@@ -38,8 +36,9 @@ function OledMock(width, height) {
   });
 
   this.io = io;
-
   server.listen(httpPort);
+
+  this.inited = true;
 }
 
 OledMock.prototype.clear = function() {
@@ -51,8 +50,10 @@ OledMock.prototype.clear = function() {
 
 // update single pixel in buffer
 OledMock.prototype.drawPixel = function(x, y, color) {
-  x = Math.round(x);
-  y = Math.round(y);
+  if(!this.buffer) return;
+  
+  x = Math.floor(x);
+  y = Math.floor(y);
 
   // check rotation, move pixel around if necessary
   //switch (getRotation()) {
