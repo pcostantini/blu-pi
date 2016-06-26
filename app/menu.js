@@ -1,48 +1,50 @@
 var _ = require('lodash');
 var exec = require('child_process').exec;
 
-var menu = [
+var menu = [  
   {
+    name: '.',
+    type: 'func',
+    command: function() { }
+  }, {
     name: 'kill_leds',
     type: 'bash',
-    data: 'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
+    command: 'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
           'sudo echo 0 >/sys/class/leds/led1/brightness'
   }, {
     name: 'wifi_off',
     type: 'bash',
-    data: 'sudo ifdown wlan0' 
+    command: 'sudo ifdown wlan0' 
   }, {
     name: 'wifi_reset',
     type: 'bash',
-    data: 'sudo ifdown wlan0\n' +
+    command: 'sudo ifdown wlan0\n' +
           'sudo ifup wlan0' 
-  }, {
-    name: 'tetris',
-    type: 'module',
-    data: 'tetris'
   }, {
     name: 'reboot',
     type: 'bash',
-    data: 'sudo reboot'
+    command: 'sudo reboot'
   }, {
     name: 'shutdown',
     type: 'bash',
-    data: 'sudo shutdown -h -H -t 0 0'
-  }
+    command: 'sudo shutdown -h -H -t 0 0'
+  }, {
+    name: 'tetris',
+    type: 'func',
+    command: function() {
+      // ha!
+    }
+  } 
 ];
 
-menu = menu.map(m => _.extend(
+module.exports = menu.map(m => _.extend(
   {
     run: () => executeItem(m)
-  }, m));
-
-module.exports = menu;
+  }, m));;
 
 function executeItem(menuItem) {
   console.log('running menuItem', menuItem);
-
-  var menuFunc = getExecFunc(menuItem);
-  var runResult = menuFunc();// TOD: pass context, state? or stream
+  var output = getExecFunc(menuItem).call();
 }
 
 function getExecFunc(menuItem) {
@@ -50,25 +52,25 @@ function getExecFunc(menuItem) {
 
     case 'bash':
       return function() {
-        var cmd = menuItem.data;
-        exec(cmd, (error, stdout, stderr) => {
-            if (error) {
-              console.log('exec error: ' + error);
-            }
-            console.log('stdout: ' + stdout);
-            console.log('stderr: ' + stderr);
-        });
+        var cmd = menuItem.command;
+        return function() {
+          exec(cmd, (error, stdout, stderr) => {
+              if (error) {
+                console.log('exec error: ' + error);
+              }
+              console.log('stdout: ' + stdout);
+              console.log('stderr: ' + stderr);
+          });
+        }
       }
 
-    case 'module':
-      return function() {
-        // var tetrisScreen = require('./display/tetris');
-      }
+    case 'func':
+      return menuItem.command;  // ... ?
 
     default:
       // unhandled!
       return function() {
-        console.log('UNRECOGNIZED.MENU_TYPE:' + menuItem.type, menuItem.data);
+        console.log('UNRECOGNIZED.MENU_TYPE:' + menuItem.type, menuItem.command);
       }
   } 
 }
