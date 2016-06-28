@@ -22,32 +22,30 @@ function Persistence(dbFile, readOnly) {
 
     this.readOnly = readOnly;
 
-    this.precompiledStatements = {}
-    var precompiledStatements = this.precompiledStatements;
+    this.precompiledStatements = {};
 
+    var self = this;
     this.dbPromise = new Promise((resolve, reject) => {
 
         // when db is ready
-        var done = (err) => {
+        const done = (err) => {
             if (err) {
                 console.log('Persistence.Err!', err);
                 return;
             }
 
-            prepareStatements(this.db, precompiledStatements);
+            prepareStatements(self.db, self.precompiledStatements);
 
             console.log('Persistence.dbCreated');
-            resolve(this.db);
+            resolve(self.db);
         };
 
-        var db = null;
         var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
         var onReady = !readOnly
-            ? () => tryCreateSchemas(db, done)
-            : done;
+            ? () => tryCreateSchemas(self.db, done)
+            : () => done();
 
-        this.db = db = new sqlite3.Database(dbFile, options, onReady);
-        
+        self.db = new sqlite3.Database(dbFile, options, onReady);
     });
 }
 
@@ -62,14 +60,13 @@ Persistence.prototype.insert = function (message) {
         throw new Error('Db in ReadOnly mode');
     }
 
-    var precompiledStatements = this.precompiledStatements;
     this.dbPromise.then(db => {
         var data = [
             message.timestamp,
             message.name,
             JSON.stringify(message.value)];
             
-        precompiledStatements.insertStatement.run(data);
+        this.precompiledStatements.insertStatement.run(data);
     });
 }
 
