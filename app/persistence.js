@@ -34,7 +34,8 @@ function Persistence(dbFile, readOnly) {
                 return;
             }
 
-            prepareStatements(self.db, self.precompiledStatements);
+            // precompile statements
+            self.precompiledStatements.insertStatement = self.db.prepare(SqlInsert);
 
             console.log('Persistence.dbCreated');
             resolve(self.db);
@@ -60,13 +61,14 @@ Persistence.prototype.insert = function (message) {
         throw new Error('Db in ReadOnly mode');
     }
 
+    var precompiledStatements = this.precompiledStatements;
     this.dbPromise.then(db => {
         var data = [
             message.timestamp,
             message.name,
             JSON.stringify(message.value)];
             
-        this.precompiledStatements.insertStatement.run(data);
+        precompiledStatements.insertStatement.run(data);
     });
 }
 
@@ -104,8 +106,4 @@ function tryCreateSchemas(db, done) {
             if (i == SqlCreateSchemas.length) done();
         });
     });
-}
-
-function prepareStatements(db, precompiledStatements) {
-    precompiledStatements.insertStatement = db.prepare(SqlInsert);
 }

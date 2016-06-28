@@ -2,9 +2,11 @@ module.change_mode = 1;
 
 var Rx = require('rxjs');
 
+const hasValidGpsSignal = s => !!s.value && s.value.point && s.value.point[0] !== null && s.name === 'Gps';
+
 module.exports.FromStream = function FromStream(events) {
   var gpsEvents = events
-    .filter(s => s.name === 'Gps')
+    .filter(hasValidGpsSignal)     // TODO: something inserted BAD gps points!
     .map(s => s.value)
     .share();
   
