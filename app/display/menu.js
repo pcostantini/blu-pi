@@ -4,6 +4,12 @@ var BaseDisplay = require('./base-display');
 var inherits = require('util').inherits;
 var menu = require('../menu');
 
+menu = [{
+    name: '',
+    type: 'func',
+    command: () => { console.log('*', new Date()) }
+  }].concat(menu);
+
 var width = 64;
 var height = 128;
 var lineHeight = 12;
@@ -27,8 +33,6 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
       state.position++;
       if (state.position >= menu.length) state.position = 0;
       drawSelection(driver, menu, state);
-      // drawMenu(driver, menu, state);
-
       break;
 
     case 'Input:LongB':
@@ -45,6 +49,7 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
         state.executing = false;
         drawSelection(driver, menu, state);
       }, 1000);
+      
       break;
   }
 }
