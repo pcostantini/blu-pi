@@ -102,6 +102,8 @@ delay(333, function () {
     log('!8. processed %s events', cnt);
     log('!9. init displays');
     ui = Display(unifiedDisplayDriver, config.size, allPlusState, stateStore);
+
+    global.displayDriver = unifiedDisplayDriver;
   });
 
   // STATE LOG

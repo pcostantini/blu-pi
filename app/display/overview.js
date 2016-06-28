@@ -16,7 +16,7 @@ function OverviewDisplay(driver, events, stateStore) {
 inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
-  this.refreshDisplayDelay = 1000;
+  this.refreshDisplayDelay = 2000;
   this.lastTimeString = '';
   drawAll(driver, stateStore.getState());
 }
@@ -83,15 +83,19 @@ var drawMapDebounced = _.debounce(drawMap, 1000);
 function drawMap(driver, path) {
   console.log('OverviewDisplay:drawMap');
   drawMapCanvas(driver);
+  
   if (!path || !path.points || path.points.length === 0) {
     // empty
+
+
+
     var lineSize = 14;
-    var x1 = mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2;
-    var y1 = mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2;
+    var x1 = Math.round(mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2);
+    var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
     driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
-    // driver.drawLine(x1, y1 + lineSize, x1 + lineSize, y1, 1);
-    // driver.fillRect(x1 + lineSize / 4, y1 + lineSize / 4, lineSize / 2 + 1, lineSize / 2 + 1, 0);
-    driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, lineSize / 2, 1);
+    driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
+    
+    
     return;
   }
 

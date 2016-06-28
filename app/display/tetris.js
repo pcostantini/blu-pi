@@ -9,15 +9,15 @@ var height = 128;
 
 module.exports = TetrisDisplay;
 
-function TetrisDisplay(driver, events) {
-    BaseDisplay.call(this, driver, events);
+function TetrisDisplay(driver, events, stateStore) {
+    BaseDisplay.call(this, driver, events, stateStore);
 }
 inherits(TetrisDisplay, BaseDisplay);
 
-TetrisDisplay.prototype.refreshDisplayDelay = 999999;
-TetrisDisplay.prototype.rerouteInput = true;
-TetrisDisplay.prototype.init = function (driver) {
+TetrisDisplay.prototype.refreshDisplayDelay = 333;
+TetrisDisplay.prototype.init = function (driver, stateStore) {
     console.log('.TetrisDisplay:init');
+    this.rerouteInput = true;
     tetrisGame.start();
     tetrisGame.on('board_updated', () => drawBoard(driver, tetrisGame));
     this.pauseReroute = false;
@@ -59,8 +59,10 @@ function getMovement(evtName) {
             return tetrisGame.Moves.MoveRight;
         case 'Input:B':
             return tetrisGame.Moves.RotClock;
-        case 'Input:LongB'
+        case 'Input:LongB':
             return tetrisGame.Moves.Drop;
+        case 'Input:LongA':
+            return 'Pause'
         default:
             return null;
     }
@@ -88,5 +90,5 @@ function drawBoard(driver, game) {
     }
 
     // update buffer
-    driver.display();
+    // driver.display();
 };

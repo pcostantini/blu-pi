@@ -5,10 +5,11 @@ var inherits = require('util').inherits;
 var menu = require('../menu');
 
 menu = [{
-    name: '',
-    type: 'func',
+    name: ' ',
     command: () => { console.log('*', new Date()) }
   }].concat(menu);
+
+console.log(menu)
 
 var width = 64;
 var height = 128;
@@ -42,7 +43,7 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
       // execute
       var menuItem = menu[state.position];
       console.log('Menu.executing', menuItem);
-      menuItem.run();
+      menuItem.command();
 
       // restore state
       setTimeout(() => {
@@ -80,6 +81,8 @@ function drawMenu(driver, menu, state) {
   driver.setTextColor(1, 0);
   driver.setTextWrap(false);
 
+  console.log("drawMenu", menu)
+
   menu.map((m, ix) => ({
     text: m.name,
     y: 10 + (ix * lineHeight),
@@ -90,6 +93,8 @@ function drawMenu(driver, menu, state) {
 }
 
 function drawMenuItem(driver, item, state) {
+
+  console.log('drawMenuItem', item)
 
   driver.setCursor(8, item.y);
   write(driver, item.text);
