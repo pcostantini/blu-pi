@@ -56,12 +56,14 @@ function BaseDisplay(driver, events, stateStore) {
   })(self);
 
 }
+
 BaseDisplay.prototype.preFlush = function(driver, stateStore) { }
 BaseDisplay.prototype.processEvent = function(driver, e) { }
 BaseDisplay.prototype.dispose = function() {
   console.log('disposed..')
   if(this.eventsSubscription) {
     this.eventsSubscription.unsubscribe();
+    this.eventsSubscription = null;
   }
 
   if(this.timeout) {
