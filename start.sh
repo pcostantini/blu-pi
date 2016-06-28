@@ -7,7 +7,7 @@ SCREEN_NAME=blu
 # echo 0 >/sys/class/leds/led1/brightness
 
 screen -dmS "$SCREEN_NAME"
-screen -S "$SCREEN_NAME" -X stuff "./check_cycle_and_start.sh $(printf \\r)"
+screen -S "$SCREEN_NAME" -X stuff "./start_and_watch_for_cycle.sh $(printf \\r)"
 
 printf "Starting... now you can view blu-pi with :\n"
 printf "$ screen -dr -S $SCREEN_NAME\n"

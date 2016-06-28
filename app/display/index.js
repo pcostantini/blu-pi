@@ -1,3 +1,4 @@
+var Rx = require('rxjs');
 var _ = require('lodash');
 var hotswap = require('hotswap');
 
@@ -8,9 +9,12 @@ var DisplayTypes = [
 	require('./overview'),
 	require('./map'),
 	require('./menu'),
-	// require('./screensaver'),
+	require('./screensaver'),
 	require('./off')];
 
+global.displayEvents = Rx.Observable.create((observer) => {
+	global.displayEvents_generator = observer;
+});
 
 function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 
@@ -45,7 +49,8 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 		}
 
 		var DisplayType = DisplayTypes[ix];
-		console.log('Display:Cycling Screen', ix);
+		console.log('Display:Cycling Screen', { ix: ix, type: DisplayType });
+		
 		current = new DisplayType(driver, events, stateStore);
 		console.log('..Screen:Input ReRouting:', current.rerouteInput)
 		return current;
@@ -62,6 +67,20 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 		if (currentIx > DisplayTypes.length - 1) currentIx = 0;
 		loadScreen(currentIx);
 	}
+
+	global.displayEvents.subscribe((t) => {
+		if (t.type === 'change_display') {
+			var DisplayType = t.displayType;
+
+			if (current) {
+				current.dispose();
+			}
+
+			current = new DisplayType(driver, events, stateStore);
+		}
+
+		console.log('display_event:', t);
+	});
 
 	// give some time for the OLED reset proc.
 	setTimeout(() => loadScreen(0), 250);

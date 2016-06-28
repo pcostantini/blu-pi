@@ -84,4 +84,8 @@ OledMock.prototype.display = function() {
   this.io.sockets.emit('buffer', this.buffer);
 }
 
+OledMock.prototype.dim = function(dimmed) {
+  // TODO
+}
+
 module.exports = OledMock;

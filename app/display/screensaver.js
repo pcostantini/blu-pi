@@ -3,6 +3,8 @@ module.change_code = 1;
 var _ = require('lodash');
 var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
+
+var DottedFilter = require('./dotted-filter');
 var NoisyFilter = require('./noisy-filter');
 
 var width = 64;
@@ -10,7 +12,6 @@ var height = 128;
 var speedAccumulator = [];
 
 function ScreenSaverDisplay(driver, events, stateStore) {
-  this.noiseFilter = NoisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 inherits(ScreenSaverDisplay, BaseDisplay);
@@ -18,11 +19,6 @@ inherits(ScreenSaverDisplay, BaseDisplay);
 ScreenSaverDisplay.prototype.init = function (driver, stateStore) {
   this.refreshDisplayDelay = 333;
   drawAll(driver, stateStore.getState());
-}
-ScreenSaverDisplay.prototype.dispose = function() {
-  this.noiseFilter.dispose();
-  BaseDisplay.prototype.dispose.call(this);
-
 }
 ScreenSaverDisplay.prototype.preFlush = function (driver, stateStore) {
   drawAll(driver, stateStore.getState());
@@ -35,22 +31,22 @@ ScreenSaverDisplay.prototype.processEvent = function (driver, e, stateStore) {
       drawSpeed(driver, speed);
       break;
 
-    // TODO: drop
+    // TODO: drop?
     case 'Wifi':
       wifi = e.value.length;
       drawWifi(driver, wifi);
       break;
 
-    // case 'MagnometerHeading':
-    // case 'Acceleration':
-    // case 'MagnometerAxis':
-    //   console.log(e)
-    //   break;
+    case 'MagnometerHeading':
+    case 'Acceleration':
+    case 'MagnometerAxis':
+      console.log(e)
+      break;
 
     case 'Ticks':
       var state = stateStore.getState();
-
       var speed = state.Gps ? state.Gps.speed : 0;
+      
       if (!_.isNumber(speed)) {
         speed = 0;
       }
