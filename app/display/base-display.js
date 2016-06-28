@@ -54,9 +54,9 @@ function BaseDisplay(driver, events, stateStore) {
     }
 
   })(self);
-
 }
 
+BaseDisplay.prototype.init = function(driver, stateStore) { }
 BaseDisplay.prototype.preFlush = function(driver, stateStore) { }
 BaseDisplay.prototype.processEvent = function(driver, e) { }
 BaseDisplay.prototype.dispose = function() {

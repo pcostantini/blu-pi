@@ -8,8 +8,8 @@ var DisplayTypes = [
 	require('./overview'),
 	require('./map'),
 	require('./menu'),
-	require('./screensaver')];
-	// require('./off')!];
+	// require('./screensaver'),
+	require('./off')];
 
 
 function DisplayBootstrap(nativeDriver, size, events, stateStore) {

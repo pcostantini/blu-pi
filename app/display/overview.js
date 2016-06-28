@@ -22,6 +22,7 @@ OverviewDisplay.prototype.init = function (driver, stateStore) {
 }
 
 OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
+
   switch (e.name) {
     case 'Distance':
       drawDistance(driver, e.value);
@@ -31,9 +32,6 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       drawSpeed(driver, e.value ? e.value.speed : NaN);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
       drawMapPoint(driver, e.value, stateStore);
-
-      // todo: draw altidudes
-
       break;
 
     case 'Ticks':
