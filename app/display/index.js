@@ -4,7 +4,7 @@ var hotswap = require('hotswap');
 // TODO: DOCUMENT and credit!
 var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 
-var Displays = [
+var DisplayTypes = [
 	require('./overview'),
 	require('./map'),
 	require('./menu'),
@@ -44,7 +44,7 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 			current.dispose();
 		}
 
-		var DisplayType = Displays[ix];
+		var DisplayType = DisplayTypes[ix];
 		console.log('Display:Cycling Screen', ix);
 		current = new DisplayType(driver, events, stateStore);
 		console.log('..Screen:Input ReRouting:', current.rerouteInput)
@@ -54,12 +54,12 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 	// cycle
 	function previousScreen() {
 		currentIx--;
-		if (currentIx < 0) currentIx = currentIx = Displays.length - 1;
+		if (currentIx < 0) currentIx = currentIx = DisplayTypes.length - 1;
 		loadScreen(currentIx);
 	}
 	function nextScreen() {
 		currentIx++;
-		if (currentIx > Displays.length - 1) currentIx = 0;
+		if (currentIx > DisplayTypes.length - 1) currentIx = 0;
 		loadScreen(currentIx);
 	}
 
