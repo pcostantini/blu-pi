@@ -64,7 +64,7 @@ delay(333, function () {
   // continue previous session
   log('!6. reading previous session');
   var replay = ReplaySensors(db.readSensors(), false);
-  var replayComplete = replay.first(s => s.name === 'ReplayComplete');
+  var replayComplete = replay.count();
 
   // sensors, do not activate the stream until replay is complete
   log('!6. sensors init');
@@ -87,7 +87,6 @@ delay(333, function () {
   log('!7. state reducers');
   var state = StateReducer.FromStream(all);
   var allPlusState = Rx.Observable.merge(all, state);
-
   
   var stateStored = null;
   var stateStore = {
@@ -99,8 +98,9 @@ delay(333, function () {
   
   // DISPLAY
   var ui = null;
-  replayComplete.subscribe(() => {
-    log('!8. init displays');
+  replayComplete.subscribe((cnt) => {
+    log('!8. processed %s events', cnt);
+    log('!9. init displays');
     ui = Display(unifiedDisplayDriver, config.size, allPlusState, stateStore);
   });
 

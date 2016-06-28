@@ -24,7 +24,6 @@ function ReplayFromDb(queryPromise, scheduled) {
 
       // send replay complete event
       stream.complete();
-      // stream.next({ name: 'ReplayComplete', value: new Date().getTime() });
     });
   }
 
@@ -55,7 +54,7 @@ function mapWithOffset(events) {
 
     return events.map(withOffset(offset));
   } catch(err) {
-    console.log('mapping err!', err);
+    console.log('replay:mapWithOffset unwrap error!', err);
   }
 }
 
