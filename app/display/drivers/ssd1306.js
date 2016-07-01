@@ -187,7 +187,7 @@ OLED.prototype.dim = function(dim) {
     //} else {
       contrast = 0xCF;
 	  contrast = 0x64;
-	  contrast = 0x01;
+	  // contrast = 0x01;
     //}
   }
   // the range of contrast to too small to be really useful
