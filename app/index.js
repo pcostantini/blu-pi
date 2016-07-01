@@ -31,13 +31,13 @@ var unifiedDisplayDriver = {
 
 // continue app init after display drivers are started
 delay(333, function () {
+
   log('!3. importing stuff...');
   var _ = require('lodash');
   var Rx = require('rxjs');
   var hotswap = require('hotswap');
   log('!3. importing more stuff...');
   var SensorsBootstrap = require('./bootstrap_sensors');
-  var ReplaySensors = require('./replay_sensors');
   var Persistence = require('./persistence');
   var Display = require('./display');
   var StateReducer = require('./state');
@@ -57,13 +57,13 @@ delay(333, function () {
 
   input.subscribe(console.log)
 
-  // persistence
-  log('!5. persistence', config.persist);
+  // storage
+  log('!5. storage', config.persist);
   var db = new Persistence(config.dbFile);
 
   // continue previous session
   log('!6. reading previous session');
-  var replay = ReplaySensors(db.readSensors(), false);
+  var replay = db.readSensors();
   var replayComplete = replay.count();
 
   // sensors, do not activate the stream until replay is complete

@@ -67,7 +67,7 @@ Persistence.prototype.insert = function (message) {
             message.timestamp,
             message.name,
             JSON.stringify(message.value)];
-            
+
         precompiledStatements.insertStatement.run(data);
     });
 }
@@ -92,10 +92,20 @@ module.exports = Persistence;
 
 // Helpers
 function runQuery(dbPromise, query, parameters) {
-    return dbPromise.then(db => {
-        var dbAll = Promise.promisify(db.all, { context: db });
-        return dbAll(query, parameters);
+    var stream = new Rx.Subject();
+
+    dbPromise.then(db => {
+        // TODO: handle errors
+        db.each(query, parameters,
+            (err, r) => stream.next({
+                name: r.sensor,
+                value: JSON.parse(r.data)
+            }),
+            (err) => stream.complete());
+
     });
+
+    return stream.share();
 };
 
 function tryCreateSchemas(db, done) {
