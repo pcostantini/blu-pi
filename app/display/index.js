@@ -7,10 +7,10 @@ var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 
 var DisplayTypes = [
 	require('./overview'),
-	require('./map'),
+	// require('./map'),
 	require('./menu'),
-	require('./screensaver'),
-	require('./off')];
+	require('./off'),
+	require('./screensaver')];
 
 global.displayEvents = Rx.Observable.create((observer) => {
 	global.displayEvents_generator = observer;
