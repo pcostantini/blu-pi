@@ -19,14 +19,11 @@ const SqlGetRanges =
     '(SELECT timestamp AS last FROM sensorEvents ORDER BY timestamp DESC LIMIT 1)';
 
 function Persistence(dbFile, readOnly) {
-
     this.readOnly = readOnly;
-
     this.precompiledStatements = {};
 
     var self = this;
     this.dbPromise = new Promise((resolve, reject) => {
-
         // when db is ready
         const done = (err) => {
             if (err) {
@@ -37,7 +34,7 @@ function Persistence(dbFile, readOnly) {
             // precompile statements
             self.precompiledStatements.insertStatement = self.db.prepare(SqlInsert);
 
-            console.log('Persistence.dbCreated');
+            console.log('Persistence.ready!');
             resolve(self.db);
         };
 
@@ -97,8 +94,8 @@ function runQuery(dbPromise, query, parameters) {
         // TODO: handle errors
         db.each(query, parameters,
             (err, r) => stream.next({
-                name: r.sensor,
-                value: JSON.parse(r.data)
+                sensor: r.sensor,
+                data: parse(r.data)
             }),
             (err) => stream.complete());
 
@@ -106,6 +103,14 @@ function runQuery(dbPromise, query, parameters) {
 
     return stream.share();
 };
+
+function parse(o) {
+    try {
+        return JSON.parse(o);
+    } catch (e) {
+        return o;
+    }
+}
 
 function tryCreateSchemas(db, done) {
     var i = 0;
