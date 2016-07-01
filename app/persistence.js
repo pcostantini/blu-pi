@@ -80,7 +80,6 @@ Persistence.prototype.readSensors = function (sensorName) {
     console.log('Persistence.readSensors:', sensorName || '*');
     var parameters = {};
     var query = SqlGetAll;
-    var query = !sensorName ? SqlGetAll : SqlGetSensor
     if (sensorName) {
         query = SqlGetSensor;
         parameters['1'] = sensorName;
