@@ -2,12 +2,12 @@ module.change_code = 1;
 
 var BaseDisplay = require('./base-display');
 var inherits = require('util').inherits;
+
+// TODO: move to config.js
 var menu = require('../menu');
 
-menu = [{
-    name: 'menu',
-command: () => {}               // noop!
-  }].concat(menu);
+// add 'title'
+menu = [{ name: 'menu', command: () => { } }].concat(menu);
 
 console.log(menu)
 
@@ -50,7 +50,7 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
         state.executing = false;
         drawSelection(driver, menu, state);
       }, 1000);
-      
+
       break;
   }
 }

@@ -8,14 +8,26 @@ var width = 64;
 var height = 128;
 
 function AveragesDisplay(driver, events, stateStore) {
-  // noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
-
+ 
   var i = 3;
-  this.averageSubject = events.filter(s => s.name.indexOf('Average_1') === 0)
-    .subscribe(buf => {
-      driver.drawPixel(1, ++i, true);
+
+
+  this.averageSubject = events
+    .filter(s => s.name === 'AverageGraphs')
+    .subscribe((graphs) => {
+      driver.clear();
+      var sample = graphs.value.Average_1_CpuLoad;
+      sample.forEach((row, ix) => {
+        driver.drawLine(0, ix, row[1], true);
+      });
+      // driver.drawPixel(Math.round(i/10) + 1, ++i, 1);
     });
+
+  // this.averageSubject = events.filter(s => s.name.indexOf('Average_1') === 0)
+  //   .subscribe(buf => {
+  //     conso
+  //   });
 
   // subscribe to events
   // filter only Average_*
@@ -30,13 +42,6 @@ inherits(AveragesDisplay, BaseDisplay);
 AveragesDisplay.prototype.dispose = function () {
   this.averageSubject.unsubscribe();
 }
-
-AveragesDisplay.prototype.init = function (driver, stateStore) {
-}
-
-AveragesDisplay.prototype.cycle = function (driver, stateStore) {
-  return false; // no state or path ready ?
-};
 
 
 // export
