@@ -12,8 +12,7 @@ var replay = db.readSensors();
 
 var state = State.FromStream(replay).share();
 state.last()
-    .subscribe(console.log);
-
+    .subscribe(console.log)
 
 state.count()
     .subscribe(console.log);
