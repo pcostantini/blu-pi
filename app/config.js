@@ -37,20 +37,18 @@ var config = {
     : './data/current.sqlite3',
   sensors: {
     // refresh times
-
     //indiscreet: {
     // wifi: 5000
     //},
-
     lsm303: {
       acceleration: 0,
       axes: 0,
-      heading: 500,
+      heading: 1000,
       temp: 3000
     },
     cpu: 3000,
     temperature: 3000,
-    memory: 15000
+    memory: 10000
   },
 };
 

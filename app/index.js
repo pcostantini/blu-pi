@@ -15,8 +15,8 @@ console.log('!2. driver displays');
 var displayDrivers = config.displayDrivers
   .map((driverName) => {
     console.log('..instantiating: ' + driverName);
-    var driverCtor = require(driverName);
-    var driverInstance = new driverCtor(config.size.width, config.size.height);
+    var DriverType = require(driverName);
+    var driverInstance = new DriverType(config.size.width, config.size.height);
     return driverInstance;
   });
 
@@ -116,11 +116,7 @@ delay(333, function () {
        .subscribe(() =>
           console.log('State.Current:', _.omit(stateStore.getState(), 'Path')));
 
-  log('!9. =)');
-
-  // web server + api
-  // var server = require('../server')(db);
-  // ...
+  log('! =)');
 });
 
 var y = 6;
