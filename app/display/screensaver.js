@@ -17,7 +17,6 @@ function ScreenSaverDisplay(driver, events, stateStore) {
 inherits(ScreenSaverDisplay, BaseDisplay);
 
 ScreenSaverDisplay.prototype.init = function (driver, stateStore) {
-  this.refreshDisplayDelay = 333;
   drawAll(driver, stateStore.getState());
 }
 ScreenSaverDisplay.prototype.preFlush = function (driver, stateStore) {

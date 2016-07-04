@@ -109,7 +109,7 @@ function AverageRange(events, sensorName, min, max, valueSelector) {
   return Rx.Observable.merge(averages, averagesGraphs);
 }
 
-var rowHeight = 164;
+var rowHeight = 160;
 var columnPixelWidth = 10;
 
 function Average(events, sensorName, min, max, valueSelector, bufferCount) {
