@@ -17,6 +17,8 @@ function DisplayBootstrap(Driver, events, stateStore) {
 	  new GFX(height, width),     // invert size since oled is rotated 90'C
 	  new Driver(width, height));
 
+	driver._drawPixel = driver.drawPixel;
+
 	// cycle screen when Next is pressed
 	events
 		.filter(s => s.name === 'Input:Display')
@@ -33,12 +35,13 @@ function DisplayBootstrap(Driver, events, stateStore) {
 	var current = null; 
 	var currentIx = 0;
 	function NewCurrent() {
-		if(current)
+		if(current) 
 			current.dispose();
 		
 		if(currentIx < 0 || currentIx > Displays.length - 1) currentIx = 0;
 		var DisplayType = Displays[currentIx];
 		console.log('Cycling Screen', currentIx);
+		driver.drawPixel = driver._drawPixel;
 		current =  new DisplayType(driver, events, stateStore);
 		currentIx++;
 

@@ -5,9 +5,7 @@ function BaseDisplay(driver, events, stateStore) {
   
   self.eventsSubscription = events.subscribe((e) => {
     try {
-
       self.processEvent(driver, e, stateStore);
-
     } catch(err) {
       console.log('Display.processEvent.err!', {
         err: err.toString(),
@@ -41,6 +39,8 @@ function BaseDisplay(driver, events, stateStore) {
   var bit = true;
   (function redraw(self) {
 
+    self.preFlush(driver, stateStore);
+
     bit = !bit;
     drawBit(driver, bit);
 
@@ -56,6 +56,7 @@ function BaseDisplay(driver, events, stateStore) {
   })(self);
 
 }
+BaseDisplay.prototype.preFlush = function(driver, stateStore) { }
 BaseDisplay.prototype.processEvent = function(driver, e) { }
 BaseDisplay.prototype.dispose = function() {
   console.log('disposed..')

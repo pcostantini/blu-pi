@@ -1,8 +1,9 @@
-module.change_mode = 1;
+module.change_code = 1;
 
 var _ = require('lodash');
 var inherits    = require('util').inherits;
 var BaseDisplay = require('./base-display');
+var noisyFilter = require('./noisy-filter');
 
 var width = 64;
 var height = 128;
@@ -15,6 +16,7 @@ var bounds = {
 };
 
 function MapDisplay(driver, events, stateStore) {
+  noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 
@@ -40,7 +42,18 @@ MapDisplay.prototype.processEvent = function(driver, e, stateStore) {
         initBounds(bounds, coord);
       }
 
-      drawPathCoordinate(driver, coord, bounds);
+      var pixel = getPixelCoordinate(coord, bounds);
+      driver.drawPixel(pixel.x, pixel.y, 1);
+
+      if(pixel.x > width || pixel.y > height ||
+           pixel.x < 0 || pixel.y < 0)
+      {
+        // relocate
+        console.log('out!')
+        var state = stateStore.getState();
+        driver.clear();
+        renderWholePath(driver, state.Path.points);
+      }
 
       break;
 
@@ -91,12 +104,13 @@ function renderWholePath(driver, path) {
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
   path.forEach((coord) => {
-    drawPathCoordinate(driver, coord, bounds)
+    var pixel = getPixelCoordinate(coord, bounds);
+    driver.drawPixel(pixel.x, pixel.y, 1);
   });
 }
 
 // graph functions
-function drawPathCoordinate(driver, coord, bounds) {
+function getPixelCoordinate(coord, bounds) {
 
   var point = convertGeoToPixel(
     coord[0], coord[1],
@@ -108,7 +122,10 @@ function drawPathCoordinate(driver, coord, bounds) {
 
   var x = Math.round(point.x);
   var y = Math.round(point.y);
-  driver.drawPixel(x, y, 1);
+
+  return { x: x, y: y };
+  
+  // driver.drawPixel(x, y, 1);
 }
 
 function initBounds(bounds, initialCoord) {
