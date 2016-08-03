@@ -5,6 +5,7 @@ var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
 var webDisplay = argv.webDisplay || argv.wd;
 var consoleInput = argv.consoleInput || argv.c;
+var demoScheduled = argv.demoScheduled !== 'false';
 
 if(!demoFile) {
   // https://www.strava.com/activities/508017565
@@ -14,6 +15,7 @@ if(!demoFile) {
 var config = {
   logState: true,
   demoMode: demoMode,
+  demoScheduled: demoScheduled,
   persist: !demoMode,
   persistBuffer: 0,
   dbFile: !demoMode
