@@ -1,7 +1,7 @@
 var Rx = require('rxjs');
 var os = require('os');
 
-function CpuLoad() {
+function CpuLoad(delay) {
 
   return Rx.Observable.create(function (observer) {
 
@@ -9,7 +9,7 @@ function CpuLoad() {
     	observer.next({ name: 'CpuLoad', value: os.loadavg() });
     }
 
-    setInterval(readAndEmit, 3000);
+    setInterval(readAndEmit, delay || 3000);
     readAndEmit();
 
   });

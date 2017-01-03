@@ -12,17 +12,19 @@ module.exports = function bootstrap(sensorsConfig) {
   var sensors = Rx.Observable.merge(
     clock,
     safeRequire('./sensors/gps')(),
-    safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
-    safeRequire('./sensors/barometer')(sensorsConfig.temperature),
+    
+    // safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
+    // require('./sensors/shake')(),
 
-    (sensorsConfig.indiscreet)
-      ? require('./sensors/wifi')(sensorsConfig.indiscreet.wifi)
-      : Rx.Observable.empty(),
-        
+    // safeRequire('./sensors/barometer')(sensorsConfig.temperature),
+
+    // (sensorsConfig.indiscreet)
+    //   ? require('./sensors/wifi')(sensorsConfig.indiscreet.wifi)
+    //   : Rx.Observable.empty(),
     // sys
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),
-    require('./sensors/cpu_load')(),
-    require('./sensors/memory')())
+    require('./sensors/cpu_load')(sensorsConfig.cpu),
+    require('./sensors/memory')(sensorsConfig.memory))
   .share();
 
   // current stamp // TODO: make as sensor! each 'click' is an event... elmiiate tickeducer?

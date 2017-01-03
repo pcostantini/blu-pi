@@ -13,7 +13,7 @@ if(!demoFile) {
 }
 
 var config = {
-  logState: true,
+  logState: false,
   demoMode: demoMode,
   demoScheduled: demoScheduled,
   persist: !demoMode,
@@ -31,10 +31,12 @@ var config = {
     lsm303: {
       acceleration: 500,
       axes: 500,
-      heading: 500,
-      temp: 5000
+      heading: 500
+      //temp: 5000
     },
-    temperature: 2500
+    cpu: 1000,
+    temperature: 2500,
+    memory: 10000
   },
   
   displayDriver: !webDisplay

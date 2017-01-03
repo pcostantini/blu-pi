@@ -22,14 +22,14 @@ MenuDisplay.prototype.init = function(driver, stateStore) {
 
 MenuDisplay.prototype.processEvent = function(driver, e, stateStore) {
   switch(e.name) {
-    case 'Input:Next':
+    case 'Input:Ok':
       state.position++;
       if(state.position >= menu.length) state.position = 0;
       drawMenu(driver, menu, state);
 
       break;
 
-    case 'Input:Accept':
+    case 'Input:LongOk':
       state.executing = true;
       drawMenu(driver, menu, state);
 

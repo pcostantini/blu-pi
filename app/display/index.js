@@ -3,9 +3,7 @@ var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 var hotswap = require('hotswap');
 
 var Displays = [
-	require('./screensaver'),
-	require('./map'),
-	require('./distance'),
+	require('./tetris'),
 	require('./menu')];
 
 var width = 128;
@@ -20,7 +18,9 @@ function DisplayBootstrap(Driver, events, stateStore) {
 	driver._drawPixel = driver.drawPixel;
 
 	// cycle screen when Next is pressed
+	var rerouting = false;
 	events
+		.filter(s => (!rerouting))
 		.filter(s => s.name === 'Input:Next')
 		.subscribe(cycle);
 
@@ -44,6 +44,8 @@ function DisplayBootstrap(Driver, events, stateStore) {
 		driver.drawPixel = driver._drawPixel;
 		current =  new DisplayType(driver, events, stateStore);
 		currentIx++;
+		rerouting = current.rerouteInput;
+		console.log('rerouting', rerouting)
 
 		return current;
 	}

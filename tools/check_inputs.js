@@ -1,2 +1,6 @@
-var inputs = require('../app/inputs')
-inputs().subscribe(console.log);
+var inputs = require('../app/inputs');
+var shake = require('../app/sensors/shake');
+
+inputs()
+    .merge(shake())
+    .subscribe(console.log);

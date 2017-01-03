@@ -1,4 +1,6 @@
+// credit: https://communities.intel.com/message/237095#237095
 var SSD1306 = require('./ssd1306_h.js');
+
 var i2c = require('i2c');
 
 // the memory buffer for the LCD

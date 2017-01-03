@@ -15,6 +15,8 @@ console.log('blu-pi!', config);
 var input = config.inputDriver()
 				  .map((s) => ({ name: s.name, value: Date.now() }));
 
+// input.subscribe(console.log);
+
 // sensors
 var sensors = !config.demoMode
   ? SensorsBootstrap(config.sensors)
@@ -30,7 +32,13 @@ if(config.persist) {
 var clock = sensors.filter(s => s.name === 'Clock');
 var ticks = Ticks(clock);
 
-var state = StateReducer.FromStream(Rx.Observable.merge(input, sensors, ticks));
+var all = Rx.Observable.merge(input, sensors, ticks)
+var state = StateReducer.FromStream(
+  inputs,
+  [
+    PathReducer(gpsEvents),
+    DistanceReducer(gpsEvents)
+  ]);
 
 // TODO: read from console and on key was toggled, do console.log
 if(config.logState) {
@@ -39,12 +47,12 @@ if(config.logState) {
     .subscribe(console.log);
 }
 
-// all
-var all = Rx.Observable.merge(input, sensors, ticks, state);
+// allPlusState
+var allPlusState = Rx.Observable.merge(input, sensors, ticks, state);
 
 // state store // TODO: dump?
 var stateStored = null;
-all.filter((s) => s.name === 'State')
+allPlusState.filter((s) => s.name === 'State')
    .subscribe((s) => stateStored = s.value);
 
 var stateStore = {
@@ -52,7 +60,7 @@ var stateStore = {
 };
 
 // DISPLAY
-var ui = Display(config.displayDriver, all, stateStore);
+var ui = Display(config.displayDriver, allPlusState, stateStore);
 
 // web server + api
 // var server = require('../server')(db);

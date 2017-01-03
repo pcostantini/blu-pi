@@ -16,7 +16,7 @@ var bounds = {
 };
 
 function MapDisplay(driver, events, stateStore) {
-  noisyFilter(driver);
+  // noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 

@@ -1,3 +1,5 @@
+// credit: https://communities.intel.com/message/237095#237095
+
 var SSD1306 ={};
 //SSD1306.I2C_ADDRESS = 0x3C;	// 011110+SA0+RW - 0x3C or 0x3D
 // Address for 128x32 is 0x3C

@@ -4,7 +4,7 @@ var os = require('os');
 
 var SensorName = 'Memory';
 
-function Memory() {
+function Memory(delay) {
   return Rx.Observable.create(function (observer) {
 
     function readAndEmit() {
@@ -13,7 +13,7 @@ function Memory() {
         observer.next({ name: SensorName, value: value });
     }
 
-    setInterval(readAndEmit, 3000);
+    setInterval(readAndEmit, delay || 3000);
     readAndEmit();
 
   });    
