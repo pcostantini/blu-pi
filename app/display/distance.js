@@ -1,26 +1,26 @@
 module.change_code = 1;
-var inherits    = require('util').inherits;
+
+var _ = require('lodash');
+var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
-var noisyFilter = require('./noisy-filter');
+var DottedFilter = require('./dotted-filter');
 
 var width = 64;
 var height = 128;
 
 function DistanceDisplay(driver, events, stateStore) {
-  // noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 
 inherits(DistanceDisplay, BaseDisplay);
 
-DistanceDisplay.prototype.init = function(driver, stateStore) {
+DistanceDisplay.prototype.init = function (driver, stateStore) {
   this.refreshDisplayDelay = 333;
-
   drawAll(driver, stateStore.getState());
 }
 
-DistanceDisplay.prototype.processEvent = function(driver, e, stateStore) {
-  switch(e.name) {
+DistanceDisplay.prototype.processEvent = function (driver, e, stateStore) {
+  switch (e.name) {
     case 'Distance':
       drawDistance(driver, e.value);
       break;
@@ -28,44 +28,118 @@ DistanceDisplay.prototype.processEvent = function(driver, e, stateStore) {
     case 'Gps':
       drawSpeed(driver, e.value ? e.value.speed : NaN);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
+      drawMapPoint(driver, e.value, stateStore);
       break;
 
     case 'Ticks':
       var ticks = e.value[0];
       drawTime(driver, ticks);
       break;
-    
+
     case 'Barometer':
       drawTemp(driver, e.value.temperature, e.value.pressure);
       break;
-    
+
+    case 'Input:B':
+      zoom(driver, stateStore);
+      break;
+
   }
 };
 
 module.exports = DistanceDisplay;
 
 function drawAll(driver, state) {
-  if(!state) return;
-  drawMap(driver, state.Path);
+  state = state || {};
+  drawMap(driver, state.Path || { points: [] });
   drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
   drawDistance(driver, state.Distance);
   drawTime(driver, state.Ticks[0]);
-  drawTemp(driver, state.Barometer.temperature, state.Barometer.pressure);
+  var barometer = state.Barometer || {};
+  drawTemp(driver, barometer.temperature, barometer.pressure);
+}
+
+var mapSize = [64, 75];
+var mapOffsets = [1, 43]
+var mapOffsetY = mapOffsets[1];
+var bounds = {
+  width: mapSize[0] - 4,
+  height: mapSize[1] - 4,
+  zoom: 1
+};
+
+function drawMapCanvas(driver) {
+  driver.fillRect(0, mapOffsetY - 1, mapSize[0], mapSize[1] + 2, 0);
+  var filter = DottedFilter(driver);
+  driver.drawRect(0, mapOffsetY - 1, mapSize[0], mapSize[1] + 2, 1);
+  filter.dispose();
 }
 
 function drawMap(driver, path) {
-  driver.drawRect(0, 44, 64, 64, true);
 
-  // ...
-  // console.log(path.points);
+  drawMapCanvas(driver);
+
+  if (!path || !path.points || path.points.length === 0) {
+    // empty
+    var lineSize = 8;
+    var x1 = mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2;
+    var y1 = mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2;
+    driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
+    driver.drawLine(x1, y1 + lineSize, x1 + lineSize, y1, 1);
+    driver.fillRect(x1 + lineSize / 4, y1 + lineSize / 4, lineSize / 2 + 1, lineSize / 2 + 1, 0);
+    return;
+  }
+
+  var pathPoints = path.points;
+  var initialCoord = pathPoints[0];
+  initBounds(bounds, initialCoord);
+  renderWholePath(driver, pathPoints, mapOffsets);
+}
+
+var outCounter = 0;
+function drawMapPoint(driver, value, stateStore) {
+  var coord = [value.latitude, value.longitude];
+  if (!bounds.lonLeft) {
+    initBounds(bounds, coord);
+  }
+
+  var pixel = getPixelCoordinate(coord, bounds);
+  if (
+    pixel.x > mapSize[0] || pixel.y > mapSize[1] ||
+    pixel.x < 0 || pixel.y < 0) {
+    // relocate
+    console.log('..out!')
+    outCounter++;
+    if (outCounter > 5) {
+      outCounter = 0;
+
+      console.log('..redraw')
+      var state = stateStore.getState();
+
+      //...
+      // driver.clear();
+      //...
+
+      drawMapCanvas(driver);
+      renderWholePath(driver, state.Path.points, mapOffsets);
+    }
+
+    return;
+  }
+
+  driver.drawPixel(
+    pixel.x + mapOffsets[0],
+    pixel.y + mapOffsets[1],
+    1);
+
 }
 
 function drawSpeed(driver, speed) {
-  driver.setCursor(0, 8);
+  driver.setCursor(0, 6);
   driver.setTextSize(2);
 
-  if(isNaN(speed)) {
+  if (isNaN(speed)) {
     write(driver, '-.-');
   } else {
     var s = toFixed(mpsToKph(speed), 1);
@@ -74,16 +148,18 @@ function drawSpeed(driver, speed) {
 }
 
 function drawTemp(driver, temp, pressure) {
-  driver.fillRect(0, 25, 64, 18, false)
-  driver.setCursor(0, 25);
-  driver.setTextSize(1);
-  write(driver, temp + ' C');
+  driver.fillRect(0, 24, 64, 18, 0);
 
-  // driver.setCursor(0, 24);
-  // write(driver, '.');
-  
-  driver.setCursor(0, 35);
-  write(driver, Math.round(pressure * 10) / 10 + ' Pa');
+  driver.setTextSize(1);
+  if (temp) {
+    driver.setCursor(0, 24);
+    write(driver, temp + ' C');
+  }
+
+  if (pressure) {
+    driver.setCursor(0, 33);
+    write(driver, Math.round(pressure * 10) / 10 + ' Pa');
+  }
 }
 
 function drawAltitude(driver, altitude) {
@@ -99,7 +175,7 @@ function drawTime(driver, ticks) {
   var sTime = formatTime(elapsed);
 
   driver.setTextColor(1, 0);
-  driver.setCursor(0, height - 18);
+  driver.setCursor(0, height - 8);
   driver.setTextSize(1);
   write(driver, sTime);
 }
@@ -107,9 +183,16 @@ function drawTime(driver, ticks) {
 function drawDistance(driver, distance) {
   distance = distance || 0;
   driver.setTextColor(1, 0);
-  driver.setCursor(0, height - 8);
+  var text = toFixed(distance, 2);
+
+  // right align
+  var minX = 34;
+  var x = mapSize[1] - ((text.length - 1) * 10 + 5);
+  x = x < minX ? minX : x;
+  driver.setCursor(x, height - 8);
+
   driver.setTextSize(1);
-  write(driver, toFixed(distance, 1) + ' km');
+  write(driver, text);
 }
 
 function write(driver, string) {
@@ -121,13 +204,13 @@ function write(driver, string) {
 
 function toFixed(value, precision) {
   var precision = precision || 0,
-      power = Math.pow(10, precision),
-      absValue = Math.abs(Math.round(value * power)),
-      result = (value < 0 ? '-' : '') + String(Math.floor(absValue / power));
+    power = Math.pow(10, precision),
+    absValue = Math.abs(Math.round(value * power)),
+    result = (value < 0 ? '-' : '') + String(Math.floor(absValue / power));
 
   if (precision > 0) {
     var fraction = String(absValue % power),
-        padding = new Array(Math.max(precision - fraction.length, 0) + 1).join('0');
+      padding = new Array(Math.max(precision - fraction.length, 0) + 1).join('0');
     result += '.' + padding + fraction;
   }
   return result;
@@ -136,7 +219,7 @@ function toFixed(value, precision) {
 const mpsToKph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 
 function formatTime(ticks) {
-  if(isNaN(ticks)) return '--:--';
+  if (isNaN(ticks)) return '--:--';
   var hh = Math.floor(ticks / 3600);
   var mm = Math.floor((ticks % 3600) / 60);
 
@@ -146,4 +229,99 @@ function formatTime(ticks) {
 function pad(n, width) {
   var n = n + '';
   return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
+}
+
+// maps stuff
+function renderWholePath(driver, path, offsets) {
+  if (!path || path.length == 0) return;
+
+  offsets = offsets || [0, 0];
+
+  var lowLongitude = _.minBy(path, (s) => s[1])[1];
+  var maxLongitude = _.maxBy(path, (s) => s[1])[1];
+  var latitude = _.minBy(path, (s) => s[0])[0];
+
+  // zoom on last point only
+  if (bounds.zoom > 1) {
+    var last = _.last(path);
+    lowLongitude = last[1] - 0.01 / bounds.zoom;
+    maxLongitude = last[1] + 0.01 / bounds.zoom;
+    latitude = last[0] - 0.02 / bounds.zoom;
+  }
+
+  var lonDelta = maxLongitude - lowLongitude;
+
+  bounds.lonLeft = lowLongitude;
+  bounds.lonDelta = lonDelta;
+  bounds.latBottomDegree = latitude * Math.PI / 180;
+
+  // TODO: prioritize and delay rendering of each point
+  // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
+  path.forEach((coord) => {
+    var pixel = getPixelCoordinate(coord, bounds);
+
+    var isOut = pixel.x > mapSize[0] || pixel.y > mapSize[1] ||
+      pixel.x < 0 || pixel.y < 0;
+
+    if (isOut) {
+      return;
+    }
+
+    driver.drawPixel(pixel.x + offsets[0], pixel.y + offsets[1], 1);
+  });
+}
+
+// graph functions
+function getPixelCoordinate(coord, bounds) {
+
+  var point = convertGeoToPixel(
+    coord[0], coord[1],
+    bounds.width,
+    bounds.height,
+    bounds.lonLeft,
+    bounds.lonDelta,
+    bounds.latBottomDegree);
+
+  var x = Math.round(point.x);
+  var y = Math.round(point.y);
+
+  return { x: x, y: y };
+}
+
+function initBounds(bounds, initialCoord) {
+  bounds.zoom = 1;
+  bounds.lonLeft = initialCoord[1] - 0.01;
+  bounds.lonDelta = 0.02;
+  bounds.latBottomDegree = (initialCoord[0] - 0.02) * Math.PI / 180;
+}
+
+function convertGeoToPixel(latitude, longitude,
+  mapWidth, // in pixels
+  mapHeight, // in pixels
+  mapLonLeft, // in degrees
+  mapLonDelta, // in degrees (mapLonRight - mapLonLeft);
+  mapLatBottomDegree) // in Radians
+{
+  var x = (longitude - mapLonLeft) * (mapWidth / mapLonDelta);
+
+  latitude = latitude * Math.PI / 180;
+  var worldMapWidth = ((mapWidth / mapLonDelta) * 360) / (2 * Math.PI);
+  var mapOffsetY = (worldMapWidth / 2 * Math.log((1 + Math.sin(mapLatBottomDegree)) / (1 - Math.sin(mapLatBottomDegree))));
+  var y = mapHeight - ((worldMapWidth / 2 * Math.log((1 + Math.sin(latitude)) / (1 - Math.sin(latitude)))) - mapOffsetY);
+
+  return { x: x, y: y };
+}
+
+function zoom(driver, stateStore) {
+  // abort/return false if path is unexistint
+  console.log('zoom', bounds);
+  var state = stateStore.getState();
+  if (state && state.Path && state.Path.points) {
+    bounds.zoom += 1;
+    if (bounds.zoom > 5) bounds.zoom = 1;
+
+    // driver.clear();
+    drawMapCanvas(driver);
+    renderWholePath(driver, state.Path.points, mapOffsets);
+  }
 }
