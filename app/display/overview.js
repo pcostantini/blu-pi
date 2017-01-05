@@ -8,18 +8,18 @@ var DottedFilter = require('./dotted-filter');
 var width = 64;
 var height = 128;
 
-function DistanceDisplay(driver, events, stateStore) {
+function OverviewDisplay(driver, events, stateStore) {
   BaseDisplay.call(this, driver, events, stateStore);
 }
 
-inherits(DistanceDisplay, BaseDisplay);
+inherits(OverviewDisplay, BaseDisplay);
 
-DistanceDisplay.prototype.init = function (driver, stateStore) {
+OverviewDisplay.prototype.init = function (driver, stateStore) {
   this.refreshDisplayDelay = 333;
   drawAll(driver, stateStore.getState());
 }
 
-DistanceDisplay.prototype.processEvent = function (driver, e, stateStore) {
+OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
   switch (e.name) {
     case 'Distance':
       drawDistance(driver, e.value);
@@ -47,7 +47,7 @@ DistanceDisplay.prototype.processEvent = function (driver, e, stateStore) {
   }
 };
 
-module.exports = DistanceDisplay;
+module.exports = OverviewDisplay;
 
 function drawAll(driver, state) {
   state = state || {};
