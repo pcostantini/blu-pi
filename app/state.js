@@ -56,15 +56,15 @@ var lastPoint = [0,0];
 function PathReducer (gpsEvents) {
   return gpsEvents
     .map(gps => [gps.latitude, gps.longitude])
-    .filter(point => {
-      if(lastPoint[0] === point[0] &&
-         lastPoint[1] === point[1]) return false;
-      lastPoint = point;
-      return true;
-    })
+    .filter(point => lastPoint[0] !== point[0] ||
+                     lastPoint[1] !== point[1])
     .scan((path, point) => {
+      lastPoint = point;
       path.push(point);
       return path;
     }, [])
-    .map((path) => ({ name: 'Path', value: { length: path.length, points: path }}));
+    .map((path) => ({
+      name: 'Path',
+      value: { length: path.length, points: path }
+    }));
 }
