@@ -2,6 +2,7 @@ module.change_code = 1;
 
 function Noisy(driver) {
   // rewrite drivers draw pixel
+  driver._drawPixel = driver.drawPixel;
   driver.drawPixel = function (x, y, color) {
 
     // shadow
@@ -21,6 +22,16 @@ function Noisy(driver) {
 
       // draw
       driver._drawPixel(x, y, color);
+    }
+  };
+
+  return {
+    dispose: function () {
+      if (driver._drawPixel) {
+        // restore
+        driver.drawPixel = driver._drawPixel;
+        delete driver._drawPixel;
+      }
     }
   };
 }

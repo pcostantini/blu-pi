@@ -3,14 +3,14 @@ module.change_code = 1;
 var _ = require('lodash');
 var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
-var noisyFilter = require('./noisy-filter');
+var NoisyFilter = require('./noisy-filter');
 
 var width = 64;
 var height = 128;
 var speedAccumulator = [];
 
 function ScreenSaverDisplay(driver, events, stateStore) {
-  noisyFilter(driver);
+  this.noiseFilter = NoisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 inherits(ScreenSaverDisplay, BaseDisplay);
@@ -18,6 +18,11 @@ inherits(ScreenSaverDisplay, BaseDisplay);
 ScreenSaverDisplay.prototype.init = function (driver, stateStore) {
   this.refreshDisplayDelay = 333;
   drawAll(driver, stateStore.getState());
+}
+ScreenSaverDisplay.prototype.dispose = function() {
+  this.noiseFilter.dispose();
+  BaseDisplay.prototype.dispose.call(this);
+
 }
 ScreenSaverDisplay.prototype.preFlush = function (driver, stateStore) {
   drawAll(driver, stateStore.getState());

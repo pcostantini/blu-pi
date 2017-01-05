@@ -20,8 +20,6 @@ function DisplayBootstrap(Driver, events, stateStore) {
 		new GFX(height, width),     // rotate the 'glib' lib
 		new Driver(width, height));
 
-	driver._drawPixel = driver.drawPixel;
-
 	// cycle screen when Next is pressed
 	events
 		.filter(s => (!!current && !current.rerouteInput))
@@ -48,10 +46,9 @@ function DisplayBootstrap(Driver, events, stateStore) {
 		}
 
 		var DisplayType = Displays[ix];
-		console.log('Cycling Screen', ix);
-		driver.drawPixel = driver._drawPixel;	// cant remember what's this for?
+		console.log('Display:Cycling Screen', ix);
 		current = new DisplayType(driver, events, stateStore);
-		console.log('\tinput rerouting?', current.rerouteInput)
+		console.log('..Screen:Input ReRouting:', current.rerouteInput)
 		return current;
 	}
 
