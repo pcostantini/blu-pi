@@ -14,18 +14,16 @@ function SessionPersistence(dbFile, readOnly) {
   var db = null;
   var dbCreated = new Promise(function(resolve, reject) {
 
-    console.log('Persistence.initing...');
-
     var options = readOnly ? sqlite3.OPEN_READONLY : sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE;
     var newDb = new sqlite3.Database(dbFile, options, !readOnly ? tryCreateSchemas : done);
 
     function done(err) {
       if(err) {
-        console.log('Persistence.err!', err);
+        console.log('Persistence.Err!', err);
         return;
       }
 
-      console.log('Persistence.inited')
+      console.log('Persistence.Inited')
       resolve(newDb);
     }
 

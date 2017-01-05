@@ -22,16 +22,20 @@ module.exports = function ConsoleInput() {
 
     switch (key.name) {
       case 'a':
-        inputBack.next({ name: 'Input:Back' });
+        inputBack.next({ name: 'Input:A' });
         break;
       case 's':
-        inputBack.next({ name: 'Input:Next' });
+        inputBack.next({ name: 'Input:B' });
         break;
       case 'd':
-        inputBack.next({ name: 'Input:Ok' });
+        inputBack.next({ name: 'Input:C' });
         break;
-      case 'f':
-        inputBack.next({ name: 'Input:LongOk' });
+      case 'q':
+        inputBack.next({ name: 'Input:LongA' });
+      case 'w':
+        inputBack.next({ name: 'Input:LongB' });
+      case 'e':
+        inputBack.next({ name: 'Input:LongC' });
       case 'space':
         inputBack.next({ name: 'Input:Shake' });
     }

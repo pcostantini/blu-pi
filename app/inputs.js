@@ -4,37 +4,43 @@ var shake = require('./sensors/shake');
 
 function GpioInputs() {
 
-  var longPressDelay = 500;
-
   var gpioA = 23;
   var gpioB = 17;
   var gpioC = 27;
 
-  // device shaked
-  var inputShake = shake();
+  var longPressDelay = 500;
 
-  // back, go to previous step
-  var inputBack = gpio.observe(gpioA).filter(e => e.value === 'up').map(() => ({ name: 'Input:Back' }));
+  // REDEFINE:
+  // A: Prev
+  // B: Ok, LongOk
+  // C: Next
 
-  // cycle screen
-  var inputNext = gpio.observe(gpioB).filter(e => e.value === 'up').map(() => ({ name: 'Input:Next' }));
+  var inputA = mapInput('A', gpio.observe(gpioA).share());
+  var inputB = mapInput('B', gpio.observe(gpioB).share());
+  var inputC = mapInput('C', gpio.observe(gpioC).share());
 
-  // Ok and LongOk (long pressing Ok btn)
-  function checkOkType(evs) {
-    if(evs.length < 2) return 'Ok';
-    var delay = new Date().getTime() - evs[evs.length - 1].timestamp;
-    return delay > longPressDelay ? 'LongOk' : 'Ok';
+  function mapInput(inputName, gpioObservable) {
+
+    function checkType(evs) {
+      if (evs.length < 2) return inputName;
+      var delay = new Date().getTime() - evs[evs.length - 1].timestamp;
+      return (delay > longPressDelay ? 'Long' : '') + inputName;
+    }
+    
+    return gpioObservable
+      .timestamp()                                                // add ts
+      .buffer(gpioObservable.filter(e => e.value === 'up'))        // take until botton is released
+      .map((evs) => ({ name: 'Input:' + checkType(evs) }));
+
   }
-  
-  var gpioCobserve = gpio.observe(gpioC).share();
-  var inputOkAndLongOk = gpioCobserve
-    .timestamp()                                                // add ts
-    .buffer(gpioCobserve.filter(e => e.value === 'up'))        // take until botton is released
-    .map((evs) => ({ name: 'Input:' + checkOkType(evs) }));
 
   // merge
   return Rx.Observable
-    .merge(inputShake, inputNext, inputBack, inputOkAndLongOk)
+    .merge(
+        // shake(),
+        inputA,
+        inputB,
+        inputC)
     .share();
 }
 

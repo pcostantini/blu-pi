@@ -1,4 +1,4 @@
-module.change_mode = 1;
+module.change_code = 1;
 
 function BaseDisplay(driver, events, stateStore) {
   var self = this;
@@ -78,7 +78,7 @@ module.exports = BaseDisplay;
 
 // helpers
 function drawBit(driver, bit) {
-  driver.fillRect(0, 0, 4, 4, bit ? 1 : 0);
+  driver.fillRect(1, 0, 4, 4, bit ? 1 : 0);
   // driver.fillRect(1, 1, 3, 3, bit ? 0 : 1);
 }
 

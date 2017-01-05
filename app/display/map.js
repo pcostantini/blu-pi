@@ -12,12 +12,12 @@ var bounds = {
   width: width,
   height: height,
   zoom: 1
-  // TODO:save lower and upper bound as 'size to fit'
 };
 
 function MapDisplay(driver, events, stateStore) {
   // noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
+  this.outCounter = 0;
 }
 
 inherits(MapDisplay, BaseDisplay);
@@ -44,25 +44,29 @@ MapDisplay.prototype.processEvent = function(driver, e, stateStore) {
       }
 
       var pixel = getPixelCoordinate(coord, bounds);
-      driver.drawPixel(pixel.x, pixel.y, 1);
-
       if(pixel.x > width || pixel.y > height ||
            pixel.x < 0 || pixel.y < 0)
       {
         // relocate
-        console.log('out!')
-        var state = stateStore.getState();
-        driver.clear();
-        renderWholePath(driver, state.Path.points);
+        console.log('..out!')
+        this.outCounter++;
+        if(this.outCounter > 5) {
+          this.outCounter = 0;
+
+          console.log('..redraw')
+          var state = stateStore.getState();
+          driver.clear();
+          renderWholePath(driver, state.Path.points);
+          return;
+        }
       }
 
-    case 'Input:Ok':
-      this.cycle(driver, this.stateStore);
+      driver.drawPixel(pixel.x, pixel.y, 1);
       break;
 
-    case 'Input:Next':
-    case 'Input:Accept':
-      this.cycle(driver, stateStore);
+    case 'Input:B':
+      this.cycle(driver, this.stateStore);
+      break;
   }
 }
 

@@ -1,18 +1,21 @@
 module.change_code = 1;
-
-var BaseDisplay = require('./base-display');
 var inherits    = require('util').inherits;
+var BaseDisplay = require('./base-display');
+var noisyFilter = require('./noisy-filter');
 
 var width = 64;
 var height = 128;
 
 function DistanceDisplay(driver, events, stateStore) {
+  // noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 
 inherits(DistanceDisplay, BaseDisplay);
 
 DistanceDisplay.prototype.init = function(driver, stateStore) {
+  this.refreshDisplayDelay = 333;
+
   drawAll(driver, stateStore.getState());
 }
 
@@ -31,6 +34,11 @@ DistanceDisplay.prototype.processEvent = function(driver, e, stateStore) {
       var ticks = e.value[0];
       drawTime(driver, ticks);
       break;
+    
+    case 'Barometer':
+      drawTemp(driver, e.value.temperature, e.value.pressure);
+      break;
+    
   }
 };
 
@@ -38,14 +46,23 @@ module.exports = DistanceDisplay;
 
 function drawAll(driver, state) {
   if(!state) return;
+  drawMap(driver, state.Path);
   drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
   drawDistance(driver, state.Distance);
   drawTime(driver, state.Ticks[0]);
+  drawTemp(driver, state.Barometer.temperature, state.Barometer.pressure);
+}
+
+function drawMap(driver, path) {
+  driver.drawRect(0, 44, 64, 64, true);
+
+  // ...
+  // console.log(path.points);
 }
 
 function drawSpeed(driver, speed) {
-  driver.setCursor(4, 6);
+  driver.setCursor(0, 8);
   driver.setTextSize(2);
 
   if(isNaN(speed)) {
@@ -56,11 +73,24 @@ function drawSpeed(driver, speed) {
   }
 }
 
-function drawAltitude(driver, altitude) {
-  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
-  driver.setCursor(4, 24);
+function drawTemp(driver, temp, pressure) {
+  driver.fillRect(0, 25, 64, 18, false)
+  driver.setCursor(0, 25);
   driver.setTextSize(1);
-  write(driver, 'A:' + altText);
+  write(driver, temp + ' C');
+
+  // driver.setCursor(0, 24);
+  // write(driver, '.');
+  
+  driver.setCursor(0, 35);
+  write(driver, Math.round(pressure * 10) / 10 + ' Pa');
+}
+
+function drawAltitude(driver, altitude) {
+  // var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
+  // driver.setCursor(4, 24);
+  // driver.setTextSize(1);
+  // write(driver, 'A:' + altText);
 }
 
 function drawTime(driver, ticks) {
@@ -69,7 +99,7 @@ function drawTime(driver, ticks) {
   var sTime = formatTime(elapsed);
 
   driver.setTextColor(1, 0);
-  driver.setCursor(4, height - 22);
+  driver.setCursor(0, height - 18);
   driver.setTextSize(1);
   write(driver, sTime);
 }
@@ -77,7 +107,7 @@ function drawTime(driver, ticks) {
 function drawDistance(driver, distance) {
   distance = distance || 0;
   driver.setTextColor(1, 0);
-  driver.setCursor(4, height - 12);
+  driver.setCursor(0, height - 8);
   driver.setTextSize(1);
   write(driver, toFixed(distance, 1) + ' km');
 }

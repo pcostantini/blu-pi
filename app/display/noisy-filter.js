@@ -1,21 +1,21 @@
 module.change_code = 1;
 
-function Noisy(driver){
+function Noisy(driver) {
   // rewrite drivers draw pixel
-  driver.drawPixel = function(x,y,color) {
+  driver.drawPixel = function (x, y, color) {
 
     // shadow
-    if(!!color)
-      driver._drawPixel(x+1, y+1, false);
+    if (!!color)
+      driver._drawPixel(x + 1, y + 1, false);
 
-    if(
+    if (
       Math.random() > .17
       || !color
-    ){
+    ) {
 
       // noise
       var r = randOffset(x, y);
-      if(!!color && Math.random() > .95) {
+      if (!!color && Math.random() > .95) {
         driver._drawPixel(r.x, r.y, color);
       }
 

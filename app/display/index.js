@@ -1,10 +1,15 @@
 var _ = require('lodash');
-var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 var hotswap = require('hotswap');
 
+// TODO: DOCUMENT and credit!
+var GFX = require('edison-ssd1306/src/Adafruit_GFX');
+
 var Displays = [
-	require('./tetris'),
-	require('./menu')];
+	require('./distance'),
+	require('./map'),
+	require('./menu'),
+	require('./screensaver')];
+	// require('./off')!];
 
 var width = 128;
 var height = 64;
@@ -12,51 +17,58 @@ var height = 64;
 function DisplayBootstrap(Driver, events, stateStore) {
 
 	var driver = _.extend(
-	  new GFX(height, width),     // invert size since oled is rotated 90'C
-	  new Driver(width, height));
+		new GFX(height, width),     // rotate the 'glib' lib
+		new Driver(width, height));
 
 	driver._drawPixel = driver.drawPixel;
 
 	// cycle screen when Next is pressed
-	var rerouting = false;
 	events
-		.filter(s => (!rerouting))
-		.filter(s => s.name === 'Input:Next')
-		.subscribe(cycle);
+		.filter(s => (!!current && !current.rerouteInput))
+		.filter(s => s.name === 'Input:C')
+		.subscribe(() => nextScreen());
+
+	events
+		.filter(s => (!!current && !current.rerouteInput))
+		.filter(s => s.name === 'Input:A')
+		.subscribe(() => previousScreen());
 
 	// recycle on module change
 	hotswap.on('swap', () => {
-		currentIx--;
-		current = nextScreen();
+		current = loadScreen(currentIx);
 	});
 
 
 	// get new screen proc (dispose previous)
-	var current = null; 
 	var currentIx = 0;
-	function nextScreen() {
-		if(current) 
+	var current = null;
+	function loadScreen(ix) {
+		if (current) {
 			current.dispose();
-		
-		if(currentIx < 0 || currentIx > Displays.length - 1) currentIx = 0;
-		var DisplayType = Displays[currentIx];
-		console.log('Cycling Screen', currentIx);
-		driver.drawPixel = driver._drawPixel;
-		current =  new DisplayType(driver, events, stateStore);
-		currentIx++;
-		rerouting = current.rerouteInput;
-		console.log('rerouting', rerouting)
+		}
 
+		var DisplayType = Displays[ix];
+		console.log('Cycling Screen', ix);
+		driver.drawPixel = driver._drawPixel;	// cant remember what's this for?
+		current = new DisplayType(driver, events, stateStore);
+		console.log('\tinput rerouting?', current.rerouteInput)
 		return current;
 	}
 
-	// cycle screen
-	function cycle() {
-		current = nextScreen();
+	// cycle
+	function previousScreen() {
+		currentIx--;
+		if (currentIx < 0) currentIx = currentIx = Displays.length - 1;
+		loadScreen(currentIx);
+	}
+	function nextScreen() {
+		currentIx++;
+		if (currentIx > Displays.length - 1) currentIx = 0;
+		loadScreen(currentIx);
 	}
 
 	// give some time for the OLED reset proc.
-	setTimeout(cycle, 250);
+	setTimeout(() => loadScreen(0), 250);
 
 }
 
