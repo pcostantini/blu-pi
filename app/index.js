@@ -72,7 +72,7 @@ function startApp() {
     : SensorsBootstrap(config.sensors);
 
   if (config.persist) {
-    sensors.subscribe(db.insert);
+    sensors.subscribe((event) => db.insert(event));
   }
 
   // clock, ticks and input
