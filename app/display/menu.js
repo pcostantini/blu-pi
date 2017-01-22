@@ -31,8 +31,6 @@ MenuDisplay.prototype.processEvent = function(driver, e, stateStore) {
 
     case 'Input:LongB':
       state.executing = true;
-      // drawMenu(driver, menu, state);
-      // drawSELECTION!
       drawSelection(driver, menu, state);
 
       // execute

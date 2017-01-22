@@ -30,10 +30,6 @@ ScreenSaverDisplay.prototype.preFlush = function (driver, stateStore) {
 ScreenSaverDisplay.prototype.processEvent = function (driver, e, stateStore) {
   switch (e.name) {
 
-    // case 'Ticks':
-    //   drawAll(driver, stateStore.getState());
-    //   break;
-
     case 'Gps':
       var speed = e.value ? e.value.speed : NaN;
       drawSpeed(driver, speed);
@@ -45,11 +41,12 @@ ScreenSaverDisplay.prototype.processEvent = function (driver, e, stateStore) {
       drawWifi(driver, wifi);
       break;
 
-    case 'MagnometerHeading':
-    case 'Acceleration':
-    case 'MagnometerAxis':
-      // console.log(e)
-      break;
+    // case 'MagnometerHeading':
+    // case 'Acceleration':
+    // case 'MagnometerAxis':
+    //   console.log(e)
+    //   break;
+
     case 'Ticks':
       var state = stateStore.getState();
 
