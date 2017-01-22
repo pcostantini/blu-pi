@@ -61,7 +61,7 @@ function schedule(source) {
     events.forEach((t) => {
       Rx.Scheduler.async.schedule(
         () => source.next(_.pick(t, ['name', 'value'])),
-        t.offset / 10,
+        t.offset,
         t);
     });
   }
