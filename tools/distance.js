@@ -1,21 +1,23 @@
-var GpsDistance = require('gps-distance');
-var Persistence = require('../persistence');
 var _ = require('lodash');
+var GpsDistance = require('gps-distance');
+var Persistence = require('../app/persistence');
 
 var dbFilePath = process.argv[2];
 if(!dbFilePath) throw new Error('no path to .sqlite!');
 
 // load path
-var db = Persistence(dbFilePath, true);
-var gpsDone = db
-  .readSensors()
+var data = new Persistence(dbFilePath, true);
+var gpsDone = data
+  .readSensors('Gps')
   .then(evts => evts.filter(isGps)
                     .map(asTrackEvent)
-                    .filter(e => !!e.data));
+                    .filter(e => !!e.data))
+  .catch(console.error)
 
 // whole path
 gpsDone.then(evts => evts.map(getCoordinate))
        .then(path => console.log('path.distance', GpsDistance(path)));
+       
 
 // filtered path
 var GpsNoiseFilter = require('../app/gps_noise_filter')(4);

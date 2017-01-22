@@ -1,4 +1,4 @@
-var Persistence = require('../persistence');
+var Persistence = require('../app/persistence');
 var _ = require('lodash');
 var pngtolcd = require('png-to-lcd');
 
@@ -7,7 +7,7 @@ var pngtolcd = require('png-to-lcd');
 // if(!dbFilePath) throw new Error('no path to .sqlite!');
 
 // // load path
-// var db = Persistence(dbFilePath, true);
+// var db = new Persistence(dbFilePath, true);
 // var pathDone = db
 //   .readSensors()
 //   .then(evts => evts.filter(isGps)

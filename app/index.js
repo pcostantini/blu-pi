@@ -40,7 +40,7 @@ function startApp() {
   log('!3. importing more stuff...');
   var SensorsBootstrap = require('./bootstrap_sensors');
   var ReplaySensors = require('./replay_sensors');
-  var Persistence = require('../persistence');
+  var Persistence = require('./persistence');
   var Display = require('./display');
   var StateReducer = require('./state');
   var Ticks = require('./sensors/ticks');
@@ -61,7 +61,7 @@ function startApp() {
 
   // persistence
   log('!5. persistence', config.persist);
-  var db = Persistence(config.dbFile);
+  var db = new Persistence(config.dbFile);
 
   // sensors
   log('!6. sensors init in ' + (config.demoMode ? 'REPLAY!' : 'device') + 'mode');

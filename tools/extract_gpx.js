@@ -1,4 +1,4 @@
-var Persistence = require('../persistence');
+var Persistence = require('../app/persistence');
 var Gpx = require('./gpx');
 
 // input:
@@ -15,7 +15,7 @@ if(!activityName) {
 	activityName = dbFilePath.split('.')[0]; // remove .ext
 }
 
-var db = Persistence(dbFilePath, true);
+var db = new Persistence(dbFilePath, true);
 
 var track =
   db.readSensors()
