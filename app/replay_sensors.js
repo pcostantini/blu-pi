@@ -1,4 +1,3 @@
-var Persistence = require('../persistence');
 var Rx = require('rxjs');
 var _ = require('lodash');
 
