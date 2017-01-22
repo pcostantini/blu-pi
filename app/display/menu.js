@@ -12,10 +12,9 @@ var state = { position: 0 };
 function MenuDisplay(driver, events, stateStore) {
   BaseDisplay.call(this, driver, events, stateStore);
 }
+
 inherits(MenuDisplay, BaseDisplay);
-
-MenuDisplay.prototype.refreshDisplayDelay = 1000;
-
+MenuDisplay.prototype.refreshDisplayDelay = 9999999;
 MenuDisplay.prototype.init = function(driver, stateStore) {
   drawMenu(driver, menu, state);
 }
@@ -23,6 +22,7 @@ MenuDisplay.prototype.init = function(driver, stateStore) {
 MenuDisplay.prototype.processEvent = function(driver, e, stateStore) {
   switch(e.name) {
     case 'Input:B':
+      state.executing = false;
       state.position++;
       if(state.position >= menu.length) state.position = 0;
       drawMenu(driver, menu, state);
@@ -31,22 +31,37 @@ MenuDisplay.prototype.processEvent = function(driver, e, stateStore) {
 
     case 'Input:LongB':
       state.executing = true;
-      drawMenu(driver, menu, state);
+      // drawMenu(driver, menu, state);
+      // drawSELECTION!
+      drawSelection(driver, menu, state);
 
       // execute
       var menuItem = menu[state.position];
       console.log('Menu.executing', menuItem);
       menuItem.run();
 
+      // restore state
       setTimeout(() => {
         state.executing = false;
-        drawMenu(driver, menu, state);
+        drawSelection(driver, menu, state);
       }, 1000);
       break;
   }
 }
 
 module.exports = MenuDisplay;
+
+function drawSelection(driver, menu, state) {
+  menu
+    .map((m, ix) => ({
+      text: m.name,
+      y: 10 + (ix * lineHeight),
+      selected: ix === state.position
+    }))
+    .filter(o => o.selected)
+    .forEach(m => drawMenuItem(driver, m, state));
+  driver.display();
+}
 
 function drawMenu(driver, menu, state) {
 
@@ -62,7 +77,7 @@ function drawMenu(driver, menu, state) {
   })).forEach(m => drawMenuItem(driver, m, state));
 
   driver.display();
-};
+}
 
 function drawMenuItem(driver, item, state) {
 
@@ -73,6 +88,7 @@ function drawMenuItem(driver, item, state) {
     if(state.executing) {
       driver.fillRect(2, item.y + 3, 4, 4, true);
     } else {
+      driver.fillRect(2, item.y + 3, 4, 4, false);
       driver.drawRect(2, item.y + 3, 4, 4, true);
     }
   }
