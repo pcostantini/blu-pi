@@ -23,7 +23,8 @@ function ReplayFromDb(queryPromise, scheduled) {
         stream.next(_.pick(e, ['name', 'value'])));
 
       // send replay complete event
-      stream.next({ name: 'ReplayComplete', value: new Date().getTime() });
+      stream.complete();
+      // stream.next({ name: 'ReplayComplete', value: new Date().getTime() });
     });
   }
 
