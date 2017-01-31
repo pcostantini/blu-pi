@@ -21,11 +21,6 @@ OverviewDisplay.prototype.init = function (driver, stateStore) {
   drawAll(driver, stateStore.getState());
 }
 
-// OverviewDisplay.prototype.dispose = function() {
-//   this.noiseFilter.dispose();
-//   BaseDisplay.prototype.dispose.call(this);
-// }
-
 OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
   switch (e.name) {
     case 'Distance':
@@ -134,16 +129,15 @@ function drawMapPoint(driver, value, stateStore) {
     if (outCounter > 5) {
       outCounter = 0;
       var state = stateStore.getState();
+
       drawMapDebounced(driver, state.Path);
-      // drawMapCanvas(driver);
-      // renderWholePath(driver, state.Path.points, mapOffsets);
     }
 
     return;
   }
 
 
-  var filter = NoisyFilter(driver);
+  var filter = DottedFilter(driver);
   driver.drawPixel(
     pixel.x + mapOffsets[0],
     pixel.y + mapOffsets[1],
@@ -192,12 +186,6 @@ function drawAltitude(driver, altitude) {
   // write(driver, 'A:' + altText);
 }
 
-function getTimeString(ticks) {
-  var totalTicks = ticks && ticks.length ? ticks[0] : 0;
-  var elapsed = Math.round(totalTicks / 1000);
-  return formatTime(elapsed);
-}
-
 function drawTime(driver, sTime) {
     driver.setTextColor(1, 0);
     driver.setTextSize(1);
@@ -244,6 +232,12 @@ function toFixed(value, precision) {
 
 const mpsToKph = (mps) => Math.round(mps * 3.6 * 100) / 100;
 
+function getTimeString(ticks) {
+  var totalTicks = ticks && ticks.length ? ticks[0] : 0;
+  var elapsed = Math.round(totalTicks / 1000);
+  return formatTime(elapsed);
+}
+
 function formatTime(ticks) {
   if (isNaN(ticks)) return '--:--';
   var hh = Math.floor(ticks / 3600);
@@ -283,7 +277,7 @@ function renderWholePath(driver, path, offsets) {
 
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
-  // var filter = NoisyFilter(driver);  
+  var filter = DottedFilter(driver);  
   path.forEach((coord) => {
     var pixel = getPixelCoordinate(coord, bounds);
 
@@ -296,7 +290,7 @@ function renderWholePath(driver, path, offsets) {
 
     driver.drawPixel(pixel.x + offsets[0], pixel.y + offsets[1], 1);
   });
-  // filter.dispose();
+  filter.dispose();
 }
 
 // graph functions
