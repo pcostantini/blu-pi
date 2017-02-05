@@ -34,7 +34,7 @@ function Persistence(dbFile, readOnly) {
             // precompile statements
             self.precompiledStatements.insertStatement = self.db.prepare(SqlInsert);
 
-            console.log('Persistence.ready!');
+            // ready!
             resolve(self.db);
         };
 
@@ -74,7 +74,6 @@ Persistence.prototype.getRanges = function () {
 };
 
 Persistence.prototype.readSensors = function (sensorName) {
-    console.log('Persistence.readSensors:', sensorName || '*');
     var parameters = {};
     var query = SqlGetAll;
     if (sensorName) {

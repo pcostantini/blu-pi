@@ -1,8 +1,8 @@
 var xml2json = require('xml2json');
 var _ = require('lodash');
 
-const CreatorName = 'blu-pi with barometer';
-const CreatorVersion = '0.1';
+const CreatorName = 'blu-pi';
+const CreatorVersion = '0.2';
 
 function read(sensorEvents, activityName) {
   var items = asTrackEvents(sensorEvents)
@@ -18,12 +18,13 @@ function readWithActivityName(activityName) {
 
 module.exports = {
   read: read,
-  readWithActivityName: readWithActivityName
+  readWithActivityName: readWithActivityName,
+  asGpxObject: asGpxObject
 };
 
 function asTrackEvents(sensorEvents) {
   var events = sensorEvents.map(s => ({
-    timestamp: s.timestamp,
+    ts: s.timestamp || 0,
     sensor: s.sensor,
     data: JSON.parse(s.data)
   }));
@@ -43,7 +44,7 @@ function asTrackEvents(sensorEvents) {
 
 const isGps = (s) => s.sensor === 'Gps' && !!s.data;
 const asPoint = (s) => ({
-  ts: s.timestamp,
+  ts: s.data.timestamp,
   lat: s.data.latitude,
   lon: s.data.longitude,
   el: s.data.altitude
@@ -51,31 +52,12 @@ const asPoint = (s) => ({
 
 const isTemp = (s) => s.sensor === 'Barometer' && !!s.data;
 const asTemp = (s) => ({
-  ts: s.timestamp,
+  ts: s.data.timestamp,
   temp: s.data.temperature,
   pres: s.data.pressure
 });
 
-function asGpxObject(items, activityName) {
-
-  var trackPoints = _.reduce(
-    items,
-    (ac, item) => {
-
-      if(item.lat !== undefined) {
-        ac.points.push(
-          _.extend({ temp: ac.lastTemperature}, item));
-      }
-
-      if(item.temp !== undefined) {
-        ac.lastTemperature = item.temp;
-      }
-
-      return ac;
-    },
-    { points: [], lastTemperature: null }
-  ).points;
-
+function asGpxObject(trackPoints, activityName) {
   var gpx = {
     gpx: {
       creator:        CreatorName,
