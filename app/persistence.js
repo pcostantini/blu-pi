@@ -93,8 +93,9 @@ function runQuery(dbPromise, query, parameters) {
         // TODO: handle errors
         db.each(query, parameters,
             (err, r) => stream.next({
-                sensor: r.sensor,
-                data: parse(r.data)
+                name: r.sensor,
+                value: parse(r.data),
+                timestamp: r.timestamp
             }),
             (err) => stream.complete());
 
