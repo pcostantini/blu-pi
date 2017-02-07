@@ -19,14 +19,11 @@ const SqlGetRanges =
     '(SELECT timestamp AS last FROM sensorEvents ORDER BY timestamp DESC LIMIT 1)';
 
 function Persistence(dbFile, readOnly) {
-
     this.readOnly = readOnly;
-
     this.precompiledStatements = {};
 
     var self = this;
     this.dbPromise = new Promise((resolve, reject) => {
-
         // when db is ready
         const done = (err) => {
             if (err) {
@@ -37,7 +34,7 @@ function Persistence(dbFile, readOnly) {
             // precompile statements
             self.precompiledStatements.insertStatement = self.db.prepare(SqlInsert);
 
-            console.log('Persistence.dbCreated');
+            // ready!
             resolve(self.db);
         };
 
@@ -67,7 +64,7 @@ Persistence.prototype.insert = function (message) {
             message.timestamp,
             message.name,
             JSON.stringify(message.value)];
-            
+
         precompiledStatements.insertStatement.run(data);
     });
 }
@@ -77,10 +74,8 @@ Persistence.prototype.getRanges = function () {
 };
 
 Persistence.prototype.readSensors = function (sensorName) {
-    console.log('Persistence.readSensors:', sensorName || '*');
     var parameters = {};
     var query = SqlGetAll;
-    var query = !sensorName ? SqlGetAll : SqlGetSensor
     if (sensorName) {
         query = SqlGetSensor;
         parameters['1'] = sensorName;
@@ -92,11 +87,30 @@ module.exports = Persistence;
 
 // Helpers
 function runQuery(dbPromise, query, parameters) {
-    return dbPromise.then(db => {
-        var dbAll = Promise.promisify(db.all, { context: db });
-        return dbAll(query, parameters);
+    var stream = new Rx.Subject();
+
+    dbPromise.then(db => {
+        // TODO: handle errors
+        db.each(query, parameters,
+            (err, r) => stream.next({
+                name: r.sensor,
+                value: parse(r.data),
+                timestamp: r.timestamp
+            }),
+            (err) => stream.complete());
+
     });
+
+    return stream.share();
 };
+
+function parse(o) {
+    try {
+        return JSON.parse(o);
+    } catch (e) {
+        return o;
+    }
+}
 
 function tryCreateSchemas(db, done) {
     var i = 0;
