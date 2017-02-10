@@ -36,7 +36,7 @@ module.exports = function bootstrap(sensorsConfig, noGps) {
     require('./sensors/memory')(sensorsConfig.memory))
   .share();
 
-  // current stamp // TODO: make as sensor! each 'click' is an event... elmiiate tickeducer?
+  // stamp!
   var lastTs = null;
   const getTimestamp = () => lastTs.gps + (Date.now() - lastTs.cpu);
   clock.subscribe((o) => lastTs = {
@@ -44,7 +44,6 @@ module.exports = function bootstrap(sensorsConfig, noGps) {
         gps: o.value
       });
   
-  // stamp!
   return sensors
     // ignore events before clock is gps synched
     .filter(() => lastTs !== null)
