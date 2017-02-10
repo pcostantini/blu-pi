@@ -70,7 +70,7 @@ delay(333, function () {
   log('!6. sensors init');
   var sensors = SensorsBootstrap(config.sensors)
     .skipUntil(replayComplete).share();
-  
+
   // persist
   if (config.persist) {
     sensors.subscribe((event) => db.insert(event));
@@ -87,7 +87,7 @@ delay(333, function () {
   log('!7. state reducers');
   var state = StateReducer.FromStream(all);
   var allPlusState = Rx.Observable.merge(all, state);
-  
+
   var stateStored = null;
   var stateStore = {
     getState: () => stateStored
@@ -95,7 +95,7 @@ delay(333, function () {
   allPlusState
     .filter((s) => s.name === 'State')
     .subscribe((s) => stateStored = s.value);
-  
+
   // DISPLAY
   var ui = null;
   replayComplete.subscribe((cnt) => {
@@ -113,31 +113,31 @@ delay(333, function () {
       .subscribe(console.log);
   }
   input.filter((e) => e.name === 'Input:Space')
-       .subscribe(() =>
-          console.log('State.Current:', _.omit(stateStore.getState(), 'Path')));
+    .subscribe(() =>
+      console.log('State.Current:',
+        _.omitBy(stateStore.getState(), (s, key) =>
+          key.indexOf('Average_') === 0 || key === 'Path')));
 
-  log('!9. =)');
-
-  // web server + api
-  // var server = require('../server')(db);
-  // ...
+  log('!. =)');
 });
 
+var x = 6;
 var y = 6;
 function log(msg, arg) {
-  if(typeof arg !== 'undefined') {
+  if (typeof arg !== 'undefined') {
     console.log(msg, arg);
   } else {
     console.log(msg);
   }
-  
+
   if (unifiedDisplayDriver && unifiedDisplayDriver.inited()) {
-    var x = 6;
     y = y + 6;
+    // unifiedDisplayDriver.fillRect(x, y, 2, 2, 1);
     unifiedDisplayDriver.drawPixel(x, y, 1);
     unifiedDisplayDriver.drawPixel(x + 1, y + 1, 1);
     unifiedDisplayDriver.drawPixel(x, y + 1, 1);
     unifiedDisplayDriver.drawPixel(x + 1, y, 1);
+
     unifiedDisplayDriver.display();
   }
 }

@@ -10,7 +10,10 @@ module.exports.FromStream = function FromStream(events) {
   // calculate and reduce main stream of events
   // into new (reduced) values
   var reducers = Rx.Observable.merge(
-    AverageRange(events, 'CpuTemperature'),
+    AverageRange(getSensor(events, 'CpuTemperature'), 'CpuTemperature', 30, 65, (sValue) => sValue),
+    AverageRange(getSensor(events, 'CpuLoad'), 'CpuLoad', 0, 2, (sValue) => sValue[0]),
+    AverageRange(gpsEvents, 'Speed', 0, 45, (sValue) =>
+      sValue.speed || 0),
     PathReducer(gpsEvents),
     DistanceReducer(gpsEvents)).share();
 
@@ -69,41 +72,44 @@ function PathReducer(gpsEvents) {
     }));
 }
 
-function AverageRange(events, sensorName) {
+function AverageRange(events, sensorName, min, max, valueSelector) {
   return Rx.Observable.merge(
-    Average(events, sensorName, 1),
-    Average(events, sensorName, 3),
-    Average(events, sensorName, 5),
-    Average(events, sensorName, 8),
-    Average(events, sensorName, 13),
-    Average(events, sensorName, 21),
-    Average(events, sensorName, 34));
+    Average(events, sensorName, min, max, valueSelector, 1),
+    Average(events, sensorName, min, max, valueSelector, 3),
+    Average(events, sensorName, min, max, valueSelector, 5),
+    Average(events, sensorName, min, max, valueSelector, 8),
+    Average(events, sensorName, min, max, valueSelector, 13),
+    Average(events, sensorName, min, max, valueSelector, 21),
+    Average(events, sensorName, min, max, valueSelector, 34));
 }
 
-var rowHeight = 163;
-function Average(events, sensorName, bufferCount) {
+var rowHeight = 164;
+function Average(events, sensorName, min, max, valueSelector, bufferCount) {
   return events
-    .filter((s) => s.name === sensorName)
-    //
-    //.select((s) => s.timestamp)
-    .map((s) => s.value)
-    .bufferCount(bufferCount)                 //
-    .map(buf => _.reduce(buf, average, 0))     // avg
-    .map(avg => [avg, calculateWidth(avg, 20, 65)])
+    .map(valueSelector)
+    .bufferCount(bufferCount)
+    .map(buf => _.reduce(buf, average, 0))
+    .map(avg => [avg, calculateWidth(avg, min, max)])
     // .do(console.log)
     .scan((acc, row) => {
       acc = _.takeRight(acc, rowHeight - 1);
       acc.push(row);
       return acc;
     }, [])
-    .map(columnBuff => ({
-      name: [sensorName, 'Average', bufferCount].join('_'),
+    .map(dataColumn => ({
+      name: ['Average', bufferCount, sensorName].join('_'),
       value: {
-        length: columnBuff.length,
-        columnBuff: columnBuff
+        length: dataColumn.length,
+        dataColumn: dataColumn
       }
     }))
   // .do(console.log)
+}
+
+function getSensor(events, sensorName) {
+  return events
+    .filter(s => s.name === sensorName)
+    .map(s => s.value);
 }
 
 function average(a, m, i, p) {
