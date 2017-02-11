@@ -1,19 +1,20 @@
 module.change_code = 1;
+var DottedFilter = require('./dotted-filter');
 
 function BaseDisplay(driver, events, stateStore) {
   var self = this;
-  
+
   self.eventsSubscription = events.subscribe((e) => {
     try {
       self.processEvent(driver, e, stateStore);
-    } catch(err) {
+    } catch (err) {
       console.log('Display.processEvent.err!', {
         err: err.toString(),
         stack: err.stack
       });
     }
 
-    if(e.name === 'CpuLoad') {
+    if (e.name === 'CpuLoad') {
       drawCpu(driver, e.value);
     }
   });
@@ -22,7 +23,7 @@ function BaseDisplay(driver, events, stateStore) {
 
   try {
     self.init(driver, stateStore);
-  } catch(err) {
+  } catch (err) {
     console.log('Display.init.err!', {
       err: err.toString(),
       stack: err.stack
@@ -31,7 +32,7 @@ function BaseDisplay(driver, events, stateStore) {
 
   // first time, draw cpu
   var state = stateStore.getState();
-  if(state && state.CpuLoad) {
+  if (state && state.CpuLoad) {
     drawCpu(driver, state.CpuLoad);
   }
 
@@ -47,7 +48,7 @@ function BaseDisplay(driver, events, stateStore) {
     // update and repeat
     driver.display();
 
-    if(self.refreshDisplayDelay) {
+    if (self.refreshDisplayDelay) {
       self.timeout = setTimeout(
         redraw.bind(null, self),
         self.refreshDisplayDelay);
@@ -56,17 +57,17 @@ function BaseDisplay(driver, events, stateStore) {
   })(self);
 }
 
-BaseDisplay.prototype.init = function(driver, stateStore) { }
-BaseDisplay.prototype.preFlush = function(driver, stateStore) { }
-BaseDisplay.prototype.processEvent = function(driver, e) { }
-BaseDisplay.prototype.dispose = function() {
+BaseDisplay.prototype.init = function (driver, stateStore) { }
+BaseDisplay.prototype.preFlush = function (driver, stateStore) { }
+BaseDisplay.prototype.processEvent = function (driver, e) { }
+BaseDisplay.prototype.dispose = function () {
   console.log('disposed..')
-  if(this.eventsSubscription) {
+  if (this.eventsSubscription) {
     this.eventsSubscription.unsubscribe();
     this.eventsSubscription = null;
   }
 
-  if(this.timeout) {
+  if (this.timeout) {
     clearTimeout(this.timeout);
   }
 }
@@ -81,13 +82,17 @@ module.exports = BaseDisplay;
 // helpers
 function drawBit(driver, bit) {
   driver.fillRect(1, 0, 4, 4, bit ? 1 : 0);
+  driver.fillRect(5, 0, 1, 4, 0);
   // driver.fillRect(1, 1, 3, 3, bit ? 0 : 1);
 }
 
 function drawCpu(driver, cpuState) {
-  driver.fillRect(0, 0, BaseDisplay.prototype.height, 4, true);
   var maxBarWidth = BaseDisplay.prototype.width - 2;
   var cpu = cpuState[0] < 2 ? cpuState[0] : 2;
   var cpuWidth = Math.round((maxBarWidth / 2) * (cpu));
+
+  var filter = DottedFilter(driver);
+  driver.fillRect(0, 0, BaseDisplay.prototype.height, 4, true);
   driver.fillRect(cpuWidth + 1, 1, maxBarWidth - cpuWidth - 1, 2, false);
+  filter.dispose();
 }

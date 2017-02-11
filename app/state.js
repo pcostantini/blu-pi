@@ -73,36 +73,66 @@ function PathReducer(gpsEvents) {
 }
 
 function AverageRange(events, sensorName, min, max, valueSelector) {
-  return Rx.Observable.merge(
+  var averages = Rx.Observable.merge(
     Average(events, sensorName, min, max, valueSelector, 1),
     Average(events, sensorName, min, max, valueSelector, 3),
     Average(events, sensorName, min, max, valueSelector, 5),
     Average(events, sensorName, min, max, valueSelector, 8),
     Average(events, sensorName, min, max, valueSelector, 13),
     Average(events, sensorName, min, max, valueSelector, 21),
-    Average(events, sensorName, min, max, valueSelector, 34));
+    Average(events, sensorName, min, max, valueSelector, 34)); averagesGraphs
+
+
+  var averagesGraphs = averages.scan((graphs, avgColumn) => {
+
+    var eventId = avgColumn.value.id;
+    var averageDescription = avgColumn.name;
+    var averagePixelInfo = avgColumn.value.dataColumn.slice(1);
+
+    var graph = graphs[averageDescription];
+    if (!graph) {
+      graph = [];
+    }
+
+    // keep to 164! (rowHeight)
+    graph = _.takeRight(graph, rowHeight - 1);
+    graph.push(averagePixelInfo)
+
+    graphs[averageDescription] = graph;
+
+    return graphs;
+
+  }, {}).map(value => ({
+    name: 'AverageGraphs',
+    value: value
+  }));
+
+  return Rx.Observable.merge(averages, averagesGraphs);
 }
 
 var rowHeight = 164;
+var columnPixelWidth = 10;
+
 function Average(events, sensorName, min, max, valueSelector, bufferCount) {
   return events
     .map(valueSelector)
     .bufferCount(bufferCount)
     .map(buf => _.reduce(buf, average, 0))
-    .map(avg => [avg, calculateWidth(avg, min, max)])
+    .map(avg => [avg, columnPixelWidth, calculateWidth(columnPixelWidth, avg, min, max)])
     // .do(console.log)
-    .scan((acc, row) => {
-      acc = _.takeRight(acc, rowHeight - 1);
-      acc.push(row);
-      return acc;
-    }, [])
-    .map(dataColumn => ({
-      name: ['Average', bufferCount, sensorName].join('_'),
-      value: {
-        length: dataColumn.length,
-        dataColumn: dataColumn
-      }
-    }))
+    // .scan((acc, row) => {
+    //   acc = _.takeRight(acc, rowHeight - 1);
+    //   acc.push(row);
+    //   return acc;
+    // }, [])
+    .map((dataColumn, ix) =>
+      ({
+        name: ['Average', bufferCount, sensorName].join('_'),
+        value: {
+          id: ix,
+          dataColumn: dataColumn
+        }
+      }))
   // .do(console.log)
 }
 
@@ -116,8 +146,7 @@ function average(a, m, i, p) {
   return a + m / p.length;
 }
 
-var pixelWidth = 10;
-function calculateWidth(val, min, max) {
+function calculateWidth(columnPixelWidth, val, min, max) {
   return Math.round(
-    (pixelWidth / (max - min)) * (val - min));
+    (columnPixelWidth / (max - min)) * (val - min));
 }

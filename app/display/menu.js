@@ -5,8 +5,8 @@ var inherits = require('util').inherits;
 var menu = require('../menu');
 
 menu = [{
-    name: ' ',
-    command: () => { console.log('*', new Date()) }
+    name: 'menu',
+command: () => {}               // noop!
   }].concat(menu);
 
 console.log(menu)
@@ -21,7 +21,7 @@ function MenuDisplay(driver, events, stateStore) {
 }
 
 inherits(MenuDisplay, BaseDisplay);
-MenuDisplay.prototype.refreshDisplayDelay = 9999999;
+MenuDisplay.prototype.refreshDisplayDelay = Number.MAX_VALUE;
 MenuDisplay.prototype.init = function (driver, stateStore) {
   drawMenu(driver, menu, state);
 }

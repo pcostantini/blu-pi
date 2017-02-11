@@ -6,6 +6,7 @@ var hotswap = require('hotswap');
 var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 
 var DisplayTypes = [
+	require('./averages'),
 	require('./overview'),
 	// require('./map'),
 	require('./menu'),

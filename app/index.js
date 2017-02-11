@@ -20,14 +20,7 @@ var displayDrivers = config.displayDrivers
     return driverInstance;
   });
 
-var unifiedDisplayDriver = {
-  inited: () => (displayDrivers.filter((d, ix) => d.inited).length) === displayDrivers.length,
-  clear: () => displayDrivers.map((d) => d.clear()),
-  display: () => displayDrivers.map((d) => d.display()),
-  drawPixel: (x, y, color) => displayDrivers.map((d) => d.drawPixel(x, y, color)),
-  invert: (invert) => displayDrivers.map((d) => d.invert(invert)),
-  dim: (dimmed) => displayDrivers.map((d) => d.dim(dimmed))
-};
+var unifiedDisplayDriver = getUnifiedDriver(displayDrivers);
 
 // continue app init after display drivers are started
 delay(333, function () {
@@ -36,6 +29,7 @@ delay(333, function () {
   var _ = require('lodash');
   var Rx = require('rxjs');
   var hotswap = require('hotswap');
+
   log('!3. importing more stuff...');
   var SensorsBootstrap = require('./bootstrap_sensors');
   var Persistence = require('./persistence');
@@ -116,7 +110,7 @@ delay(333, function () {
     .subscribe(() =>
       console.log('State.Current:',
         _.omitBy(stateStore.getState(), (s, key) =>
-          key.indexOf('Average_') === 0 || key === 'Path')));
+          /*key.indexOf('Average_') === 0 || */key === 'Path')));
 
   log('!. =)');
 });
@@ -124,6 +118,7 @@ delay(333, function () {
 var x = 6;
 var y = 6;
 function log(msg, arg) {
+  
   if (typeof arg !== 'undefined') {
     console.log(msg, arg);
   } else {
@@ -145,3 +140,15 @@ function log(msg, arg) {
 function delay(time, func) {
   setTimeout(func, time);
 }
+
+function getUnifiedDriver(drivers) {
+  return {
+    inited: () => (displayDrivers.filter((d, ix) => d.inited).length) === displayDrivers.length,
+    clear: () => displayDrivers.map((d) => d.clear()),
+    display: () => displayDrivers.map((d) => d.display()),
+    drawPixel: (x, y, color) => displayDrivers.map((d) => d.drawPixel(x, y, color)),
+    invert: (invert) => displayDrivers.map((d) => d.invert(invert)),
+    dim: (dimmed) => displayDrivers.map((d) => d.dim(dimmed))
+  };
+}
+
