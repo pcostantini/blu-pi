@@ -80,8 +80,7 @@ function AverageRange(events, sensorName, min, max, valueSelector) {
     Average(events, sensorName, min, max, valueSelector, 8),
     Average(events, sensorName, min, max, valueSelector, 13),
     Average(events, sensorName, min, max, valueSelector, 21),
-    Average(events, sensorName, min, max, valueSelector, 34)); averagesGraphs
-
+    Average(events, sensorName, min, max, valueSelector, 34)); 
 
   var averagesGraphs = averages.scan((graphs, avgColumn) => {
 
@@ -91,7 +90,7 @@ function AverageRange(events, sensorName, min, max, valueSelector) {
 
     var graph = graphs[averageDescription];
     if (!graph) {
-      graph = [];
+      graph = empty(rowHeight, columnPixelWidth);
     }
 
     // keep to 164! (rowHeight)
@@ -149,4 +148,10 @@ function average(a, m, i, p) {
 function calculateWidth(columnPixelWidth, val, min, max) {
   return Math.round(
     (columnPixelWidth / (max - min)) * (val - min));
+}
+
+function empty(rowHeight, columnPixelWidth) {
+  return _
+    .range(0, rowHeight)
+    .map(() => [columnPixelWidth, 0]);
 }

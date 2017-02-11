@@ -107,10 +107,17 @@ delay(333, function () {
       .subscribe(console.log);
   }
   input.filter((e) => e.name === 'Input:Space')
-    .subscribe(() =>
+    .subscribe(() => {
+      var state = stateStore.getState();
       console.log('State.Current:',
-        _.omitBy(stateStore.getState(), (s, key) =>
-          /*key.indexOf('Average_') === 0 || */key === 'Path')));
+        _.omitBy(state, (s, key) =>
+          key.indexOf('Average_') === 0 || key === 'AverageGraphs' || key === 'Path'));
+
+      console.log('State.AverageGraphs', _.keys(state.AverageGraphs));
+
+
+
+    });
 
   log('!. =)');
 });
@@ -118,7 +125,7 @@ delay(333, function () {
 var x = 6;
 var y = 6;
 function log(msg, arg) {
-  
+
   if (typeof arg !== 'undefined') {
     console.log(msg, arg);
   } else {
