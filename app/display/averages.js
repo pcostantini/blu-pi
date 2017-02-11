@@ -43,9 +43,9 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
 // draw
 var drawAllThrotlled = _.throttle(function (driver, graphs) {
   drawSample(driver, graphs.Average_1_CpuLoad, 0);
-  // drawSample(driver, graphs.Average_13_CpuLoad, 10);
-  // drawSample(driver, graphs.Average_21_CpuLoad, 20);
-  // drawSample(driver, graphs.Average_34_CpuLoad, 30);
+  drawSample(driver, graphs.Average_13_CpuLoad, 10);
+  drawSample(driver, graphs.Average_21_CpuLoad, 20);
+  drawSample(driver, graphs.Average_34_CpuLoad, 30);
 }, 1000);
 function drawAll(driver, graphs) {
   drawAllThrotlled(driver, graphs)
@@ -57,6 +57,8 @@ function drawSample(driver, sample, xOffset) {
   driver.fillRect(xOffset, 4, sample[0][0], sample.length, false);
 
   sample.forEach((row, ix) => {
+    if(ix === 0) return;
+
     var filter = null;
     if(row[1] == 0) {
       filter = DottedFilter(driver);
