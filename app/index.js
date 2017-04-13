@@ -15,8 +15,8 @@ console.log('!2. driver displays');
 var displayDrivers = config.displayDrivers
   .map((driverName) => {
     console.log('..instantiating: ' + driverName);
-    var driverCtor = require(driverName);
-    var driverInstance = new driverCtor(config.size.width, config.size.height);
+    var DriverType = require(driverName);
+    var driverInstance = new DriverType(config.size.width, config.size.height);
     return driverInstance;
   });
 
@@ -114,7 +114,6 @@ delay(333, function () {
           key.indexOf('Average_') === 0 || key === 'AverageGraphs' || key === 'Path'));
 
       console.log('State.AverageGraphs', _.keys(state.AverageGraphs));
-
 
 
     });
