@@ -16,7 +16,7 @@ var displayDrivers = config.displayDrivers
   .map((driverName) => {
     console.log('..instantiating: ' + driverName);
     var DriverType = require(driverName);
-    var driverInstance = new DriverType(config.size.width, config.size.height);
+    var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
     return driverInstance;
   });
 
@@ -101,7 +101,7 @@ delay(333, function () {
   replayComplete.subscribe((cnt) => {
     log('!8. processed %s events', cnt);
     log('!9. init displays');
-    ui = Display(unifiedDisplayDriver, config.size, allPlusState, stateStore);
+    ui = Display(unifiedDisplayDriver, config.displaySize, allPlusState, stateStore);
 
     global.displayDriver = unifiedDisplayDriver;
   });

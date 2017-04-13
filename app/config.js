@@ -12,13 +12,10 @@ if (!demoFile) {
   demoFile = './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3'
 }
 
-var size = {
-  width: 128,
-  height: 64
-};
+var displaySize = { width: 128, height: 64 };
 
 var config = {
-  size: size,
+  displaySize: displaySize,
   logState: logState,
   demoMode: demoMode,
   demoScheduled: demoScheduled,
