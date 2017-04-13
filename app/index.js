@@ -1,10 +1,3 @@
-// global error handling
-process.on('uncaughtException', function (err) {
-  console.log('ERROR!:');
-  console.log('!\t' + err.toString());
-  console.log('!\t', err.stack);
-});
-
 // read config
 log('!1. reading config...');
 var config = require('./config');
@@ -43,6 +36,20 @@ delay(333, function () {
   var StateReducer = require('./state');
   var Ticks = require('./sensors/ticks');
 
+  // error handling
+  var errors = Rx.Observable.create(function (observer) {
+    process.on('uncaughtException', function (err) {
+      var data = {
+        message: err.toString(),
+        stack: err.stack
+      };
+      console.log('ERROR!:');
+      console.log('!\t' + data.message);
+      console.log('!\t', data.stack);
+      observer.next({ name: 'Error', value: data, timestamp: Date.now() });
+    });
+  });
+
   // input with ts
   log('!4. input(s) init');
   var inputInstances = config.inputDrivers.map((driverName) => {
@@ -55,7 +62,7 @@ delay(333, function () {
     .mergeAll()
     .map((s) => ({ name: s.name, value: Date.now() }));
 
-  input.subscribe(console.log)
+  input.subscribe(console.log);
 
   // storage
   log('!5. storage', config.persist);
@@ -73,14 +80,15 @@ delay(333, function () {
   
   // persist
   if (config.persist) {
-    sensors.subscribe((event) => db.insert(event));
+    errors.subscribe(e => db.insert(e));
+    sensors.subscribe(e => db.insert(e));
   }
 
   // clock, ticks and input
   var sensorsAndReplay = Rx.Observable.merge(replay, sensors);
   var clock = sensors.filter(s => s.name === 'Clock');
   var ticks = Ticks(clock);
-  var all = Rx.Observable.merge(input, sensorsAndReplay, ticks)
+  var all = Rx.Observable.merge(errors, input, sensorsAndReplay, ticks)
     .share();
 
   // state store or snapshot of latest events // defeats the purpuse!
@@ -112,6 +120,7 @@ delay(333, function () {
       .throttle(ev => Rx.Observable.interval(1000))
       .subscribe(console.log);
   }
+
   input.filter((e) => e.name === 'Input:Space')
        .subscribe(() =>
           console.log('State.Current:', _.omit(stateStore.getState(), 'Path')));
