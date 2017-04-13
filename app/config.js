@@ -3,8 +3,8 @@ var argv = minimist(process.argv.slice(2));
 
 var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
-var persist = !demoMode; //false
-var demoScheduled = argv.demoScheduled !== 'false'; // ?? document!
+var persist = !demoMode;
+var demoScheduled = argv.demoScheduled !== 'false'; // UNUSED!
 var logState = argv.log || argv.consoleLog;
 
 if (!demoFile) {
