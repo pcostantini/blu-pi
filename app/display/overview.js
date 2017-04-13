@@ -103,7 +103,8 @@ function drawMap(driver, path) {
   var initialCoord = pathPoints[0];
   initBounds(bounds, initialCoord);
 
-  renderWholePath(driver, pathPoints, mapOffsets);
+  // render with delay
+  setTimeout(() => renderWholePath(driver, pathPoints, mapOffsets), 100);
 }
 
 function drawMapCanvas(driver) {
