@@ -2,14 +2,14 @@ module.change_code = 1;
 
 var BaseDisplay = require('./base-display');
 var inherits = require('util').inherits;
+
+// TODO: move to config.js
 var menu = require('../menu');
+console.log('the menu is:', menu)
 
-menu = [{
-    name: ' ',
-    command: () => { console.log('*', new Date()) }
-  }].concat(menu);
+// add 'title'
+menu = [{ name: 'menu', command: () => { } }].concat(menu);
 
-console.log(menu)
 
 var width = 64;
 var height = 128;
@@ -21,7 +21,7 @@ function MenuDisplay(driver, events, stateStore) {
 }
 
 inherits(MenuDisplay, BaseDisplay);
-MenuDisplay.prototype.refreshDisplayDelay = 9999999;
+MenuDisplay.prototype.refreshDisplayDelay = Number.MAX_VALUE;
 MenuDisplay.prototype.init = function (driver, stateStore) {
   drawMenu(driver, menu, state);
 }
@@ -50,7 +50,7 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
         state.executing = false;
         drawSelection(driver, menu, state);
       }, 1000);
-      
+
       break;
   }
 }
