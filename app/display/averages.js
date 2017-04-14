@@ -32,7 +32,7 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     
     // 
     row = row + 1;
-    if (row >= 163) row = yOffset;
+    if (row >= 128) row = yOffset;
   }
 }
 
