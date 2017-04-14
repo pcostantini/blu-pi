@@ -29,9 +29,11 @@ MenuDisplay.prototype.init = function (driver, stateStore) {
 MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
   switch (e.name) {
     case 'Input:B':
+    case 'Input:A':
+    case 'Input:C':
       clearSelection(driver, menu, state);
       state.executing = false;
-      state.position++;
+      state.position += (e.name === 'Input:A') ? -1 : 1;
       if (state.position >= menu.length) state.position = 0;
       drawSelection(driver, menu, state);
       break;

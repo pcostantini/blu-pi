@@ -27,12 +27,12 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 	// cycle screen when Next is pressed
 	events
 		.filter(s => (!!current && !current.rerouteInput))
-		.filter(s => s.name === 'Input:C')
+		.filter(s => s.name === 'Input:LongC')
 		.subscribe(() => nextScreen());
 
 	events
 		.filter(s => (!!current && !current.rerouteInput))
-		.filter(s => s.name === 'Input:A')
+		.filter(s => s.name === 'Input:LongA')
 		.subscribe(() => previousScreen());
 
 	// recycle on module change

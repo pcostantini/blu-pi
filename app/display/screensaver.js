@@ -120,7 +120,7 @@ function drawWifi(driver, count, force) {
   currentWifi = count;
 
   if (currentWifi > 0) {
-    driver.setCursor(10, height - 10);
+    driver.setCursor(10, 10);
     driver.setTextSize(1);
     driver.setTextColor(1, 0);
     var string = 'wifi:' + count;
