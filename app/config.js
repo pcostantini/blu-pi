@@ -3,8 +3,8 @@ var argv = minimist(process.argv.slice(2));
 
 var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
-var persist = !demoMode; //false
-var demoScheduled = argv.demoScheduled !== 'false'; // ?? document!
+var persist = !demoMode;
+var demoScheduled = argv.demoScheduled !== 'false'; // UNUSED!
 var logState = argv.log || argv.consoleLog;
 
 if (!demoFile) {
@@ -12,13 +12,10 @@ if (!demoFile) {
   demoFile = './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3'
 }
 
-var size = {
-  width: 128,
-  height: 64
-};
+var displaySize = { width: 128, height: 64 };
 
 var config = {
-  size: size,
+  displaySize: displaySize,
   logState: logState,
   demoMode: demoMode,
   demoScheduled: demoScheduled,
@@ -37,20 +34,18 @@ var config = {
     : './data/current.sqlite3',
   sensors: {
     // refresh times
-
     //indiscreet: {
     // wifi: 5000
     //},
-
     lsm303: {
       acceleration: 0,
       axes: 0,
-      heading: 500,
+      heading: 1000,
       temp: 3000
     },
     cpu: 3000,
     temperature: 3000,
-    memory: 15000
+    memory: 10000
   },
 };
 

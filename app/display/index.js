@@ -49,7 +49,7 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 		}
 
 		var DisplayType = DisplayTypes[ix];
-		console.log('Display:Cycling Screen', { ix: ix, type: DisplayType });
+		console.log('Display:Cycling Screen', { ix: ix });
 		
 		current = new DisplayType(driver, events, stateStore);
 		console.log('..Screen:Input ReRouting:', current.rerouteInput)
