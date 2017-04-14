@@ -8,7 +8,7 @@ var NoiseFilter = require('./noisy-filter');
 
 function AveragesDisplay(driver, events, stateStore) {
   BaseDisplay.call(this, driver, events, stateStore);
-  drawLabel(driver, AverageGroupLabel, EventName);
+  drawLabel(driver, currentGroup.label, currentAverageSet);
 };
 inherits(AveragesDisplay, BaseDisplay);
 
@@ -17,25 +17,27 @@ var yOffset = 6;
 var row = yOffset;
 var width = 19;
 
-var CurrentStep = 1;
-var EventName = 'Average_' + CurrentStep;
-var AverageGroupLabel = 'SYS';
-var AverageGroup = [
-  ['CpuTemperature', 70],
-  ['CpuLoad', 2.0],
-  ['Gps.Speed', 35]
-];
+var currentAverageStep = 1;
+var currentAverageSet = 'Average_' + currentAverageStep;
+var currentGroup = {
+  label: 'SYS',
+  layout: [
+    ['CpuTemperature', 70],
+    ['CpuLoad', 2.0],
+    ['Gps.Speed', 35]
+  ]
+};
 
 var steps = [1, 3, 5, 8, 13, 21, 34];
 function NextStep() {
-  var ix = steps.indexOf(CurrentStep);
-  CurrentStep = steps[ix + 1];
-  if (!CurrentStep) CurrentStep = steps[0];
-  EventName = 'Average_' + CurrentStep;
+  var ix = steps.indexOf(currentAverageStep);
+  currentAverageStep = steps[ix + 1];
+  if (!currentAverageStep) currentAverageStep = steps[0];
+  currentAverageSet = 'Average_' + currentAverageStep;
 }
 
 AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
-  if (e.name.indexOf(EventName) === 0) {
+  if (e.name.indexOf(currentAverageSet) === 0) {
 
     // Average event
 
@@ -45,14 +47,14 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     driver.drawRect(0, row + 4, 64, 2, false);
 
     // 3 col samples
-    drawSampleSample(driver, 0, row, e.value[AverageGroup[0][0]], AverageGroup[0][1]);
-    drawSampleSample(driver, 22, row, e.value[AverageGroup[1][0]], AverageGroup[1][1]);
-    drawSampleSample(driver, 44, row, e.value[AverageGroup[2][0]], AverageGroup[2][1]);
+    drawSampleSample(driver, 0, row, e.value[currentGroup.layout[0][0]], currentGroup.layout[0][1]);
+    drawSampleSample(driver, 22, row, e.value[currentGroup.layout[1][0]], currentGroup.layout[1][1]);
+    drawSampleSample(driver, 44, row, e.value[currentGroup.layout[2][0]], currentGroup.layout[2][1]);
     // ...
 
     // re-draw label
     if (row === yOffset) {
-      drawLabel(driver, AverageGroupLabel, EventName);
+      drawLabel(driver, currentGroup.label, currentAverageSet);
     }
 
     row = row + 1;
@@ -60,15 +62,15 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     // mve drawer up
     if (row >= 120) row = yOffset;
   } else if (e.name === 'Input:B') {
-    
+
     // Change Frequency
 
     driver.drawLine(0, row, 64, row, false);
-    driver.drawLine(0, row+1, 64, row+1, true);
+    driver.drawLine(0, row + 1, 64, row + 1, true);
     row += 1;
 
     NextStep();
-    drawLabel(driver, AverageGroupLabel, EventName);
+    drawLabel(driver, currentGroup.label, currentAverageSet);
   }
 }
 
