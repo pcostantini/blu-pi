@@ -92,14 +92,9 @@ function drawCpu(driver, cpuState) {
 
   var filter = DottedFilter(driver);
   driver.fillRect(0, 0, BaseDisplay.prototype.height, 5, true);
-  driver.fillRect(cpuWidth + 1, 0, maxBarWidth - cpuWidth, 2, false);
+  driver.fillRect(cpuWidth + 1, 1, maxBarWidth - cpuWidth, 2, false);
   filter.dispose();
 
   driver.drawLine(0, 3, BaseDisplay.prototype.width, 3, 0);
   driver.drawLine(0, 4, BaseDisplay.prototype.width, 4, 1);
-
-  // tip
-  // driver.drawRect(cpuWidth + 1, 0, 2, 3, true);
-  // driver.drawRect(cpuWidth + 3, 0, 1, 3, false);
-
 }
