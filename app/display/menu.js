@@ -21,7 +21,6 @@ function MenuDisplay(driver, events, stateStore) {
 }
 
 inherits(MenuDisplay, BaseDisplay);
-MenuDisplay.prototype.refreshDisplayDelay = 9999999;
 MenuDisplay.prototype.init = function (driver, stateStore) {
   drawMenu(driver, menu, state);
 }

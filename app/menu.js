@@ -52,7 +52,7 @@ var menu = [
   }, {
     name: 'shutdown',
     command: bash('sudo shutdown -h -H -t 0 0')
-  }, {
+  }/*, {
     name: 'tetris',
     command: function () {
       var TetrisDisplay = require('./display/tetris.js');
@@ -62,7 +62,7 @@ var menu = [
         displayType: TetrisDisplay
       })
     }
-  }
+  }*/
 ];
 
 module.exports = menu;
