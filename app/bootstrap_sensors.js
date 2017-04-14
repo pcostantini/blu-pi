@@ -23,7 +23,10 @@ module.exports = function bootstrap(sensorsConfig, noGps) {
     // ****
 
     safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
-    safeRequire('./sensors/barometer')(sensorsConfig.temperature),
+
+    (sensorsConfig.temperature)
+      ? safeRequire('./sensors/barometer')(sensorsConfig.temperature)
+      : Rx.Observable.empty(),
 
     // wifi scanner
     (sensorsConfig.indiscreet)
