@@ -36,9 +36,13 @@ function NextStep() {
 
 AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
   if (e.name.indexOf(EventName) === 0) {
+
+    // Average event
+
     // bottom drawer
     driver.drawLine(0, row + 1, 64, row + 1, false);
     driver.drawRect(0, row + 2, 64, 2, true);
+    driver.drawRect(0, row + 4, 64, 2, false);
 
     // 3 col samples
     drawSampleSample(driver, 0, row, e.value[AverageGroup[0][0]], AverageGroup[0][1]);
@@ -46,15 +50,19 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     drawSampleSample(driver, 44, row, e.value[AverageGroup[2][0]], AverageGroup[2][1]);
     // ...
 
+    // re-draw label
     if (row === yOffset) {
       drawLabel(driver, AverageGroupLabel, EventName);
     }
 
     row = row + 1;
+
     // mve drawer up
     if (row >= 120) row = yOffset;
   } else if (e.name === 'Input:B') {
     
+    // Change Frequency
+
     driver.drawLine(0, row, 64, row, false);
     driver.drawLine(0, row+1, 64, row+1, true);
     row += 1;
@@ -82,12 +90,6 @@ function drawLabel(driver, label, step) {
   var filter = DottedFilter(driver);
   driver.fillRect(0, 125, steps, 3, true);
   filter.dispose();
-
-  // for(var i=0; i<steps; i++) {
-  //   var y = (i % 2 === 0) ? 121: 124;
-  //   var x = Math.floor(i / 2) * 3;
-  //   driver.fillRect(x, y, 2, 2, true);
-  // }
 }
 
 function drawSampleSample(driver, x0, y, sample, max) {
@@ -98,7 +100,7 @@ function drawSampleSample(driver, x0, y, sample, max) {
   var filter = DottedFilter(driver);
   // current bar value (width) -- dotted
   driver.drawLine(x0, y, x0 + pxWidth, y, true, true);
-  // bar.max   -- + noisy
+  // bar.max -- dotted
   driver.drawPixel(x0 + width + 1, y, true);
   filter.dispose();
 
