@@ -48,6 +48,7 @@ module.exports.FromStream = function FromStream(events) {
 
   // oneSecSnapshot.subscribe(console.log);
   var averages = Rx.Observable.merge(
+    // TODO: extract times
     AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 1),
     AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 3),
     AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 5),
