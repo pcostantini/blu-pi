@@ -109,19 +109,13 @@ function AverageFromSnapshot(snapshot, sensorNames, bufferCount) {
       _.mapValues(item, (value, name) =>
         avgSnapshot[name] + value / buf.length),
       defaultValues))
-
-    // .do(console.log)
-
     // .map(avg => [avg, columnPixelWidth, calculateWidth(columnPixelWidth, avg, min, max)])
-
-
+    // .do(console.log)
     .map((s) => ({
       name: ['Average', bufferCount].join('_'),
       value: s
-    }))
-    .do(console.log);
-  // return snapshot.bufferCount(bufferCount)
-
+    }));
+    
 }
 
 function AverageRange(events, sensorName, min, max, valueSelector) {

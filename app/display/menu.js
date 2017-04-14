@@ -5,11 +5,11 @@ var inherits = require('util').inherits;
 
 // TODO: move to config.js
 var menu = require('../menu');
+console.log('the menu is:', menu)
 
 // add 'title'
 menu = [{ name: 'menu', command: () => { } }].concat(menu);
 
-console.log(menu)
 
 var width = 64;
 var height = 128;
