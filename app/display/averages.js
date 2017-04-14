@@ -9,6 +9,7 @@ var NoiseFilter = require('./noisy-filter');
 function AveragesDisplay(driver, events, stateStore) {
   BaseDisplay.call(this, driver, events, stateStore);
   drawLabel(driver, currentGroup.label, currentAverageSet);
+  row = yOffset;
 };
 inherits(AveragesDisplay, BaseDisplay);
 
