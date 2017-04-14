@@ -6,12 +6,13 @@ var hotswap = require('hotswap');
 var GFX = require('edison-ssd1306/src/Adafruit_GFX');
 
 var DisplayTypes = [
-	require('./averages')];
-	// require('./overview'),
-	// require('./map'),
-	// require('./menu'),
-	// require('./off'),
-	// require('./screensaver')];
+	require('./averages'),
+	require('./overview'),
+	require('./map'),
+	// require('./screensaver'),
+	require('./menu'),
+	require('./off')
+];
 
 global.displayEvents = Rx.Observable.create((observer) => {
 	global.displayEvents_generator = observer;
@@ -51,7 +52,7 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 
 		var DisplayType = DisplayTypes[ix];
 		console.log('Display:Cycling Screen', { ix: ix });
-		
+
 		current = new DisplayType(driver, events, stateStore);
 		console.log('..Screen:Input ReRouting:', current.rerouteInput)
 		return current;
