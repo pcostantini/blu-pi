@@ -16,8 +16,9 @@ function OverviewDisplay(driver, events, stateStore) {
 inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
-  this.refreshDisplayDelay = 2000;
+  this.refreshDisplayDelay = 3333;
   this.lastTimeString = '';
+  
   drawAll(driver, stateStore.getState());
 }
 
@@ -29,9 +30,9 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       break;
 
     case 'Gps':
+      drawMapPoint(driver, e.value, stateStore);
       drawSpeed(driver, e.value ? e.value.speed : NaN);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
-      drawMapPoint(driver, e.value, stateStore);
       break;
 
     case 'Ticks':
@@ -70,7 +71,7 @@ function drawAll(driver, state) {
 }
 
 var mapSize = [64, 75];
-var mapOffsets = [1, 43]
+var mapOffsets = [1, 30]
 var mapOffsetY = mapOffsets[1];
 var bounds = {
   width: mapSize[0] - 4,
