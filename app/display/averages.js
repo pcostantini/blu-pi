@@ -45,12 +45,9 @@ AveragesDisplay.prototype.init = function(driver, stateStore){
     var o = stateStore.getState().Averages || [];
     var a = o[currentAverageSet];
 
+    drawLabel(driver, currentGroup.label, currentAverageSet);
 
-
-  drawLabel(driver, currentGroup.label, currentAverageSet);
-    // console.log(a)
     _.forEach(a, function(e) {
-      console.log(e)
       // 3 col samples
       drawSampleSample(driver, 0, row, e[currentGroup.layout[0][0]], currentGroup.layout[0][1]);
       drawSampleSample(driver, 22, row, e[currentGroup.layout[1][0]], currentGroup.layout[1][1]);
@@ -120,9 +117,7 @@ function drawLabel(driver, label, step) {
 
   // step
   var steps = parseInt(step.split('_')[1], 10);
-  var filter = DottedFilter(driver);
-  driver.fillRect(0, 125, steps, 3, true);
-  filter.dispose();
+  driver.fillRect(0, 123, steps, 5, true);
 }
 
 function drawSampleSample(driver, x0, y, sample, max) {
