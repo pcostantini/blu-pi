@@ -13,10 +13,12 @@ function AveragesDisplay(driver, events, stateStore) {
 };
 inherits(AveragesDisplay, BaseDisplay);
 
-
+/* */
 var yOffset = 6;
 var row = yOffset;
 var width = 19;
+
+var steps = [1, 3, 5, 8, 13, 21, 34];
 
 var currentAverageStep = 1;
 var currentAverageSet = 'Average_' + currentAverageStep;
@@ -29,16 +31,21 @@ var currentGroup = {
   ]
 };
 
-var steps = [1, 3, 5, 8, 13, 21, 34];
 function NextStep() {
+  
   var ix = steps.indexOf(currentAverageStep);
   currentAverageStep = steps[ix + 1];
   if (!currentAverageStep) currentAverageStep = steps[0];
   currentAverageSet = 'Average_' + currentAverageStep;
+
+    row = row + 1;
+    if (row >= 120) row = yOffset;
 }
 
 AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
   if (e.name.indexOf(currentAverageSet) === 0) {
+
+    // return
 
     // Average event
 
@@ -57,11 +64,6 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     if (row === yOffset) {
       drawLabel(driver, currentGroup.label, currentAverageSet);
     }
-
-    row = row + 1;
-
-    // mve drawer up
-    if (row >= 120) row = yOffset;
   } else if (e.name === 'Input:B') {
 
     // Change Frequency
@@ -72,7 +74,24 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     NextStep();
     drawLabel(driver, currentGroup.label, currentAverageSet);
+  } else if(e.name === 'Input:LongB') {
+    //
+    //
+    //
+    //
+
+    var o = stateStore.getState().Averages || [];
+    var a = o[currentAverageSet];
+    console.log(a);
   }
+}
+
+function drawSample(driver, currentGroup) {
+  
+    // 3 col samples
+    drawSampleSample(driver, 0, row, e.value[currentGroup.layout[0][0]], currentGroup.layout[0][1]);
+    drawSampleSample(driver, 22, row, e.value[currentGroup.layout[1][0]], currentGroup.layout[1][1]);
+    drawSampleSample(driver, 44, row, e.value[currentGroup.layout[2][0]], currentGroup.layout[2][1]);
 }
 
 function drawLabel(driver, label, step) {
