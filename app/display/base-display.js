@@ -95,6 +95,6 @@ function drawCpu(driver, cpuState) {
   driver.fillRect(cpuWidth + 1, 1, maxBarWidth - cpuWidth, 2, false);
   filter.dispose();
 
-  driver.drawLine(0, 3, BaseDisplay.prototype.width, 3, 0);
-  driver.drawLine(0, 4, BaseDisplay.prototype.width, 4, 1);
+  driver.drawLine(0, 3, BaseDisplay.prototype.width, 3, 1);
+  driver.drawLine(0, 4, BaseDisplay.prototype.width, 4, 0);
 }

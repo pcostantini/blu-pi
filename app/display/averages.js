@@ -4,23 +4,24 @@ var _ = require('lodash');
 var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
 var DottedFilter = require('./dotted-filter');
+var ScanlinesFilter = require('./scanlines-filter');
 var NoiseFilter = require('./noisy-filter');
-
-var steps = [1, 3, 5, 8, 13, 21, 34];
 
 var yOffset = 6;
 var row = yOffset;
 var width = 19;
 
+var steps = [1, 5, 13, 34, 60, 60 * 60];
+// [1, 3, 5, 8, 13, 21, 34, 60];
+//require('../state').AverageSensorSteps;
 var currentAverageStep = 1;
 var currentAverageSet = 'Average_' + currentAverageStep;
 var currentGroup = {
   label: 'SYS',
   layout: [
+    ['MagnometerTemperature', 70],
     ['CpuTemperature', 70],
-    ['CpuLoad', 2.0],
-    ['Gps.Speed', 35]
-  ]
+    ['CpuLoad', 2.0]]
 };
 
 function AveragesDisplay(driver, events, stateStore) {
@@ -30,37 +31,38 @@ function AveragesDisplay(driver, events, stateStore) {
 inherits(AveragesDisplay, BaseDisplay);
 
 function NextStep(driver) {
-  
+
   row++;
-    driver.drawLine(0, row, 64, row, true);
-  
+  driver.drawLine(0, row, 64, row, true);
+
   var ix = steps.indexOf(currentAverageStep);
   currentAverageStep = steps[ix + 1];
   if (!currentAverageStep) currentAverageStep = steps[0];
   currentAverageSet = 'Average_' + currentAverageStep;
 }
 
-AveragesDisplay.prototype.init = function(driver, stateStore){
+AveragesDisplay.prototype.init = function (driver, stateStore) {
 
-    var o = stateStore.getState().Averages || [];
-    var a = o[currentAverageSet];
+  var o = stateStore.getState().Averages || [];
+  var a = o[currentAverageSet];
+  var page = _.takeRight(a, 164 - yOffset);
 
-    drawLabel(driver, currentGroup.label, currentAverageSet);
+  drawLabel(driver, currentGroup.label, currentAverageSet);
 
-    _.forEach(a, function(e) {
-      // 3 col samples
-      drawSampleSample(driver, 0, row, e[currentGroup.layout[0][0]], currentGroup.layout[0][1]);
-      drawSampleSample(driver, 22, row, e[currentGroup.layout[1][0]], currentGroup.layout[1][1]);
-      drawSampleSample(driver, 44, row, e[currentGroup.layout[2][0]], currentGroup.layout[2][1]);
-      row = row + 1;
-      if (row >= 120) row = yOffset;
-    });
+  _.forEach(page, function (e) {
+    // 3 col samples
+    drawSampleSample(driver, 0, row, e[currentGroup.layout[0][0]], currentGroup.layout[0][1]);
+    drawSampleSample(driver, 22, row, e[currentGroup.layout[1][0]], currentGroup.layout[1][1]);
+    drawSampleSample(driver, 44, row, e[currentGroup.layout[2][0]], currentGroup.layout[2][1]);
+    row = row + 1;
+    if (row >= 120) row = yOffset;
+  });
 
-    // bottom drawer
-    driver.drawLine(0, row + 1, 64, row + 1, false);
-    driver.drawRect(0, row + 2, 64, 2, true);
-    driver.drawRect(0, row + 4, 64, 2, false);
-    
+  // bottom drawer
+  driver.drawLine(0, row + 1, 64, row + 1, false);
+  driver.drawRect(0, row + 2, 64, 2, true);
+  driver.drawRect(0, row + 4, 64, 0, false);
+
 }
 
 AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
@@ -73,7 +75,7 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     // bottom drawer
     driver.drawLine(0, row + 1, 64, row + 1, false);
     driver.drawRect(0, row + 2, 64, 2, true);
-    driver.drawRect(0, row + 4, 64, 2, false);
+    driver.drawRect(0, row + 4, 64, 6, false);
 
     // 3 col samples
     drawSampleSample(driver, 0, row, e.value[currentGroup.layout[0][0]], currentGroup.layout[0][1]);
@@ -88,7 +90,6 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
       drawLabel(driver, currentGroup.label, currentAverageSet);
     }
 
-
   } else if (e.name === 'Input:B') {
 
     // Change Frequency
@@ -99,14 +100,27 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     NextStep(driver);
     drawLabel(driver, currentGroup.label, currentAverageSet);
+
+  } else if (e.name === 'Input:LongB') {
+
+    // partial clear
+    var filter = ScanlinesFilter(driver);
+    driver.fillRect(0, 5, 64, 164);
+    filter.dispose();
+
+    driver.fillRect(0, row, 64, 164);
+
+    row += 2;
+
+    this.init(driver, stateStore);
+
   }
 }
 
 function drawLabel(driver, label, step) {
   // clear
-  driver.fillRect(0, 125, 64, 3);
+  driver.fillRect(0, 124, 64, 5);
   // label
-  driver.drawRect(0, 122, 64, 1, false);
   driver.setTextSize(1);
   driver.setTextColor(1, 0);
   driver.setTextWrap(false);
@@ -143,20 +157,6 @@ function drawSampleSample(driver, x0, y, sample, max) {
 }
 
 // draw
-function drawAll(driver, graphs) {
-  drawAllThrotlled(driver, graphs)
-}
-var drawAllThrotlled = _.throttle(function (driver, graphs) {
-
-  // ... SAMPLES
-  drawSample(driver, graphs.Average_1_CpuLoad, 0);
-  drawSample(driver, graphs.Average_1_CpuLoad, 10);
-  drawSample(driver, graphs.Average_1_CpuLoad, 20);
-  drawSample(driver, graphs.Average_1_CpuLoad, 30);
-  //
-
-}, 1000);
-
 function drawSample(driver, sample, xOffset) {
   // console.log('drawSample', sample);
   if (!sample) return;
