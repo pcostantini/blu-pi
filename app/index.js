@@ -118,11 +118,15 @@ delay(333, function () {
   input.filter((e) => e.name === 'Input:Space')
     .subscribe(() => {
       var state = stateStore.getState();
-      console.log('State.Current:',
-        _.omitBy(state, (s, key) =>
-          key.indexOf('Average_') === 0 || key === 'AverageGraphs' || key === 'Path'));
+      console.log(
+        'State',
+        _.omitBy(state, (s, key) => key === 'Averages' || key === 'Path'));
 
-      console.log('State.AverageGraphs', _.keys(state.AverageGraphs));
+      console.log('State.Path', { length: state.Path ? state.Path.length : 0 });
+      console.log('State.Averages', _.keys(state.Averages).map(k => ({ 
+        Step: k,
+        Points: state.Averages[k].length
+      })));
 
 
     });
@@ -142,12 +146,10 @@ function log(msg, arg) {
 
   if (unifiedDisplayDriver && unifiedDisplayDriver.inited()) {
     y = y + 6;
-    // unifiedDisplayDriver.fillRect(x, y, 2, 2, 1);
     unifiedDisplayDriver.drawPixel(x, y, 1);
     unifiedDisplayDriver.drawPixel(x + 1, y + 1, 1);
     unifiedDisplayDriver.drawPixel(x, y + 1, 1);
     unifiedDisplayDriver.drawPixel(x + 1, y, 1);
-
     unifiedDisplayDriver.display();
   }
 }

@@ -47,7 +47,21 @@ module.exports.FromStream = function FromStream(events) {
     AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 8),
     AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 13),
     AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 21),
-    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 34))
+    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 34)).share()
+
+  // Averages history
+  state.Averages = {};
+  averages.subscribe((avg) => {
+    var history = state.Averages[avg.name];
+    if(!history) {
+      history = []; 
+    }
+
+    history.push(avg.value);
+    history = _.takeRight(history, 256);
+
+    state.Averages[avg.name] = history;
+  });
 
   // combine all
   return Rx.Observable.merge(stateStream, reducers, averages)
