@@ -42,6 +42,13 @@ function NextStep() {
     if (row >= 120) row = yOffset;
 }
 
+AveragesDisplay.prototype.init = function(driver, stateStore){
+
+    var o = stateStore.getState().Averages || [];
+    var a = o[currentAverageSet];
+    
+}
+
 AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
   if (e.name.indexOf(currentAverageSet) === 0) {
 
