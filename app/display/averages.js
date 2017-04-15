@@ -6,19 +6,11 @@ var BaseDisplay = require('./base-display');
 var DottedFilter = require('./dotted-filter');
 var NoiseFilter = require('./noisy-filter');
 
-function AveragesDisplay(driver, events, stateStore) {
-  BaseDisplay.call(this, driver, events, stateStore);
-  drawLabel(driver, currentGroup.label, currentAverageSet);
-  row = yOffset;
-};
-inherits(AveragesDisplay, BaseDisplay);
+var steps = [1, 3, 5, 8, 13, 21, 34];
 
-/* */
 var yOffset = 6;
 var row = yOffset;
 var width = 19;
-
-var steps = [1, 3, 5, 8, 13, 21, 34];
 
 var currentAverageStep = 1;
 var currentAverageSet = 'Average_' + currentAverageStep;
@@ -31,21 +23,46 @@ var currentGroup = {
   ]
 };
 
-function NextStep() {
+function AveragesDisplay(driver, events, stateStore) {
+  BaseDisplay.call(this, driver, events, stateStore);
+}
+
+inherits(AveragesDisplay, BaseDisplay);
+
+function NextStep(driver) {
+  
+  row++;
+    driver.drawLine(0, row, 64, row, true);
   
   var ix = steps.indexOf(currentAverageStep);
   currentAverageStep = steps[ix + 1];
   if (!currentAverageStep) currentAverageStep = steps[0];
   currentAverageSet = 'Average_' + currentAverageStep;
-
-    row = row + 1;
-    if (row >= 120) row = yOffset;
 }
 
 AveragesDisplay.prototype.init = function(driver, stateStore){
 
     var o = stateStore.getState().Averages || [];
     var a = o[currentAverageSet];
+
+
+
+  drawLabel(driver, currentGroup.label, currentAverageSet);
+    // console.log(a)
+    _.forEach(a, function(e) {
+      console.log(e)
+      // 3 col samples
+      drawSampleSample(driver, 0, row, e[currentGroup.layout[0][0]], currentGroup.layout[0][1]);
+      drawSampleSample(driver, 22, row, e[currentGroup.layout[1][0]], currentGroup.layout[1][1]);
+      drawSampleSample(driver, 44, row, e[currentGroup.layout[2][0]], currentGroup.layout[2][1]);
+      row = row + 1;
+      if (row >= 120) row = yOffset;
+    });
+
+    // bottom drawer
+    driver.drawLine(0, row + 1, 64, row + 1, false);
+    driver.drawRect(0, row + 2, 64, 2, true);
+    driver.drawRect(0, row + 4, 64, 2, false);
     
 }
 
@@ -53,8 +70,8 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
   if (e.name.indexOf(currentAverageSet) === 0) {
 
     // return
-
     // Average event
+    row = row + 1;
 
     // bottom drawer
     driver.drawLine(0, row + 1, 64, row + 1, false);
@@ -67,10 +84,14 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     drawSampleSample(driver, 44, row, e.value[currentGroup.layout[2][0]], currentGroup.layout[2][1]);
     // ...
 
+    if (row >= 120) row = yOffset;
+
     // re-draw label
     if (row === yOffset) {
       drawLabel(driver, currentGroup.label, currentAverageSet);
     }
+
+
   } else if (e.name === 'Input:B') {
 
     // Change Frequency
@@ -79,26 +100,9 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     driver.drawLine(0, row + 1, 64, row + 1, true);
     row += 1;
 
-    NextStep();
+    NextStep(driver);
     drawLabel(driver, currentGroup.label, currentAverageSet);
-  } else if(e.name === 'Input:LongB') {
-    //
-    //
-    //
-    //
-
-    var o = stateStore.getState().Averages || [];
-    var a = o[currentAverageSet];
-    console.log(a);
   }
-}
-
-function drawSample(driver, currentGroup) {
-  
-    // 3 col samples
-    drawSampleSample(driver, 0, row, e.value[currentGroup.layout[0][0]], currentGroup.layout[0][1]);
-    drawSampleSample(driver, 22, row, e.value[currentGroup.layout[1][0]], currentGroup.layout[1][1]);
-    drawSampleSample(driver, 44, row, e.value[currentGroup.layout[2][0]], currentGroup.layout[2][1]);
 }
 
 function drawLabel(driver, label, step) {
