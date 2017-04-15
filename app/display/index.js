@@ -9,8 +9,8 @@ var DisplayTypes = [
 	require('./overview'),
 	require('./map'),
 	// require('./screensaver'),
-	require('./menu'),
-	require('./off')
+	require('./off'),
+	require('./menu')
 ];
 
 global.displayEvents = Rx.Observable.create((observer) => {
@@ -33,7 +33,8 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 	events
 		.filter(s => (!!current && !current.rerouteInput))
 		.filter(s => s.name === 'Input:LongA')
-		.subscribe(() => previousScreen());
+		.subscribe(() => menuScreen());
+	// .subscribe(() => previousScreen());
 
 	// recycle on module change
 	hotswap.on('swap', () => {
@@ -66,6 +67,10 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 	function nextScreen() {
 		currentIx++;
 		if (currentIx > DisplayTypes.length - 1) currentIx = 0;
+		loadScreen(currentIx);
+	}
+	function menuScreen() {
+		currentIx = DisplayTypes.length - 1;
 		loadScreen(currentIx);
 	}
 
