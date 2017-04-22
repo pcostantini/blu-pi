@@ -144,7 +144,7 @@ function log(msg, arg) {
     console.log(msg);
   }
 
-  if (unifiedDisplayDriver && unifiedDisplayDriver.inited()) {
+  if (unifiedDisplayDriver) {
     y = y + 6;
     unifiedDisplayDriver.drawPixel(x, y, 1);
     unifiedDisplayDriver.drawPixel(x + 1, y + 1, 1);
