@@ -2,15 +2,17 @@ var _ = require('lodash');
 var Rx = require('rxjs');
 
 // averages configuration
+var averageSensorSteps = [1, 5, 13, 34, 60, 60 * 60];
 var averageSensorReaders = {
   'CpuTemperature': (sValue) => sValue,
   'CpuLoad': (sValue) => sValue[0],
-  'Gps.Speed': (sValue) => sValue.speed || 0
+  'Gps.Speed': (sValue) => sValue.speed || 0,
+  'MagnometerTemperature': (sValue) => sValue.temp
 };
 
 var averageSensorNames = _.keys(averageSensorReaders);
 var defaultValues = _.mapValues(averageSensorReaders, () => 0);
-
+module.exports.AverageSensorSteps = averageSensorSteps;
 module.exports.FromStream = function FromStream(events) {
   var gpsEvents = events
     .filter(hasValidGpsSignal)
@@ -33,21 +35,18 @@ module.exports.FromStream = function FromStream(events) {
     .map((state) => ({ 'name': 'State', 'value': state }))
     .share();
 
-  // snapshot every 1 and then average them in different time windows
+  // every 1 snapshot capture (?)
   var oneSecSnapshot = Rx.Observable.timer(0, 1000)
     .map(() => _.pick(state, averageSensorNames))
     .map((snapshotUnnormalized) =>
       _.mapValues(snapshotUnnormalized, (value, sensor) => averageSensorReaders[sensor](value)))
     .map((snapshot) => _.assign({}, defaultValues, snapshot));
 
-  var averages = Rx.Observable.merge(
-    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 1),
-    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 3),
-    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 5),
-    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 8),
-    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 13),
-    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 21),
-    AverageFromSnapshot(oneSecSnapshot, averageSensorNames, 34)).share()
+  var averagesStreams = averageSensorSteps.map(t => AverageFromSnapshot(oneSecSnapshot, averageSensorNames, t))
+  var averages = Rx.Observable
+    .from(averagesStreams)
+    .mergeAll()
+    .share();
 
   // Averages history
   state.Averages = {};
@@ -57,6 +56,7 @@ module.exports.FromStream = function FromStream(events) {
       history = []; 
     }
 
+    // limit page size
     history.push(avg.value);
     history = _.takeRight(history, 256);
 
