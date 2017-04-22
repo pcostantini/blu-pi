@@ -3,6 +3,8 @@ log('!1. reading config...');
 var config = require('./config');
 console.log('\tblu-pi!', config);
 
+// TODO: emit 'config' event using config object
+
 // display drivers
 console.log('!2. driver displays');
 var displayDrivers = config.displayDrivers
@@ -14,6 +16,7 @@ var displayDrivers = config.displayDrivers
   });
 
 var unifiedDisplayDriver = getUnifiedDriver(displayDrivers);
+global.displayDriver = unifiedDisplayDriver;
 
 // continue app init after display drivers are started
 delay(333, function () {
@@ -85,7 +88,7 @@ delay(333, function () {
   var all = Rx.Observable.merge(errors, input, sensorsAndReplay, ticks)
     .share();
 
-  // state store or snapshot of latest events // defeats the purpuse!
+  // state store or snapshot of latest events // defeats the purpose!
   log('!7. state reducers');
   var state = StateReducer.FromStream(all);
   var allPlusState = Rx.Observable.merge(all, state);
@@ -102,10 +105,8 @@ delay(333, function () {
   var ui = null;
   replayComplete.subscribe((cnt) => {
     log('!8. processed %s events', cnt);
-    log('!9. init displays');
-    ui = Display(unifiedDisplayDriver, config.displaySize, allPlusState, stateStore);
-
-    global.displayDriver = unifiedDisplayDriver;
+    log('!9. init displays. NOT!');
+    ui = Display(unifiedDisplayDriver, config.displaySize, input, allPlusState, stateStore);
   });
 
   // STATE LOG
@@ -144,7 +145,7 @@ function log(msg, arg) {
     console.log(msg);
   }
 
-  if (unifiedDisplayDriver) {
+  if (unifiedDisplayDriver && unifiedDisplayDriver.inited()) {
     y = y + 6;
     unifiedDisplayDriver.drawPixel(x, y, 1);
     unifiedDisplayDriver.drawPixel(x + 1, y + 1, 1);

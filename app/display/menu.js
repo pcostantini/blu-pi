@@ -94,9 +94,6 @@ function drawMenu(driver, menu, state) {
 }
 
 function drawMenuItem(driver, item, state) {
-
-  console.log('drawMenuItem', item)
-
   driver.setCursor(8, item.y);
   write(driver, item.text);
 
