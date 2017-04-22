@@ -22,7 +22,7 @@ var config = {
   persist: persist,
   persistBuffer: 0,
   inputDrivers: [
-    './inputs_gpio',
+//    './inputs_gpio',
     './inputs_console'
   ],
   displayDrivers: [
@@ -44,7 +44,7 @@ var config = {
       temp: 3000
     },
     cpu: 3000,
-    temperature: 3000,
+    // temperature: 3000,
     memory: 10000
   },
 };

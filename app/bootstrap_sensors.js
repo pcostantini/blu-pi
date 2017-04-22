@@ -39,18 +39,9 @@ module.exports = function bootstrap(sensorsConfig, noGps) {
     require('./sensors/memory')(sensorsConfig.memory))
   .share();
 
-  // stamp!
-  var lastTs = null;
-  const getTimestamp = () => lastTs.gps + (Date.now() - lastTs.cpu);
-  clock.subscribe((o) => lastTs = {
-        cpu: Date.now(),
-        gps: o.value
-      });
-  
+  // timestamp!
   return sensors
-    // ignore events before clock is gps synched
-    .filter(() => lastTs !== null)
-    .map(o => _.assign({ timestamp: getTimestamp() }, o)) 
+    .map(o => _.assign({ timestamp: Date.now() }, o))
     .share();
 }
 

@@ -162,32 +162,33 @@ function drawSpeed(driver, speed) {
   }
 }
 
+const getValue = (temp) => temp ? temp.toFixed(1) : '?';
 function drawTemp(driver, temp, pressure, cpuTemp) {
   // driver.fillRect(0, 24, 64, 18, 0);
 
   driver.setTextSize(1);
   if (temp || cpuTemp) {
-    var getValue = (temp) => temp ? temp.toFixed(1) : '?';
+    
     temp = getValue(temp);
-    cpuTemp = getValue(cpuTemp);
+    // cpuTemp = getValue(cpuTemp);
 
-    var sTemp = temp + 'c ' + cpuTemp  + 'c';
+    var sTemp = temp + 'c '// + cpuTemp  + 'c';
     driver.setCursor(0, 24);
     write(driver, sTemp);
   }
 
-  if (pressure) {
-    driver.setCursor(0, 33);
-    var pressureLabel = (Math.round(pressure * 10) / 10) + ' Pa';
-    write(driver, pressureLabel);
-  }
+  // if (pressure) {
+  //   driver.setCursor(0, 33);
+  //   var pressureLabel = (Math.round(pressure * 10) / 10) + ' Pa';
+  //   write(driver, pressureLabel);
+  // }
 }
 
 function drawAltitude(driver, altitude) {
-  // var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
-  // driver.setCursor(4, 24);
-  // driver.setTextSize(1);
-  // write(driver, 'A:' + altText);
+  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
+  driver.setCursor(4, 24);
+  driver.setTextSize(1);
+  write(driver, 'A:' + altText);
 }
 
 function drawTime(driver, sTime) {
@@ -195,11 +196,12 @@ function drawTime(driver, sTime) {
     driver.setTextSize(1);
 
     // right align
-    var minX = 34;
-    var x = mapSize[1] - ((sTime.length - 1) * 10 + 5);
-    x = x < minX ? minX : x;
-    driver.setCursor(x, height - 8);
+    // var minX = 34;
+    // var x = mapSize[1] - ((sTime.length - 1) * 10 + 5);
+    // x = x < minX ? minX : x;
+    // driver.setCursor(x, height - 8);
 
+    driver.setCursor(0, height - 17);
     write(driver, sTime);
 }
 
