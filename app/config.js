@@ -6,13 +6,12 @@ var demoMode = argv.demo || argv.d || !!demoFile;
 var persist = !demoMode;
 var demoScheduled = argv.demoScheduled !== 'false'; // UNUSED!
 var logState = argv.log || argv.consoleLog;
+var displaySize = { width: 128, height: 64 };
 
 if (!demoFile) {
   // https://www.strava.com/activities/508017565
   demoFile = './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3'
 }
-
-var displaySize = { width: 128, height: 64 };
 
 var config = {
   displaySize: displaySize,
@@ -34,9 +33,9 @@ var config = {
     : './data/current.sqlite3',
   sensors: {
     // refresh times
-    //indiscreet: {
-    // wifi: 5000
-    //},
+    // indiscreet: {
+    //   wifi: 5000
+    // },
     lsm303: {
       acceleration: 0,
       axes: 0,

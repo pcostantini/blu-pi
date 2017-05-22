@@ -9,7 +9,20 @@ var displayDrivers = config.displayDrivers
   .map((driverName) => {
     console.log('..instantiating: ' + driverName);
     var DriverType = require(driverName);
-    var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
+    try {
+      var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
+    } catch(e) {
+      // console.log('error', e)
+      return {
+        inited: () => true,
+        clear: () => true,
+        display: () => true,
+        drawPixel: (x, y, color) => true,
+        invert: (invert) => false,
+        dim: (dimmed) => true
+      };
+    }
+    
     return driverInstance;
   });
 
@@ -54,9 +67,14 @@ delay(333, function () {
   log('!4. input(s) init');
   var inputInstances = config.inputDrivers.map((driverName) => {
     console.log('..initing input: ' + driverName);
+    try {
     var driver = require(driverName);
     var driverInstance = driver();
     return driverInstance;
+    } catch(e) {
+      // console.log('init.err!', e);
+      return Rx.Observable.empty();
+    }
   });
   var input = Rx.Observable.from(inputInstances)
     .mergeAll()
@@ -96,13 +114,15 @@ delay(333, function () {
   var state = StateReducer.FromStream(all);
   var allPlusState = Rx.Observable.merge(all, state);
   
+  // state store
   var stateStored = null;
   var stateStore = {
+    set: (state) => stateStored = state,
     getState: () => stateStored
   };
-  allPlusState
-    .filter((s) => s.name === 'State')
-    .subscribe((s) => stateStored = s.value);
+  allPlusState.filter((s) => s.name === 'State')
+    .subscribe((s) => stateStore.set(s.value));
+  
   
   // DISPLAY
   var ui = null;

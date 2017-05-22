@@ -11,8 +11,17 @@ var db = new Persistence(dbFilePath, true);
 var replay = db.readSensors();
 
 var state = State.FromStream(replay).share();
-state.last()
-    .subscribe(console.log)
 
-state.count()
-    .subscribe(console.log);
+var snapshot = null;
+state.subscribe((s) => snapshot = s);
+
+replay.count().subscribe(() => {
+    console.log(snapshot);
+    process.exit(0);
+})
+
+// state.last()
+//     .subscribe(console.log)
+
+// state.count()
+//     .subscribe(console.log);

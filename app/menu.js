@@ -51,7 +51,10 @@ var menu = [
     }
   }, {
     name: 'shutdown',
-    command: bash('sudo shutdown -h -H -t 0 0')
+    command: () => {
+      bash('sudo reboot')();
+      bash('sudo shutdown -h -H -t 0 0');
+    }
   }/*, {
     name: 'tetris',
     command: function () {
