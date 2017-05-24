@@ -1,18 +1,6 @@
 var _ = require('lodash');
 var exec = require('child_process').exec;
 
-function bash(cmd) {
-  return () => {
-    exec(cmd, (error, stdout, stderr) => {
-      if (error) {
-        console.log('exec error: ' + error);
-      }
-      console.log('stdout: ' + stdout);
-      console.log('stderr: ' + stderr);
-    });
-  }
-}
-
 var dimmed = false;
 var menu = [
   {
@@ -21,12 +9,14 @@ var menu = [
       dimmed = !dimmed;
       global.displayDriver.dim(dimmed);
     }
-  },
-  {
+  }, {
     name: 'kill leds',
     command: bash(
       'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
       'sudo echo 0 >/sys/class/leds/led1/brightness')
+  }, {
+    name: 'reset box (keep)',
+    command: () => process.exit()
   }, {
     name: 'cycle db',
     command: () => {
@@ -70,7 +60,19 @@ var menu = [
 
 module.exports = menu;
 
-function executeItem(menuItem) {
-  console.log('running menuItem', menuItem);
-  var output = menuItem.command();
+// function executeItem(menuItem) {
+//   console.log('running menuItem', menuItem);
+//   var output = menuItem.command();
+// }
+
+function bash(cmd) {
+  return () => {
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.log('exec error: ' + error);
+      }
+      console.log('stdout: ' + stdout);
+      console.log('stderr: ' + stderr);
+    });
+  }
 }

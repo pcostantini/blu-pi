@@ -17,7 +17,7 @@ global.displayEvents = Rx.Observable.create((observer) => {
 	global.displayEvents_generator = observer;
 });
 
-function DisplayBootstrap(nativeDriver, size, events, stateStore) {
+function DisplayBootstrap(nativeDriver, size, inputs, events, stateStore) {
 
 	// to the driver, add GFX stuff for eas use
 	var driver = _.extend(
@@ -25,13 +25,13 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 		nativeDriver);
 
 	// cycle screen when Next is pressed
-	events
-		.filter(s => (!!current && !current.rerouteInput))
+	inputs
+		.filter(s => current && !current.rerouteInput)
 		.filter(s => s.name === 'Input:LongC')
 		.subscribe(() => nextScreen());
 
-	events
-		.filter(s => (!!current && !current.rerouteInput))
+	inputs
+		.filter(s => current && !current.rerouteInput)
 		.filter(s => s.name === 'Input:LongA')
 		.subscribe(() => menuScreen());
 	// .subscribe(() => previousScreen());
