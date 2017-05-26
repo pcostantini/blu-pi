@@ -1,4 +1,4 @@
-// credit for this great convertion: git://github.com/wballard/edisonedison-ssd1306
+// credit for this great convertion: https://github.com/wballard/edisonedison-ssd1306
 // original src: ??? adafruit python or c lib ???
 
 /*

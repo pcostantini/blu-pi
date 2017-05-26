@@ -13,7 +13,7 @@ inputs.subscribe(console.log);
 // ui
 // var Driver = require('../app/display/drivers/oled');
 var Driver = require('../app/display/drivers/web');
-var GFX = require('edison-ssd1306/src/Adafruit_GFX');
+var GFX = require('../app/display/adafruit-gfx');
 var width = 128;
 var height = 64;
 var driver = _.extend(

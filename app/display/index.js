@@ -2,15 +2,15 @@ var Rx = require('rxjs');
 var _ = require('lodash');
 var hotswap = require('hotswap');
 
-// TODO: DOCUMENT and credit!
-var GFX = require('edison-ssd1306/src/Adafruit_GFX');
+// Great convertion of Adafruit GFX ( https://github.com/wballard/edisonedison-ssd1306 )
+var GFX = require('./adafruit-gfx');
 
 var DisplayTypes = [
-	require('./averages'),
 	require('./overview'),
+	require('./averages'),
 	require('./map'),
-	// require('./screensaver'),
-	require('./off'),
+	require('./screensaver'),
+	// require('./off'),
 	require('./menu')
 ];
 
@@ -34,8 +34,8 @@ function DisplayBootstrap(nativeDriver, size, inputs, events, stateStore) {
 	inputs
 		.filter(s => current && !current.rerouteInput)
 		.filter(s => s.name === 'Input:LongA')
-		.subscribe(() => menuScreen());
-	// .subscribe(() => previousScreen());
+		// .subscribe(() => menuScreen());
+		.subscribe(() => previousScreen());
 
 	// recycle on module change
 	hotswap.on('swap', () => {
