@@ -21,7 +21,7 @@ var config = {
   persist: persist,
   persistBuffer: 0,
   inputDrivers: [
-//    './inputs_gpio',
+    './inputs_gpio',
     './inputs_console'
   ],
   displayDrivers: [
