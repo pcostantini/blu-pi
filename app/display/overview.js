@@ -64,10 +64,10 @@ function drawAll(driver, state) {
   drawTime(driver, getTimeString(state.Ticks));
   drawMap(driver, state.Path || { points: [] });
   drawDistance(driver, state.Distance);
-  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, barometer.pressure, state.CpuTemperature);
+  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
 var mapSize = [64, 75];
@@ -164,16 +164,12 @@ function drawSpeed(driver, speed) {
 
 const getValue = (temp) => temp ? temp.toFixed(1) : '?';
 function drawTemp(driver, temp, pressure, cpuTemp) {
-  // driver.fillRect(0, 24, 64, 18, 0);
-
   driver.setTextSize(1);
   if (temp || cpuTemp) {
-    
     temp = getValue(temp);
     // cpuTemp = getValue(cpuTemp);
-
     var sTemp = temp + 'c '// + cpuTemp  + 'c';
-    driver.setCursor(0, 24);
+    driver.setCursor(0, 22);
     write(driver, sTemp);
   }
 
@@ -185,10 +181,11 @@ function drawTemp(driver, temp, pressure, cpuTemp) {
 }
 
 function drawAltitude(driver, altitude) {
-  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
-  driver.setCursor(4, 24);
+  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + 'm') : '-';
+  var x = width - (altText.length * 6);
+  driver.setCursor(x, 22);
   driver.setTextSize(1);
-  write(driver, 'A:' + altText);
+  write(driver, altText);
 }
 
 function drawTime(driver, sTime) {
