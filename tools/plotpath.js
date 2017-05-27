@@ -1,6 +1,7 @@
-var Persistence = require('../app/persistence');
 var Promise = require('bluebird');
 var _ = require('lodash');
+var Persistence = require('../app/persistence');
+var PathReducer = require('../app/state/path');
 
 var filePath = process.argv[2];
 if(!filePath) throw new Error('no path to .sqlite or .gpx!');
@@ -37,28 +38,21 @@ if(_.last(filePath.toLowerCase().split('.')) === 'gpx') {
   sensors.count().subscribe(cnt => console.log('sensors.count()', cnt));
   gpsEvents = sensors
     .filter(isGps)
-    .do(console.log)
-    .map(asTrackEvent)
-    .do(console.log)
-    .filter(e => !!e.data)
-    .map(getCoordinate)
-    .do(console.log)
+    .map(o => o.value);
 }
 
 gpsEvents.count().subscribe(cnt => console.log('gpsEvents.count()', cnt));
 
-var path = PathReducer(gpsEvents);
-path.last()
-  .do(console.log)
+PathReducer(gpsEvents)
+  .last()
   .subscribe((s) => {
     var path = s.value.points;
     try {
-      console.log('path.points: ' + path.length);
       var stateStore = {
         getState: () => ({ Path: { points: path } })
       };
-      var Display = require('../app/display/map');
-      var ui = new Display(driver, inputs, stateStore);
+      var MapDisplay = require('../app/display/map');
+      var ui = new MapDisplay(driver, inputs, stateStore);
 
       inputs.filter((e) => e.name === 'Input:Next')
         .subscribe(() => ui.cycle());
@@ -75,7 +69,7 @@ path.last()
 
 // helpers
 function isGps(s) {
-  return s.sensor === 'Gps' && !!s.data;
+  return s.name === 'Gps' && !!s.value;
 }
 
 function asTrackEvent(s) {
@@ -87,23 +81,5 @@ function asTrackEvent(s) {
 }
 
 function getCoordinate(s) {
-  return [s.data.latitude, s.data.longitude, s.data.altitude];
-}
-
-function PathReducer (gpsEvents) {
-  return gpsEvents
-    .do(console.log)
-    .map(gps => [gps.latitude, gps.longitude])
-    .filter(point => point[0] && point[1] &&
-                     (lastPoint[0] !== point[0] ||
-                      lastPoint[1] !== point[1]))
-    .scan((path, point) => {
-      lastPoint = point;
-      path.push(point);
-      return path;
-    }, [])
-    .map((path) => ({
-      name: 'Path',
-      value: { length: path.length, points: path }
-    }));
+  return [s.value.latitude, s.value.longitude, s.value.altitude];
 }

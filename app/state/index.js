@@ -1,5 +1,9 @@
 var _ = require('lodash');
 var Rx = require('rxjs');
+var DistanceReducer = require('./distance');
+var PathReducer = require('./path');
+
+// TODO: Extract averages to own file
 
 // averages configuration
 var averageSensorSteps = [1, 5, 13, 34, 60, 60 * 60];
@@ -69,50 +73,6 @@ module.exports.FromStream = function FromStream(events) {
 }
 
 const hasValidGpsSignal = s => !!s.value && s.value.point && s.value.point[0] !== null && s.name === 'Gps';
-
-// REDUCERS
-
-// DISTANCE
-// takes a gps stream, applies a noise filter
-// returns a 'Distance' stream
-function DistanceReducer(gpsEvents) {
-  var GpsDistance = require('gps-distance');
-  var GpsNoiseFilter = require('./gps_noise_filter');
-
-  var distance = 0;
-
-  return gpsEvents
-    .filter(GpsNoiseFilter(GpsNoiseFilter.DefaultSpeedThreshold))
-    .map(gps => [gps.latitude, gps.longitude])
-    .scan((last, curr) => {
-      if (last) {
-        var offset = GpsDistance(last[0], last[1], curr[0], curr[1]);
-        distance += offset;
-      }
-      return curr;
-    }, null)
-    .map(() => ({ name: 'Distance', value: distance }));
-}
-
-
-// PATH
-// takes a gps stream
-// returns a 'Path' stream with all points
-var lastPoint = [0, 0];
-function PathReducer(gpsEvents) {
-  return gpsEvents
-    .map(gps => [gps.latitude, gps.longitude])
-    .filter(point => point[0] && point[1] && (lastPoint[0] !== point[0] || lastPoint[1] !== point[1]))
-    .scan((path, point) => {
-      lastPoint = point;
-      path.push(point);
-      return path;
-    }, [])
-    .map((path) => ({
-      name: 'Path',
-      value: { length: path.length, points: path }
-    }));
-}
 
 // AVERAGE
 function AverageFromSnapshot(snapshot, sensorNames, bufferCount) {
