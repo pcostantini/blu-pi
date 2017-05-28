@@ -15,7 +15,7 @@ var menu = [
       'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
       'sudo echo 0 >/sys/class/leds/led1/brightness')
   }, {
-    name: 'reset box (keep)',
+    name: 'restart',
     command: () => process.exit()
   }, {
     name: 'cycle db',
@@ -43,7 +43,7 @@ var menu = [
     name: 'shutdown',
     command: () => {
       bash('sudo reboot')();
-      bash('sudo shutdown -h -H -t 0 0');
+      bash('sudo shutdown -h -H -t 0 0')();
     }
   }/*, {
     name: 'tetris',
