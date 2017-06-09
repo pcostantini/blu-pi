@@ -1,11 +1,12 @@
-var SSD1306 = require('./ssd1306.js');
-var GPIO = require('onoff').Gpio;
-var exitHook = require('exit-hook');
-
 var resetPins = [4, 24];
 
 function Oled(width, height) {
   console.log('.OledDriver:initing')
+
+  var SSD1306 = require('./ssd1306.js');
+  var GPIO = require('onoff').Gpio;
+  var exitHook = require('exit-hook');
+
   // Reset oled through pin
   resetPins.forEach((resetPin) => {
     console.log('..reseting oled @ pin ' + resetPin);

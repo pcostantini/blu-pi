@@ -7,7 +7,7 @@ function GpioInputs() {
   var gpioB = 17;
   var gpioC = 27;
 
-  var longPressDelay = 777;
+  var longPressDelay = 1000;
 
   // REDEFINE:
   // A: Prev

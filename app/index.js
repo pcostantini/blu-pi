@@ -3,17 +3,33 @@ log('!1. reading config...');
 var config = require('./config');
 console.log('\tblu-pi!', config);
 
+// TODO: emit 'config' event using config object
+
 // display drivers
 console.log('!2. driver displays');
 var displayDrivers = config.displayDrivers
   .map((driverName) => {
     console.log('..instantiating: ' + driverName);
     var DriverType = require(driverName);
-    var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
+    try {
+      var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
+    } catch(e) {
+      // console.log('error', e)
+      return {
+        inited: () => true,
+        clear: () => true,
+        display: () => true,
+        drawPixel: (x, y, color) => true,
+        invert: (invert) => false,
+        dim: (dimmed) => true
+      };
+    }
+    
     return driverInstance;
   });
 
 var unifiedDisplayDriver = getUnifiedDriver(displayDrivers);
+global.displayDriver = unifiedDisplayDriver;
 
 // continue app init after display drivers are started
 delay(333, function () {
@@ -48,9 +64,14 @@ delay(333, function () {
   log('!4. input(s) init');
   var inputInstances = config.inputDrivers.map((driverName) => {
     console.log('..initing input: ' + driverName);
+    try {
     var driver = require(driverName);
     var driverInstance = driver();
     return driverInstance;
+    } catch(e) {
+      // console.log('init.err!', e);
+      return Rx.Observable.empty();
+    }
   });
   var input = Rx.Observable.from(inputInstances)
     .mergeAll()
@@ -85,27 +106,27 @@ delay(333, function () {
   var all = Rx.Observable.merge(errors, input, sensorsAndReplay, ticks)
     .share();
 
-  // state store or snapshot of latest events // defeats the purpuse!
+  // state store or snapshot of latest events // defeats the purpose!
   log('!7. state reducers');
   var state = StateReducer.FromStream(all);
   var allPlusState = Rx.Observable.merge(all, state);
 
+  // state store
   var stateStored = null;
   var stateStore = {
+    set: (state) => stateStored = state,
     getState: () => stateStored
   };
-  allPlusState
-    .filter((s) => s.name === 'State')
-    .subscribe((s) => stateStored = s.value);
+  allPlusState.filter((s) => s.name === 'State')
+    .subscribe((s) => stateStore.set(s.value));
+  
 
   // DISPLAY
   var ui = null;
   replayComplete.subscribe((cnt) => {
     log('!8. processed %s events', cnt);
-    log('!9. init displays');
-    ui = Display(unifiedDisplayDriver, config.displaySize, allPlusState, stateStore);
-
-    global.displayDriver = unifiedDisplayDriver;
+    log('!9. init displays. NOT!');
+    ui = Display(unifiedDisplayDriver, config.displaySize, input, allPlusState, stateStore);
   });
 
   // STATE LOG
@@ -118,11 +139,15 @@ delay(333, function () {
   input.filter((e) => e.name === 'Input:Space')
     .subscribe(() => {
       var state = stateStore.getState();
-      console.log('State.Current:',
-        _.omitBy(state, (s, key) =>
-          key.indexOf('Average_') === 0 || key === 'AverageGraphs' || key === 'Path'));
+      console.log(
+        'State',
+        _.omitBy(state, (s, key) => key === 'Averages' || key === 'Path'));
 
-      console.log('State.AverageGraphs', _.keys(state.AverageGraphs));
+      console.log('State.Path', { length: state.Path ? state.Path.length : 0 });
+      console.log('State.Averages', _.keys(state.Averages).map(k => ({ 
+        Step: k,
+        Points: state.Averages[k].length
+      })));
 
 
     });
@@ -142,12 +167,10 @@ function log(msg, arg) {
 
   if (unifiedDisplayDriver && unifiedDisplayDriver.inited()) {
     y = y + 6;
-    // unifiedDisplayDriver.fillRect(x, y, 2, 2, 1);
     unifiedDisplayDriver.drawPixel(x, y, 1);
     unifiedDisplayDriver.drawPixel(x + 1, y + 1, 1);
     unifiedDisplayDriver.drawPixel(x, y + 1, 1);
     unifiedDisplayDriver.drawPixel(x + 1, y, 1);
-
     unifiedDisplayDriver.display();
   }
 }

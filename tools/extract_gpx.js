@@ -59,23 +59,23 @@ allPoints.last().subscribe(result => {
 // helpers
 function is(sensorName) {
   return function (s) {
-    return s.sensor === sensorName && !!s.data;
+    return s.name === sensorName && !!s.value;
   }
 }
 
 function asPoint(s) {
   return {
-    ts: s.data.timestamp,
-    lat: s.data.latitude,
-    lon: s.data.longitude,
-    el: s.data.altitude
+    ts: s.value.timestamp,
+    lat: s.value.latitude,
+    lon: s.value.longitude,
+    el: s.value.altitude
   };
 }
 
 function asTemp(s) {
   return {
     ts: s.timestamp,
-    temp: s.data.temperature,
-    pres: s.data.pressure
+    temp: s.value.temperature,
+    pres: s.value.pressure
   };
 }

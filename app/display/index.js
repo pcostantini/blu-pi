@@ -2,22 +2,23 @@ var Rx = require('rxjs');
 var _ = require('lodash');
 var hotswap = require('hotswap');
 
-// TODO: DOCUMENT and credit!
-var GFX = require('edison-ssd1306/src/Adafruit_GFX');
+// Great convertion of Adafruit GFX ( https://github.com/wballard/edisonedison-ssd1306 )
+var GFX = require('./adafruit-gfx');
 
 var DisplayTypes = [
-	require('./averages')];
-	// require('./overview'),
-	// require('./map'),
-	// require('./menu'),
+	require('./overview'),
+	require('./averages'),
+	require('./map'),
+	require('./screensaver'),
 	// require('./off'),
-	// require('./screensaver')];
+	require('./menu')
+];
 
 global.displayEvents = Rx.Observable.create((observer) => {
 	global.displayEvents_generator = observer;
 });
 
-function DisplayBootstrap(nativeDriver, size, events, stateStore) {
+function DisplayBootstrap(nativeDriver, size, inputs, events, stateStore) {
 
 	// to the driver, add GFX stuff for eas use
 	var driver = _.extend(
@@ -25,14 +26,15 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 		nativeDriver);
 
 	// cycle screen when Next is pressed
-	events
-		.filter(s => (!!current && !current.rerouteInput))
-		.filter(s => s.name === 'Input:C')
+	inputs
+		.filter(s => current && !current.rerouteInput)
+		.filter(s => s.name === 'Input:LongC')
 		.subscribe(() => nextScreen());
 
-	events
-		.filter(s => (!!current && !current.rerouteInput))
-		.filter(s => s.name === 'Input:A')
+	inputs
+		.filter(s => current && !current.rerouteInput)
+		.filter(s => s.name === 'Input:LongA')
+		// .subscribe(() => menuScreen());
 		.subscribe(() => previousScreen());
 
 	// recycle on module change
@@ -51,7 +53,7 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 
 		var DisplayType = DisplayTypes[ix];
 		console.log('Display:Cycling Screen', { ix: ix });
-		
+
 		current = new DisplayType(driver, events, stateStore);
 		console.log('..Screen:Input ReRouting:', current.rerouteInput)
 		return current;
@@ -66,6 +68,10 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 	function nextScreen() {
 		currentIx++;
 		if (currentIx > DisplayTypes.length - 1) currentIx = 0;
+		loadScreen(currentIx);
+	}
+	function menuScreen() {
+		currentIx = DisplayTypes.length - 1;
 		loadScreen(currentIx);
 	}
 

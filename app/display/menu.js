@@ -21,7 +21,6 @@ function MenuDisplay(driver, events, stateStore) {
 }
 
 inherits(MenuDisplay, BaseDisplay);
-MenuDisplay.prototype.refreshDisplayDelay = Number.MAX_VALUE;
 MenuDisplay.prototype.init = function (driver, stateStore) {
   drawMenu(driver, menu, state);
 }
@@ -29,9 +28,11 @@ MenuDisplay.prototype.init = function (driver, stateStore) {
 MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
   switch (e.name) {
     case 'Input:B':
+    case 'Input:A':
+    case 'Input:C':
       clearSelection(driver, menu, state);
       state.executing = false;
-      state.position++;
+      state.position += (e.name === 'Input:A') ? -1 : 1;
       if (state.position >= menu.length) state.position = 0;
       drawSelection(driver, menu, state);
       break;
@@ -93,9 +94,6 @@ function drawMenu(driver, menu, state) {
 }
 
 function drawMenuItem(driver, item, state) {
-
-  console.log('drawMenuItem', item)
-
   driver.setCursor(8, item.y);
   write(driver, item.text);
 

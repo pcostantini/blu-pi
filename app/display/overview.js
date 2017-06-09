@@ -16,8 +16,9 @@ function OverviewDisplay(driver, events, stateStore) {
 inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
-  this.refreshDisplayDelay = 2000;
+  this.refreshDisplayDelay = 3333;
   this.lastTimeString = '';
+  
   drawAll(driver, stateStore.getState());
 }
 
@@ -29,9 +30,9 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       break;
 
     case 'Gps':
+      drawMapPoint(driver, e.value, stateStore);
       drawSpeed(driver, e.value ? e.value.speed : NaN);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
-      drawMapPoint(driver, e.value, stateStore);
       break;
 
     case 'Ticks':
@@ -63,14 +64,14 @@ function drawAll(driver, state) {
   drawTime(driver, getTimeString(state.Ticks));
   drawMap(driver, state.Path || { points: [] });
   drawDistance(driver, state.Distance);
-  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, barometer.pressure, state.CpuTemperature);
+  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
 var mapSize = [64, 75];
-var mapOffsets = [1, 43]
+var mapOffsets = [1, 30]
 var mapOffsetY = mapOffsets[1];
 var bounds = {
   width: mapSize[0] - 4,
@@ -161,32 +162,30 @@ function drawSpeed(driver, speed) {
   }
 }
 
+const getValue = (temp) => temp ? temp.toFixed(1) : '?';
 function drawTemp(driver, temp, pressure, cpuTemp) {
-  // driver.fillRect(0, 24, 64, 18, 0);
-
   driver.setTextSize(1);
   if (temp || cpuTemp) {
-    var getValue = (temp) => temp ? temp.toFixed(1) : '?';
     temp = getValue(temp);
-    cpuTemp = getValue(cpuTemp);
-
-    var sTemp = temp + 'c ' + cpuTemp  + 'c';
-    driver.setCursor(0, 24);
+    // cpuTemp = getValue(cpuTemp);
+    var sTemp = temp + 'c '// + cpuTemp  + 'c';
+    driver.setCursor(0, 22);
     write(driver, sTemp);
   }
 
-  if (pressure) {
-    driver.setCursor(0, 33);
-    var pressureLabel = (Math.round(pressure * 10) / 10) + ' Pa';
-    write(driver, pressureLabel);
-  }
+  // if (pressure) {
+  //   driver.setCursor(0, 33);
+  //   var pressureLabel = (Math.round(pressure * 10) / 10) + ' Pa';
+  //   write(driver, pressureLabel);
+  // }
 }
 
 function drawAltitude(driver, altitude) {
-  // var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + ' m') : '-';
-  // driver.setCursor(4, 24);
-  // driver.setTextSize(1);
-  // write(driver, 'A:' + altText);
+  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + 'm') : '-';
+  var x = width - (altText.length * 6);
+  driver.setCursor(x, 22);
+  driver.setTextSize(1);
+  write(driver, altText);
 }
 
 function drawTime(driver, sTime) {
@@ -194,11 +193,12 @@ function drawTime(driver, sTime) {
     driver.setTextSize(1);
 
     // right align
-    var minX = 34;
-    var x = mapSize[1] - ((sTime.length - 1) * 10 + 5);
-    x = x < minX ? minX : x;
-    driver.setCursor(x, height - 8);
+    // var minX = 34;
+    // var x = mapSize[1] - ((sTime.length - 1) * 10 + 5);
+    // x = x < minX ? minX : x;
+    // driver.setCursor(x, height - 8);
 
+    driver.setCursor(0, height - 17);
     write(driver, sTime);
 }
 

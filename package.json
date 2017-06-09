@@ -20,14 +20,12 @@
     "sirtet": "0.0.4",
     "socket.io": "^1.4.5",
     "sqlite3": "^3.1.3",
-    "tetris": "git+https://github.com/paulojreis/nodetris.git",
     "xml2json": "^0.9.0"
   },
   "optionalDependencies": {
     "i2c": "0.2.1",
     "bmp085": "^0.3.2",
     "lsm303": "git://github.com/praneshkmr/node-lsm303",
-    "edison-ssd1306": "git://github.com/wballard/edisonedison-ssd1306",
     "pi-temperature": "^1.0.0",
     "rpio": "^0.9.12"
   },

@@ -1,18 +1,6 @@
 var _ = require('lodash');
 var exec = require('child_process').exec;
 
-function bash(cmd) {
-  return () => {
-    exec(cmd, (error, stdout, stderr) => {
-      if (error) {
-        console.log('exec error: ' + error);
-      }
-      console.log('stdout: ' + stdout);
-      console.log('stderr: ' + stderr);
-    });
-  }
-}
-
 var dimmed = false;
 var menu = [
   {
@@ -21,12 +9,14 @@ var menu = [
       dimmed = !dimmed;
       global.displayDriver.dim(dimmed);
     }
-  },
-  {
+  }, {
     name: 'kill leds',
     command: bash(
       'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
       'sudo echo 0 >/sys/class/leds/led1/brightness')
+  }, {
+    name: 'restart',
+    command: () => process.exit()
   }, {
     name: 'cycle db',
     command: () => {
@@ -51,8 +41,11 @@ var menu = [
     }
   }, {
     name: 'shutdown',
-    command: bash('sudo shutdown -h -H -t 0 0')
-  }, {
+    command: () => {
+      bash('sudo reboot')();
+      bash('sudo shutdown -h -H -t 0 0')();
+    }
+  }/*, {
     name: 'tetris',
     command: function () {
       var TetrisDisplay = require('./display/tetris.js');
@@ -62,12 +55,24 @@ var menu = [
         displayType: TetrisDisplay
       })
     }
-  }
+  }*/
 ];
 
 module.exports = menu;
 
-function executeItem(menuItem) {
-  console.log('running menuItem', menuItem);
-  var output = menuItem.command();
+// function executeItem(menuItem) {
+//   console.log('running menuItem', menuItem);
+//   var output = menuItem.command();
+// }
+
+function bash(cmd) {
+  return () => {
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.log('exec error: ' + error);
+      }
+      console.log('stdout: ' + stdout);
+      console.log('stderr: ' + stderr);
+    });
+  }
 }
