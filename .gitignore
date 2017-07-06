@@ -1,6 +1,6 @@
 node_modules/
 npm-debug.log
-_temp
+#_temp
 *.sqlite3
 *.sqlite3-journal
 data/
