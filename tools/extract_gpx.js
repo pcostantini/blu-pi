@@ -3,6 +3,7 @@ var _ = require('lodash');
 var Persistence = require('../app/persistence');
 var Gpx = require('./gpx');
 var xml2json = require('xml2json');
+var path = require('path');
 
 // input arguments:
 // [0] = .sqlite file
@@ -16,10 +17,7 @@ if(!dbFilePath) {
 
 var activityName = process.argv[3];
 if (!activityName) {
-  activityName = parseInt(dbFilePath, 10);
-}
-if (!activityName) {
-  activityName = dbFilePath.split('.')[0]; // remove .ext
+  activityName = path.basename(dbFilePath).split('.')[0]; // remove .ext
 }
 
 // read
@@ -31,7 +29,7 @@ var temp = events.filter(is('Barometer')).map(asTemp);
 var all = Rx.Observable.merge(track, temp);
 var allPointsSeed = { points: [], lastTemperature: null };
 var allPoints = all.scan((ac, item) => {
-  if (item.lat !== undefined) {
+  if (item.ts && item.lat !== undefined) {
     ac.points.push(
       _.extend({ temp: ac.lastTemperature }, item));
   }
@@ -48,7 +46,7 @@ allPoints.last().subscribe(result => {
   var gpx = Gpx.asGpxObject(points, activityName);
   // var json = JSON.stringify(gpx, null, '\t');
   var xml = xml2json.toXml(gpx);
-  
+
   console.log(xml);
 
 });
