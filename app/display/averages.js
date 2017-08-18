@@ -18,8 +18,8 @@ var DottedFilter = require('./dotted-filter');
 var ScanlinesFilter = require('./scanlines-filter');
 var NoiseFilter = require('./noisy-filter');
 
-var yOffset = 5;
-var row = yOffset;
+var offsetY = 5;
+var y = offsetY;
 var width = 19;
 var steps = require('../state').AverageSensorSteps;
 global.currentAverageStep = global.currentAverageStep || steps[2];
@@ -43,8 +43,8 @@ inherits(AveragesDisplay, BaseDisplay);
 
 function NextStep(driver) {
 
-  row++;
-  driver.drawLine(0, row, 64, row, true);
+  y++;
+  driver.drawLine(0, y, 64, y, true);
 
   var ix = steps.indexOf(global.currentAverageStep);
   global.currentAverageStep = steps[ix - 1];
@@ -59,43 +59,43 @@ AveragesDisplay.prototype.init = function (driver, stateStore) {
   var state = stateStore.getState() || { Averages: [] };
   var o = state.Averages || [];
   var a = o[currentAverageSet];
-  var page = _.takeRight(a, 164 - yOffset);
+  var page = _.takeRight(a, 164 - offsetY);
 
   drawLabel(driver, currentGroup.label);
 
   _.forEach(page, function (e, ix) {
 
-    if (row >= 120) row = yOffset;
+    if (y >= 120) y = offsetY;
 
     // re-draw label
-    if (row === yOffset) {
+    if (y === offsetY) {
       drawLabel(driver, currentGroup.label);
     }
 
     var tip = ix === page.length - 1;
 
     // clear line
-    driver.drawLine(0, row, 64, row, false, true);
-    
+    driver.drawLine(0, y, 64, y, false, true);
+
     if(tip) {
       // bottom drawer
       drawDrawer(driver);
     }
 
     // 3 col samples
-    drawSampleSample(driver, 0, row, e[currentGroup.layout[0][0]], currentGroup.layout[0][1], currentGroup.layout[0][2], tip);
-    drawSampleSample(driver, 22, row, e[currentGroup.layout[1][0]], currentGroup.layout[1][1], currentGroup.layout[1][2],tip);
-    drawSampleSample(driver, 44, row, e[currentGroup.layout[2][0]], currentGroup.layout[2][1], currentGroup.layout[2][2], tip);
+    drawSampleSample(driver, 0, y, e[currentGroup.layout[0][0]], currentGroup.layout[0][1], currentGroup.layout[0][2], tip);
+    drawSampleSample(driver, 22, y, e[currentGroup.layout[1][0]], currentGroup.layout[1][1], currentGroup.layout[1][2],tip);
+    drawSampleSample(driver, 44, y, e[currentGroup.layout[2][0]], currentGroup.layout[2][1], currentGroup.layout[2][2], tip);
 
-    row = row + 1;
+    y = y + 1;
   });
 
 }
 
 function drawDrawer(driver) {
-  driver.drawLine(0, row + 1, 64, row + 1, false);
-  driver.drawRect(0, row + 2, 64, 2, true);
-  driver.fillRect(0, row + 4, 64, 6, false);
+  driver.drawLine(0, y + 1, 64, y + 1, false);
+  driver.drawRect(0, y + 2, 64, 2, true);
+  driver.fillRect(0, y + 4, 64, 6, false);
 }
 
 AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
@@ -103,35 +103,35 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     // return
     // Average event
-    if (row >= 120) row = yOffset;
+    if (y >= 120) y = offsetY;
 
     // bottom drawer
     drawDrawer(driver);
 
     // clear line
-    driver.drawLine(0, row, 64, row, false, true);
+    driver.drawLine(0, y, 64, y, false, true);
 
     // 3 col samples
-    drawSampleSample(driver, 0, row, e.value[currentGroup.layout[0][0]],  currentGroup.layout[0][1],currentGroup.layout[0][2], true);
-    drawSampleSample(driver, 22, row, e.value[currentGroup.layout[1][0]], currentGroup.layout[1][1], currentGroup.layout[1][2], true);
-    drawSampleSample(driver, 44, row, e.value[currentGroup.layout[2][0]], currentGroup.layout[2][1], currentGroup.layout[2][2], true);
+    drawSampleSample(driver, 0, y, e.value[currentGroup.layout[0][0]],  currentGroup.layout[0][1],currentGroup.layout[0][2], true);
+    drawSampleSample(driver, 22, y, e.value[currentGroup.layout[1][0]], currentGroup.layout[1][1], currentGroup.layout[1][2], true);
+    drawSampleSample(driver, 44, y, e.value[currentGroup.layout[2][0]], currentGroup.layout[2][1], currentGroup.layout[2][2], true);
     // ...
 
 
     // re-draw label
-    if (row === yOffset) {
+    if (y === offsetY) {
       drawLabel(driver, currentGroup.label);
     }
 
-    row = row + 1;
+    y = y + 1;
 
   } else if (e.name === 'Input:B') {
 
     // Change Frequency
 
-    driver.drawLine(0, row, 64, row, false);
-    driver.drawLine(0, row + 1, 64, row + 1, true);
-    row += 1;
+    driver.drawLine(0, y, 64, y, false);
+    driver.drawLine(0, y + 1, 64, y + 1, true);
+    y += 1;
 
     NextStep(driver);
     drawLabel(driver, currentGroup.label);
@@ -140,14 +140,14 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     // partial clear
     var filter = ScanlinesFilter(driver, 2);
-    driver.fillRect(0, yOffset, 64, 120 - yOffset, false);
+    driver.fillRect(0, offsetY, 64, 120 - offsetY, false);
     filter.dispose();
 
     // sep line
-    row += 1;
-    driver.drawLine(0, row, 64, row, false);
-    driver.drawLine(0, row + 1, 64, row + 1, true);
-    row += 2;
+    y += 1;
+    driver.drawLine(0, y, 64, y, false);
+    driver.drawLine(0, y + 1, 64, y + 1, true);
+    y += 2;
 
     this.init(driver, stateStore);
   }
