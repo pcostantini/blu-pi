@@ -4,7 +4,7 @@ var argv = minimist(process.argv.slice(2));
 var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
 var persist = !demoMode;
-var demoScheduled = argv.demoScheduled !== 'false'; // UNUSED!
+var demoScheduled = !!(demoMode && argv.demoScheduled);
 var logState = argv.log || argv.consoleLog;
 var displaySize = { width: 128, height: 64 };
 
