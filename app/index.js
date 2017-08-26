@@ -45,6 +45,7 @@ delay(333, function () {
   var Display = require('./display');
   var StateReducer = require('./state');
   var Ticks = require('./sensors/ticks');
+  var ReplayWithSchedule = require('./replay_scheduled');
 
   // error handling
   var errors = Rx.Observable.create(function (observer) {
@@ -87,11 +88,13 @@ delay(333, function () {
   log('!6. reading previous session');
   var replay = db.readSensors();
   var replayComplete = replay.count();
+  replay = config.demoScheduled ? ReplayWithSchedule(replay) : replay;
 
   // sensors, do not activate the stream until replay is complete
   log('!6. sensors init');
-  var sensors = SensorsBootstrap(config.sensors)
-    .skipUntil(replayComplete).share();
+  var sensors = config.demoScheduled
+    ? Rx.Observable.empty()
+    : SensorsBootstrap(config.sensors).skipUntil(replayComplete).share();
 
   // persist
   if (config.persist) {
