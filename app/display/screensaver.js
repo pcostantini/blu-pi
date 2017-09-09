@@ -113,9 +113,14 @@ function drawSpeed(driver, speed, force) {
 
   var kmPh = !isNaN(speed) ? utils.mpsToKph(speed) : NaN;
   driver.setCursor(18, height - 50 + offsetY);
-  driver.setTextSize(3);
   driver.setTextColor(1, 0);
-  var sKmPh = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
+  var isNan =!isNaN(kmPh)
+  var sKmPh = isNan ? toFixed(kmPh, 1) : '-.-';
+  if(!isNan) {
+    driver.setTextSize(3);
+  } else {
+    driver.setTextSize(4);
+  }
   write(driver, sKmPh)
 }
 

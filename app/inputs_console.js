@@ -49,5 +49,6 @@ module.exports = function ConsoleInput() {
   process.stdin.resume();
 
   return Rx.Observable.merge(inputBack, inputNext, inputOk)
+    .debounceTime(111)
     .share();
 }

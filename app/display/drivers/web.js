@@ -7,7 +7,7 @@ var httpPort = 8080;
 
 // Mock Display that routes buffer data using socket.io
 function OledMock(width, height) {
-  
+
   this.bufferWidth =  width;
   this.bufferHeight = height;
   this.clear();
@@ -51,12 +51,12 @@ OledMock.prototype.clear = function() {
 // update single pixel in buffer
 OledMock.prototype.drawPixel = function(x, y, color) {
   if(!this.buffer) return;
-  
+
   x = Math.floor(x);
   y = Math.floor(y);
 
   // check rotation, move pixel around if necessary
-  //switch (getRotation()) {
+  ////switch (getRotation()) {
   switch (3) {
   case 1:
     x = [y, y = x][0];//swap(x, y);
@@ -70,7 +70,7 @@ OledMock.prototype.drawPixel = function(x, y, color) {
     x = [y, y = x][0];//swap(x, y);
     y = this.bufferHeight - y - 1;
     break;
-  }  
+  }
 
   if(x > this.bufferWidth-1 || x < 0 ||
      y > this.bufferHeight-1 || y < 0) return;
@@ -85,7 +85,7 @@ OledMock.prototype.display = function() {
 }
 
 OledMock.prototype.dim = function(dimmed) {
-  // TODO
+  // not implement
 }
 
 module.exports = OledMock;
