@@ -1,67 +1,201 @@
 <!doctype html>
 <html>
-  <head>
-      <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-      <title>blu-pi test display</title>
-      <style>
-          body {
-              font-family: 'sans serif';
-              background-color: #030303;
-              text-align: right;
-              padding-right: 25%;
-              /* TODO: Autosize! */
-          }
 
-          #display {
-            transform: translate(0px, 50px) rotate(90deg);
-          }
-      </style>
-  </head>
-  
-  <body>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <title>blu-pi test display</title>
+  <style>
+    body {
+      font-family: 'sans serif';
+      background-color: #030303;
+      text-align: right;
+      padding-right: 25%;
+      /* TODO: Autosize! */
+    }
 
-    <canvas id="display" width="128" height="64"></canvas>
+    #display {
+      transform: translate(0px, 50px) rotate(90deg);
+    }
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
+    #controls {
+      display: inline-block;
+      margin-top: 100px;
+      margin-right: -25px;
 
-      // canvas
-      var canvas = document.getElementById('display');
-      var canvasWidth = canvas.width;
-      var canvasHeight = canvas.height;
-      var ctx = canvas.getContext("2d");
-      var canvasData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      padding: 10px;
+      background-color: #111;
+      border-radius: 10px;
+    }
+    /* controls and default state */
 
-      function drawBit(x, y, bit) {
-        var c = !!bit ? 255 : 0;
-        drawPixel(x, y, c, c, c, 255);
-      }
+    #controls .ctrl {
+      display: inline-block;
+      margin: 2px;
+      margin-top: 4px;
+      width: 40px;
+      height: 40px;
+      border: 2px solid;
+      border-radius: 5px;
+      border-bottom: 8px solid;
+      border-color: #777 #333 #333 #777;
+      background-color: #777;
 
-      function drawPixel(x, y, r, g, b, a) {
-        var index = (x + y * canvasWidth) * 4;
-        canvasData.data[index + 0] = r;
-        canvasData.data[index + 1] = g;
-        canvasData.data[index + 2] = b;
-        canvasData.data[index + 3] = a;
-      }
+      position: relative;
 
-      function updateCanvas() {
-        ctx.putImageData(canvasData, 0, 0);
-      }
-     
-      var socket = io(window.location.origin);
-      socket.on('buffer', function (buffer) {
-        // draw
-        for(var y = 0; y < buffer.length; y++) {
-          for(var x = 0; x < buffer[y].length; x++) {
-            var bit = buffer[y][x];
-            drawBit(x, y, bit);
-          }
+      cursor: pointer;
+    }
+
+    #controls .ctrl span {
+      display: inline-block;
+
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      background-color: #eee;
+      border-radius: 4px;
+
+      text-shadow: #fff 0px 1px .5px;
+    }
+
+    #forward {
+      display: block !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      /* center */
+    }
+    /* controls pressed state */
+
+    #controls .ctrl.pressed {
+      border-bottom-width: 2px;
+      top: 6px;
+      margin-bottom: 8px !important;
+    }
+
+    #controls .ctrl.pressed span {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="display" width="128" height="64"></canvas>
+  <br />
+  <div id="controls">
+    <div class="ctrl" id="A"><span>A</span></div>
+    <div class="ctrl" id="S"><span>S</span></div>
+    <div class="ctrl" id="D"><span>D</span></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/rxjs@5.4.3/bundles/Rx.min.js"></script>
+  <script>
+    // canvas updates
+    var canvas = document.getElementById('display');
+    var canvasWidth = canvas.width;
+    var canvasHeight = canvas.height;
+    var ctx = canvas.getContext("2d");
+    var canvasData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+
+    function drawBit(x, y, bit) {
+      var c = !!bit ? 255 : 0;
+      drawPixel(x, y, c, c, c, 255);
+    }
+
+    function drawPixel(x, y, r, g, b, a) {
+      var index = (x + y * canvasWidth) * 4;
+      canvasData.data[index + 0] = r;
+      canvasData.data[index + 1] = g;
+      canvasData.data[index + 2] = b;
+      canvasData.data[index + 3] = a;
+    }
+
+    function updateCanvas() {
+      ctx.putImageData(canvasData, 0, 0);
+    }
+
+    var socket = io(window.location.origin);
+    socket.on('buffer', function (buffer) {
+      // draw
+      for (var y = 0; y < buffer.length; y++) {
+        for (var x = 0; x < buffer[y].length; x++) {
+          var bit = buffer[y][x];
+          drawBit(x, y, bit);
         }
+      }
 
-        // and update...
-        updateCanvas();
-      });
-    </script>
-  </body>
+      // and update...
+      updateCanvas();
+    });
+
+
+    // input
+    var keyMappings =
+      {
+        65: 'A',
+        83: 'S',
+        68: 'D'
+      };
+
+    var keyDowns = Rx.Observable.fromEvent(document, 'keydown');
+    var keyUps = Rx.Observable.fromEvent(document, 'keyup');
+    var keyActions = keyDowns
+      .merge(keyUps)
+      .groupBy(e => e.keyCode)
+      .map(group => group.distinctUntilChanged(null, e => e.type))
+      .mergeAll()
+      .share();
+
+    var longPressDelay = 1000;
+    var inputA = mapInput('A', keyActions.filter(e => e.keyCode === 65));
+    var inputB = mapInput('B', keyActions.filter(e => e.keyCode === 83));
+    var inputC = mapInput('C', keyActions.filter(e => e.keyCode === 68));
+
+    function mapInput(inputName, gpioObservable) {
+
+      var up = gpioObservable.filter(o => o.type === 'keyup');  // .skip(1)
+      var upOrSecond = (val) => Rx.Observable.merge(Rx.Observable.interval(longPressDelay), up);
+
+      return gpioObservable
+        .bufferWhen(upOrSecond)
+        .filter(s => s.length > 0)
+        .filter(s => s[0].type !== 'keyup')
+        .filter(s => s.length > 0)
+        .map(s => ({ name: 'Input:' + (s[s.length - 1].type === 'keyup' ? inputName : 'Long' + inputName) }))
+    }
+
+    // merge
+    var inputs = Rx.Observable
+      .merge(inputA, inputB, inputC)
+      .share();
+
+    // submit input events to socket
+    inputs.subscribe((e) => socket.emit('input', e));
+
+    // route key events
+    function onKeyPress(e) {
+      var input = keyMappings[e.keyCode];
+      if (!input) return;
+      var el = get(input);
+      el.className = 'ctrl pressed';
+    }
+
+    function onKeyRelease(e) {
+      var input = keyMappings[e.keyCode];
+      if (!input) return;
+      var el = get(input);
+      el.className = 'ctrl';
+    }
+
+    // handle key presses
+    document.onkeydown = onKeyPress
+    document.onkeyup = onKeyRelease;
+
+    // helpers
+    function get(id) { return document.getElementById(id); }
+
+  </script>
+</body>
+
 </html>

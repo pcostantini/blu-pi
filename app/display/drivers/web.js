@@ -33,8 +33,14 @@ function OledMock(width, height) {
   io.sockets.on('connection', function (socket) {
     // send buffer on connect
     socket.emit('buffer', self.buffer);
-  });
 
+      // recieve events
+    socket.on('input', function(e) {
+      global.globalEvents_generator.next(e)
+      console.log('input!', e)
+    });
+
+  });
   this.io = io;
   server.listen(httpPort);
 
