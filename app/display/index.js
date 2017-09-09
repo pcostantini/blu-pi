@@ -14,7 +14,7 @@ var DisplayTypes = [
 	require('./menu')
 ];
 
-function DisplayBootstrap(nativeDriver, size, inputs, events, stateStore) {
+function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 
 	// to the driver, add GFX stuff for eas use
 	var driver = _.extend(
@@ -22,12 +22,12 @@ function DisplayBootstrap(nativeDriver, size, inputs, events, stateStore) {
 		nativeDriver);
 
 	// cycle screen when Next is pressed
-	inputs
+	events
 		.filter(s => current && !current.rerouteInput)
 		.filter(s => s.name === 'Input:LongC')
 		.subscribe(() => nextScreen());
 
-	inputs
+	events
 		.filter(s => current && !current.rerouteInput)
 		.filter(s => s.name === 'Input:LongA')
 		// .subscribe(() => menuScreen());

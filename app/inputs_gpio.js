@@ -3,16 +3,15 @@ var gpio = require('./gpios');
 
 function GpioInputs() {
 
+  // A: Prev
+  // B: Action
+  // C: Next
+
   var gpioA = 23;
   var gpioB = 17;
   var gpioC = 27;
 
   var longPressDelay = 1000;
-
-  // REDEFINE:
-  // A: Prev
-  // B: Ok, LongOk
-  // C: Next
 
   var inputA = mapInput('A', gpio.observe(gpioA).share());
   var inputB = mapInput('B', gpio.observe(gpioB).share());

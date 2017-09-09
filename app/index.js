@@ -13,7 +13,7 @@ var displayDrivers = config.displayDrivers
     var DriverType = require(driverName);
     try {
       var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
-    } catch(e) {
+    } catch (e) {
       // console.log('error', e)
       return {
         inited: () => true,
@@ -71,10 +71,9 @@ delay(333, function () {
   var inputInstances = config.inputDrivers.map((driverName) => {
     console.log('..initing input: ' + driverName);
     try {
-    var driver = require(driverName);
-    var driverInstance = driver();
-    return driverInstance;
-    } catch(e) {
+      var Driver = require(driverName);
+      return Driver();
+    } catch (e) {
       // console.log('init.err!', e);
       return Rx.Observable.empty();
     }
@@ -111,7 +110,7 @@ delay(333, function () {
   var sensorsAndReplay = Rx.Observable.merge(replay, sensors);
   var clock = sensors.filter(s => s.name === 'Clock');
   var ticks = Ticks(clock);
-  var all = Rx.Observable.merge(errors, input, sensorsAndReplay, ticks)
+  var all = Rx.Observable.merge(errors, input, sensorsAndReplay, global.globalEvents, ticks)
     .share();
 
   // state store or snapshot of latest events // defeats the purpose!
@@ -134,7 +133,7 @@ delay(333, function () {
   replayComplete.subscribe((cnt) => {
     log('!8. processed %s events', cnt);
     log('!9. init displays. NOT!');
-    ui = Display(unifiedDisplayDriver, config.displaySize, input, allPlusState, stateStore);
+    ui = Display(unifiedDisplayDriver, config.displaySize, allPlusState, stateStore);
   });
 
   // STATE LOG
