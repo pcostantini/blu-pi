@@ -24,19 +24,22 @@ var width = 19;
 var steps = require('../state').AverageSensorSteps;
 var currentAverageStep = steps[2];
 var currentAverageSet = 'Average_' + currentAverageStep;
-var currentGroup = {
-  label: 'SYS',
-  layout: [
-
-    // TODO: provide modifier, logaritmic and exponential, allow custom ones...
-    ['MagnometerTemperature', 50, 24],
-    ['CpuTemperature', 77, 33],
-    ['CpuLoad', 1, 0]],
-
-    // ['Gps.speed']
-    // ['Odometer.speed']
-    // ['Cadence' ]
-};
+var layouts = [
+  {
+    label: 'SPEED',
+    layout: [
+      ['Gps', 40, 5]
+    ]
+  }, {
+    label: 'SYS',
+    layout: [
+      ['MagnometerTemperature', 50, 24],
+      ['CpuTemperature', 77, 33],
+      ['CpuLoad', 1, 0]
+    ]
+  }
+]
+var currentLayout = _.first(layouts);
 
 function AveragesDisplay(driver, events, stateStore) {
   this.refreshDisplayDelay = 1000;
@@ -45,8 +48,7 @@ function AveragesDisplay(driver, events, stateStore) {
 
 inherits(AveragesDisplay, BaseDisplay);
 
-function NextStep(driver) {
-
+function PreviousStep(driver) {
   y++;
   driver.drawLine(0, y, 64, y, true);
 
@@ -55,7 +57,18 @@ function NextStep(driver) {
   if (!currentAverageStep) currentAverageStep = steps[steps.length - 1];
   currentAverageSet = 'Average_' + currentAverageStep;
 
-  console.log('AverageSet', currentAverageSet)
+  return currentAverageSet;
+}
+
+
+function NextStep(driver) {
+  y++;
+  driver.drawLine(0, y, 64, y, true);
+
+  var ix = steps.indexOf(currentAverageStep);
+  currentAverageStep = steps[ix + 1];
+  if (!currentAverageStep) currentAverageStep = steps[0];
+  currentAverageSet = 'Average_' + currentAverageStep;
 }
 
 AveragesDisplay.prototype.init = function (driver, stateStore) {
@@ -65,7 +78,7 @@ AveragesDisplay.prototype.init = function (driver, stateStore) {
   var a = o[currentAverageSet];
   var page = _.takeRight(a, 164 - offsetY);
 
-  drawLabel(driver, currentGroup.label);
+  drawLabel(driver, currentLayout.label);
 
   _.forEach(page, function (e, ix) {
 
@@ -73,7 +86,7 @@ AveragesDisplay.prototype.init = function (driver, stateStore) {
 
     // re-draw label
     if (y === offsetY) {
-      drawLabel(driver, currentGroup.label);
+      drawLabel(driver, currentLayout.label);
     }
 
     var tip = ix === page.length - 1;
@@ -81,15 +94,16 @@ AveragesDisplay.prototype.init = function (driver, stateStore) {
     // clear line
     driver.drawLine(0, y, 64, y, false, true);
 
-    if(tip) {
+    if (tip) {
       // bottom drawer
       drawDrawer(driver);
     }
 
     // 3 col samples
-    drawSampleSample(driver, 0, y, e[currentGroup.layout[0][0]], currentGroup.layout[0][1], currentGroup.layout[0][2], tip);
-    drawSampleSample(driver, 22, y, e[currentGroup.layout[1][0]], currentGroup.layout[1][1], currentGroup.layout[1][2],tip);
-    drawSampleSample(driver, 44, y, e[currentGroup.layout[2][0]], currentGroup.layout[2][1], currentGroup.layout[2][2], tip);
+    for (var i = 0; i < currentLayout.layout.length; i++) {
+      var layout = currentLayout.layout[i];
+      drawSample(driver, i * 22, y, e[layout[0]], layout[1], layout[2], tip);
+    }
 
     y = y + 1;
   });
@@ -105,6 +119,8 @@ function drawDrawer(driver) {
 AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
   if (e.name.indexOf(currentAverageSet) === 0) {
 
+    // NEW AVERAGE EVENT
+
     // return
     // Average event
     if (y >= 120) y = offsetY;
@@ -116,44 +132,62 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     driver.drawLine(0, y, 64, y, false, true);
 
     // 3 col samples
-    drawSampleSample(driver, 0, y, e.value[currentGroup.layout[0][0]],  currentGroup.layout[0][1],currentGroup.layout[0][2], true);
-    drawSampleSample(driver, 22, y, e.value[currentGroup.layout[1][0]], currentGroup.layout[1][1], currentGroup.layout[1][2], true);
-    drawSampleSample(driver, 44, y, e.value[currentGroup.layout[2][0]], currentGroup.layout[2][1], currentGroup.layout[2][2], true);
+    for (var i = 0; i <= currentLayout.layout.length; i++) {
+      var layout = currentLayout.layout[i];
+      if (layout) {
+        drawSample(driver, i * 22, y, e.value[layout[0]], layout[1], layout[2], true);
+      }
+    }
     // ...
 
 
     // re-draw label
     if (y === offsetY) {
-      drawLabel(driver, currentGroup.label);
+      drawLabel(driver, currentLayout.label);
     }
 
     y = y + 1;
 
-  } else if (e.name === 'Input:B') {
+    return;
 
-    // Change Frequency
+  }
 
-    driver.drawLine(0, y, 64, y, false);
-    driver.drawLine(0, y + 1, 64, y + 1, true);
-    y += 1;
+  switch (e.name) {
+    case 'Input:A':
+    case 'Input:C':
+      // Change Frequency
 
-    NextStep(driver);
-    drawLabel(driver, currentGroup.label);
+      driver.drawLine(0, y, 64, y, false);
+      driver.drawLine(0, y + 1, 64, y + 1, true);
+      y += 1;
 
-  } else if (e.name === 'Input:LongB') {
+      var step = e.name === 'Input:A' ? PreviousStep(driver) : NextStep(driver);
+      drawLabel(driver, currentLayout.label);
+      break;
 
-    // partial clear
-    var filter = ScanlinesFilter(driver, 2);
-    driver.fillRect(0, offsetY, 64, 120 - offsetY, false);
-    filter.dispose();
+    case 'Input:LongB':
+      var ix = layouts.indexOf(currentLayout);
+      currentLayout = layouts[ix + 1];
+      currentLayout = currentLayout ? currentLayout : layouts[0];
 
-    // sep line
-    y += 1;
-    driver.drawLine(0, y, 64, y, false);
-    driver.drawLine(0, y + 1, 64, y + 1, true);
-    y += 2;
+      // CONTINUE TO REDRAW
+    case 'Input:B':
 
-    this.init(driver, stateStore);
+      // Redraw set
+
+      // partial clear
+      var filter = ScanlinesFilter(driver, 2);
+      driver.fillRect(0, offsetY, 64, 120 - offsetY, false);
+      filter.dispose();
+
+      // sep line
+      y += 1;
+      driver.drawLine(0, y, 64, y, false);
+      driver.drawLine(0, y + 1, 64, y + 1, true);
+      y += 2;
+
+      this.init(driver, stateStore);
+      break;
   }
 }
 
@@ -172,12 +206,12 @@ function drawLabel(driver, label) {
 
   // step
   var step = steps.indexOf(currentAverageStep);
-  var max = steps.length-1;
+  var max = steps.length - 1;
   var px = Math.ceil((32 / max) * step) + 1;
   driver.fillRect(0, 123, px, 5, true);
 }
 
-function drawSampleSample(driver, x0, y, sample, max, min, drawTip) {
+function drawSample(driver, x0, y, sample, max, min, drawTip) {
   sample = sample || 0;
   min = min || 0;
 
