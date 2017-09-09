@@ -1,16 +1,16 @@
 module.change_code = 1;
 
-var BaseDisplay = require('./base-display');
 var inherits = require('util').inherits;
+var BaseDisplay = require('./base-display');
+var DottedFilter = require('./dotted-filter');
 
 // TODO: move to config.js
 var menu = require('../menu');
 console.log('the menu is:', menu)
 
 // add 'title'
-menu = [{ name: 'menu', command: () => { } }].concat(menu);
-
-
+menu = [{ name: 'menu', command: () => { } }]
+  .concat(menu);
 var width = 64;
 var height = 128;
 var lineHeight = 12;
@@ -22,6 +22,8 @@ function MenuDisplay(driver, events, stateStore) {
 
 inherits(MenuDisplay, BaseDisplay);
 MenuDisplay.prototype.init = function (driver, stateStore) {
+  // reset =)
+  state = { position: 0 };
   drawMenu(driver, menu, state);
 }
 
@@ -30,6 +32,7 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
     case 'Input:B':
     case 'Input:A':
     case 'Input:C':
+    // ?
       clearSelection(driver, menu, state);
       state.executing = false;
       state.position += (e.name === 'Input:A') ? -1 : 1;
@@ -46,9 +49,10 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
       console.log('Menu.executing', menuItem);
       menuItem.command();
 
+      state.executing = false;
+
       // restore state
       setTimeout(() => {
-        state.executing = false;
         drawSelection(driver, menu, state);
       }, 1000);
 
@@ -60,7 +64,7 @@ module.exports = MenuDisplay;
 
 function clearSelection(driver, menu, state) {
   var y = 10 + state.position * lineHeight;
-  driver.fillRect(2, y + 3, 4, 4, false);
+  driver.fillRect(2, y + 3, 4, 4, false); // clear old box
 }
 
 function drawSelection(driver, menu, state) {
@@ -77,32 +81,43 @@ function drawSelection(driver, menu, state) {
 
 function drawMenu(driver, menu, state) {
 
-  driver.fillRect(0, 4, 64, 124, false);
-  driver.setTextSize(1);
+  driver.clear();
+  driver.setTextSize(2);
   driver.setTextColor(1, 0);
   driver.setTextWrap(false);
 
   console.log("drawMenu", menu)
 
-  menu.map((m, ix) => ({
-    text: m.name,
-    y: 10 + (ix * lineHeight),
-    selected: ix === state.position
-  })).forEach(m => drawMenuItem(driver, m, state));
+  var p = menu.map((m, ix) => ({
+      text: m.name,
+      y: 10 + (ix * lineHeight),
+      selected: ix === state.position
+    }));
+
+    p.push(p.splice(0, 1)[0]);
+    p.unshift(p.find(o => o.selected));
+
+    p.forEach(m => drawMenuItem(driver, m, state));
 
   driver.display();
 }
 
 function drawMenuItem(driver, item, state) {
+
+  var y = item.y === 10 ? 94 : item.y;
+  var filter = DottedFilter(driver);
+    driver.fillRect(0, y - lineHeight, 64, lineHeight + 4, 0);
+  filter.dispose();
+
   driver.setCursor(8, item.y);
   write(driver, item.text);
 
   if (item.selected) {
     if (state.executing) {
-      driver.fillRect(2, item.y + 3, 4, 4, true);
+      driver.fillRect(0, item.y + 2, 9, 9, true);
     } else {
-      driver.fillRect(2, item.y + 3, 4, 4, false);
-      driver.drawRect(2, item.y + 3, 4, 4, true);
+      driver.fillRect(0, item.y + 2, 8, 9, false);
+      driver.fillRect(2, item.y + 4, 4, 4, true);
     }
   }
 }

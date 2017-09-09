@@ -14,10 +14,6 @@ var DisplayTypes = [
 	require('./menu')
 ];
 
-global.displayEvents = Rx.Observable.create((observer) => {
-	global.displayEvents_generator = observer;
-});
-
 function DisplayBootstrap(nativeDriver, size, inputs, events, stateStore) {
 
 	// to the driver, add GFX stuff for eas use
@@ -47,9 +43,7 @@ function DisplayBootstrap(nativeDriver, size, inputs, events, stateStore) {
 	var currentIx = 0;
 	var current = null;
 	function loadScreen(ix) {
-		if (current) {
-			current.dispose();
-		}
+		var disposed = current ? current.dispose() : false;
 
 		var DisplayType = DisplayTypes[ix];
 		console.log('Display:Cycling Screen', { ix: ix });
@@ -75,19 +69,15 @@ function DisplayBootstrap(nativeDriver, size, inputs, events, stateStore) {
 		loadScreen(currentIx);
 	}
 
-	global.displayEvents.subscribe((t) => {
-		if (t.type === 'change_display') {
-			var DisplayType = t.displayType;
+	global.globalEvents
+		.filter(t => t.type === 'display_event')
+		.subscribe(t => {
+			console.log('display_event:', t);
+			var DisplayType = t.value;
 
-			if (current) {
-				current.dispose();
-			}
-
+			var disposed = current ? current.dispose() : false;
 			current = new DisplayType(driver, events, stateStore);
-		}
-
-		console.log('display_event:', t);
-	});
+		});
 
 	// give some time for the OLED reset proc.
 	setTimeout(() => loadScreen(0), 250);

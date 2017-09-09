@@ -24,7 +24,7 @@ var displayDrivers = config.displayDrivers
         dim: (dimmed) => true
       };
     }
-    
+
     return driverInstance;
   });
 
@@ -38,6 +38,11 @@ delay(333, function () {
   var _ = require('lodash');
   var Rx = require('rxjs');
   var hotswap = require('hotswap');
+
+  // a global hack!
+  global.globalEvents = Rx.Observable.create((observer) => {
+    global.globalEvents_generator = observer;
+  }).share();
 
   log('!3. importing more stuff...');
   var SensorsBootstrap = require('./bootstrap_sensors');
@@ -81,7 +86,7 @@ delay(333, function () {
   input.subscribe(console.log);
 
   // storage
-  log('!5. storage', config.persist);
+  log('!5. persistence', config.persist);
   var db = new Persistence(config.dbFile);
 
   // continue previous session
@@ -122,7 +127,7 @@ delay(333, function () {
   };
   allPlusState.filter((s) => s.name === 'State')
     .subscribe((s) => stateStore.set(s.value));
-  
+
 
   // DISPLAY
   var ui = null;
@@ -147,7 +152,7 @@ delay(333, function () {
         _.omitBy(state, (s, key) => key === 'Averages' || key === 'Path'));
 
       console.log('State.Path', { length: state.Path ? state.Path.length : 0 });
-      console.log('State.Averages', _.keys(state.Averages).map(k => ({ 
+      console.log('State.Averages', _.keys(state.Averages).map(k => ({
         Step: k,
         Points: state.Averages[k].length
       })));

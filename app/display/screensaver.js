@@ -30,12 +30,6 @@ ScreenSaverDisplay.prototype.processEvent = function (driver, e, stateStore) {
       drawSpeed(driver, speed);
       break;
 
-    // TODO: drop?
-    case 'Wifi':
-      wifi = e.value.length;
-      drawWifi(driver, wifi);
-      break;
-
     case 'MagnometerHeading':
     case 'Acceleration':
     case 'MagnometerAxis':
@@ -45,7 +39,7 @@ ScreenSaverDisplay.prototype.processEvent = function (driver, e, stateStore) {
     case 'Ticks':
       var state = stateStore.getState();
       var speed = state.Gps ? state.Gps.speed : 0;
-      
+
       if (!_.isNumber(speed)) {
         speed = 0;
       }
@@ -64,12 +58,8 @@ module.exports = ScreenSaverDisplay;
 function drawAll(driver, state) {
   if (!state) return;
   var speed = state.Gps ? state.Gps.speed : NaN;
-  var wifi = state.Wifi ? state.Wifi.length : 0;
-
-  driver.fillRect(0, 4, 64, 124, false);
-  drawSpeed(driver, speed, true);
   drawBackground(driver, state);
-  drawWifi(driver, wifi, true);
+  drawSpeed(driver, speed, true);
 };
 
 var offsetX = 9;
@@ -81,7 +71,10 @@ var keepN = takeN + previousN;
 function drawBackground(driver, state) {
   var speed = (state.Gps ? state.Gps.speed : 0) || 0;
   var radious = (speed + 1) * Math.PI;
+
+  var filter = NoisyFilter(driver);
   driver.drawCircle(width / 2 + offsetX, 92 + offsetY, radious, true);
+  filter.dispose();
 
   var a = speedAccumulator;
   var lastN = a.slice(a.length - takeN);
@@ -98,7 +91,9 @@ function drawBackground(driver, state) {
   // });
 
   var modifier = 1.95;
-  driver.drawLine(previousSpeedAvg * modifier, 4, currentSpeedAvg * modifier, 127, true);
+  var filter = DottedFilter(driver);
+  driver.drawLine(previousSpeedAvg * modifier, 8, currentSpeedAvg * modifier, 127, true);
+  filter.dispose();
 }
 
 var currentSpeed = NaN;
@@ -106,33 +101,23 @@ function drawSpeed(driver, speed, force) {
   if (!force && speed === currentSpeed) return;
   currentSpeed = speed;
 
+  driver.fillRect(12, 90, 55, 34, 0)
+
   var kmPh = !isNaN(speed) ? mpsTokph(speed) : NaN;
-  driver.setCursor(11, height - 50 + offsetY);
-  driver.setTextSize(2);
+  driver.setCursor(18, height - 50 + offsetY);
+  driver.setTextSize(4);
   driver.setTextColor(1, 0);
   var sKmPh = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
   write(driver, sKmPh)
 }
 
-var currentWifi = 0;
-function drawWifi(driver, count, force) {
-  if (!force && currentWifi === count) return;
-  currentWifi = count;
-
-  if (currentWifi > 0) {
-    driver.setCursor(10, 10);
-    driver.setTextSize(1);
-    driver.setTextColor(1, 0);
-    var string = 'wifi:' + count;
-    write(driver, string);
-  }
-}
-
 function write(driver, string) {
   var chars = string.split('');
+  var filter = DottedFilter(driver);
   chars.forEach((c) => {
     driver.write(c.charCodeAt(0));
   });
+  filter.dispose();
 }
 
 var r0 = Math.PI * Math.PI;

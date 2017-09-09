@@ -22,7 +22,7 @@ var offsetY = 5;
 var y = offsetY;
 var width = 19;
 var steps = require('../state').AverageSensorSteps;
-global.currentAverageStep = global.currentAverageStep || steps[2];
+var currentAverageStep = steps[2];
 var currentAverageSet = 'Average_' + currentAverageStep;
 var currentGroup = {
   label: 'SYS',
@@ -31,7 +31,11 @@ var currentGroup = {
     // TODO: provide modifier, logaritmic and exponential, allow custom ones...
     ['MagnometerTemperature', 50, 24],
     ['CpuTemperature', 77, 33],
-    ['CpuLoad', 1, 0]]
+    ['CpuLoad', 1, 0]],
+
+    // ['Gps.speed']
+    // ['Odometer.speed']
+    // ['Cadence' ]
 };
 
 function AveragesDisplay(driver, events, stateStore) {
@@ -46,10 +50,10 @@ function NextStep(driver) {
   y++;
   driver.drawLine(0, y, 64, y, true);
 
-  var ix = steps.indexOf(global.currentAverageStep);
-  global.currentAverageStep = steps[ix - 1];
-  if (!global.currentAverageStep) global.currentAverageStep = steps[steps.length - 1];
-  currentAverageSet = 'Average_' + global.currentAverageStep;
+  var ix = steps.indexOf(currentAverageStep);
+  currentAverageStep = steps[ix - 1];
+  if (!currentAverageStep) currentAverageStep = steps[steps.length - 1];
+  currentAverageSet = 'Average_' + currentAverageStep;
 
   console.log('AverageSet', currentAverageSet)
 }
@@ -167,7 +171,7 @@ function drawLabel(driver, label) {
   write(driver, label);
 
   // step
-  var step = steps.indexOf(global.currentAverageStep);
+  var step = steps.indexOf(currentAverageStep);
   var max = steps.length-1;
   var px = Math.ceil((32 / max) * step) + 1;
   driver.fillRect(0, 123, px, 5, true);
