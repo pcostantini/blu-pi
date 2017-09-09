@@ -1,9 +1,8 @@
 module.change_code = 1;
 
-// click: cycle step
-// long click: redraw
-// next: next AVERAGE SCREEN
-// prev: prev " "
+// long click: change group
+// next: averages - lower frequency
+// prev: averages - higher frequency
 
 // smaple seq:
 // SYS.* > SYS.CPU_TEMP > SYS.CPU_LOAD > SYS.MEMORY
@@ -33,9 +32,9 @@ var layouts = [
   }, {
     label: 'SYS',
     layout: [
-      ['MagnometerTemperature', 50, 24],
+      ['CpuLoad', 1, 0],
       ['CpuTemperature', 77, 33],
-      ['CpuLoad', 1, 0]
+      ['MagnometerTemperature', 50, 24]
     ]
   }
 ]
