@@ -70,7 +70,7 @@ function drawAll(driver, state) {
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
-var mapSize = [64, 75];
+var mapSize = [64, 73];
 var mapOffsets = [1, 30]
 var mapOffsetY = mapOffsets[1];
 var bounds = {
@@ -190,7 +190,8 @@ function drawAltitude(driver, altitude) {
 
 function drawTime(driver, sTime) {
     driver.setTextColor(1, 0);
-    driver.setTextSize(1);
+    driver.setTextSize(2);
+    driver.setCursor(0, height - 23);
 
     // right align
     // var minX = 34;
@@ -198,7 +199,6 @@ function drawTime(driver, sTime) {
     // x = x < minX ? minX : x;
     // driver.setCursor(x, height - 8);
 
-    driver.setCursor(0, height - 17);
     write(driver, sTime);
 }
 
@@ -208,7 +208,7 @@ function drawDistance(driver, distance) {
 
   driver.setTextColor(1, 0);
   driver.setTextSize(1);
-  driver.setCursor(0, height - 8);
+  driver.setCursor(0, height - 7);
   write(driver, text);
 }
 
