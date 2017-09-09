@@ -6,6 +6,7 @@ var BaseDisplay = require('./base-display');
 
 var DottedFilter = require('./dotted-filter');
 var NoisyFilter = require('./noisy-filter');
+var utils = require('../utils');
 
 var width = 64;
 var height = 128;
@@ -33,7 +34,6 @@ ScreenSaverDisplay.prototype.processEvent = function (driver, e, stateStore) {
     case 'MagnometerHeading':
     case 'Acceleration':
     case 'MagnometerAxis':
-      console.log(e)
       break;
 
     case 'Ticks':
@@ -72,16 +72,24 @@ function drawBackground(driver, state) {
   var speed = (state.Gps ? state.Gps.speed : 0) || 0;
   var radious = (speed + 1) * Math.PI;
 
+  var filter = DottedFilter(driver);
+  driver.fillRect(0, 64, 64, 64, 0)
+  filter.dispose();
+
+
+  var centerX = width / 2 + offsetX;
+  var centerY = 92 + offsetY;
   var filter = NoisyFilter(driver);
-  driver.drawCircle(width / 2 + offsetX, 92 + offsetY, radious, true);
+  driver.drawCircle(centerX, centerY, radious, true);
+  driver.drawCircle(centerX, centerY - 1, radious, true);
   filter.dispose();
 
   var a = speedAccumulator;
   var lastN = a.slice(a.length - takeN);
   var previous = a.slice(0, a.length - takeN);
 
-  var previousSpeedAvg = mpsTokph(average(previous));
-  var currentSpeedAvg = mpsTokph(average(lastN));
+  var previousSpeedAvg = utils.mpsToKph(average(previous));
+  var currentSpeedAvg = utils.mpsToKph(average(lastN));
 
   // console.log({
   //   prev: previous.join(','),
@@ -101,11 +109,11 @@ function drawSpeed(driver, speed, force) {
   if (!force && speed === currentSpeed) return;
   currentSpeed = speed;
 
-  driver.fillRect(12, 90, 55, 34, 0)
+  driver.fillRect(12, 90, 52, 26, 0)
 
-  var kmPh = !isNaN(speed) ? mpsTokph(speed) : NaN;
+  var kmPh = !isNaN(speed) ? utils.mpsToKph(speed) : NaN;
   driver.setCursor(18, height - 50 + offsetY);
-  driver.setTextSize(4);
+  driver.setTextSize(3);
   driver.setTextColor(1, 0);
   var sKmPh = !isNaN(kmPh) ? toFixed(kmPh, 1) : '-.-';
   write(driver, sKmPh)
@@ -152,8 +160,4 @@ function average(arr) {
   return _.reduce(arr, function (memo, num) {
     return memo + num;
   }, 0) / (arr.length === 0 ? 1 : arr.length);
-}
-
-function mpsTokph(mps) {
-  return Math.round(mps * 3.6 * 100) / 100
 }

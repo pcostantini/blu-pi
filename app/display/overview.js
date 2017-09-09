@@ -5,7 +5,7 @@ var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
 var DottedFilter = require('./dotted-filter');
 var NoisyFilter = require('./noisy-filter');
-
+var utils = require('../utils');
 var width = 64;
 var height = 128;
 
@@ -18,7 +18,7 @@ inherits(OverviewDisplay, BaseDisplay);
 OverviewDisplay.prototype.init = function (driver, stateStore) {
   this.refreshDisplayDelay = 3333;
   this.lastTimeString = '';
-  
+
   drawAll(driver, stateStore.getState());
 }
 
@@ -84,7 +84,7 @@ var drawMapDebounced = _.debounce(drawMap, 1000);
 function drawMap(driver, path) {
   console.log('OverviewDisplay:drawMap');
   drawMapCanvas(driver);
-  
+
   if (!path || !path.points || path.points.length === 0) {
     // empty
 
@@ -95,8 +95,8 @@ function drawMap(driver, path) {
     var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
     driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
     driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
-    
-    
+
+
     return;
   }
 
@@ -157,7 +157,7 @@ function drawSpeed(driver, speed) {
   if (isNaN(speed)) {
     write(driver, '-.-');
   } else {
-    var s = toFixed(mpsToKph(speed), 1);
+    var s = toFixed(utils.mpsToKph(speed), 1);
     write(driver, s);
   }
 }
@@ -233,8 +233,6 @@ function toFixed(value, precision) {
   return result;
 }
 
-const mpsToKph = (mps) => Math.round(mps * 3.6 * 100) / 100;
-
 function getTimeString(ticks) {
   var totalTicks = ticks && ticks.length ? ticks[0] : 0;
   var elapsed = Math.round(totalTicks / 1000);
@@ -280,7 +278,7 @@ function renderWholePath(driver, path, offsets) {
 
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
-  var filter = DottedFilter(driver);  
+  var filter = DottedFilter(driver);
   path.forEach((coord) => {
     var pixel = getPixelCoordinate(coord, bounds);
 

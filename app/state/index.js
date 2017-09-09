@@ -2,16 +2,18 @@ var _ = require('lodash');
 var Rx = require('rxjs');
 var DistanceReducer = require('./distance');
 var PathReducer = require('./path');
+var utils = require('../utils');
+
 
 // TODO: Extract averages to own file
 
 // averages configuration
 var averageSensorSteps = [1, 5, 13, 34, 60, 60 * 60];
 var averageSensorReaders = {
-  'CpuTemperature': (sValue) => sValue,
   'CpuLoad': (sValue) => sValue[0],
-  'Gps.Speed': (sValue) => sValue.speed || 0,
-  'MagnometerTemperature': (sValue) => sValue.temp
+  'CpuTemperature': (sValue) => sValue,
+  'MagnometerTemperature': (sValue) => sValue.temp,
+  'Gps': (sValue) => utils.mpsToKph(sValue.speed || 0)
 };
 
 var averageSensorNames = _.keys(averageSensorReaders);
@@ -57,12 +59,13 @@ module.exports.FromStream = function FromStream(events) {
   averages.subscribe((avg) => {
     var history = state.Averages[avg.name];
     if(!history) {
-      history = []; 
+      history = [];
     }
 
-    // limit page size
     history.push(avg.value);
-    history = _.takeRight(history, 256);
+
+    // limit page size
+    history = history.length > 256 ? _.takeRight(history, 256) : history;
 
     state.Averages[avg.name] = history;
   });
