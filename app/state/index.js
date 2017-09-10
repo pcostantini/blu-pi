@@ -8,7 +8,7 @@ var utils = require('../utils');
 // TODO: Extract averages to own file
 
 // averages configuration
-var averageSensorSteps = [1, 5, 13, 34, 60, 60 * 60];
+var averageSensorSteps = [1, 5, 30, 60, 60 * 5, 60 * 10];
 var averageSensorReaders = {
   'CpuLoad': (sValue) => sValue[0],
   'CpuTemperature': (sValue) => sValue,
