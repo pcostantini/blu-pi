@@ -6,6 +6,7 @@ var BaseDisplay = require('./base-display');
 
 var DottedFilter = require('./dotted-filter');
 var NoisyFilter = require('./noisy-filter');
+var ScanlinesFilter = require('./scanlines-filter');
 var utils = require('../utils');
 
 var width = 64;
@@ -62,27 +63,20 @@ function drawAll(driver, state) {
   drawSpeed(driver, speed, true);
 };
 
-var offsetX = 9;
-var offsetY = 15;
-
 var takeN = 3;
 var previousN = 10;
 var keepN = takeN + previousN;
 function drawBackground(driver, state) {
   var speed = (state.Gps ? state.Gps.speed : 0) || 0;
-  var radious = (speed + 1) * Math.PI;
+  var radious = ((speed + 1) * Math.PI) * 2;
 
-  var filter = DottedFilter(driver);
-  driver.fillRect(0, 64, 64, 64, 0)
+  var filter = ScanlinesFilter(driver);
+  driver.fillRect(0, 54, 64, 74, 0);
   filter.dispose();
 
-
-  var centerX = width / 2 + offsetX;
-  var centerY = 92 + offsetY;
-  var filter = NoisyFilter(driver);
-  driver.drawCircle(centerX, centerY, radious, true);
-  driver.drawCircle(centerX, centerY - 1, radious, true);
-  filter.dispose();
+  var centerX = width;
+  var centerY = height;
+  driver.fillCircle(centerX, centerY, radious, 1);
 
   var a = speedAccumulator;
   var lastN = a.slice(a.length - takeN);
@@ -98,10 +92,10 @@ function drawBackground(driver, state) {
   //   lastAvg: currentSpeedAvg
   // });
 
-  var modifier = 1.95;
-  var filter = DottedFilter(driver);
-  driver.drawLine(previousSpeedAvg * modifier, 8, currentSpeedAvg * modifier, 127, true);
-  filter.dispose();
+  // var modifier = 1.95;
+  // var filter = DottedFilter(driver);
+  // driver.drawLine(previousSpeedAvg * modifier, 8, currentSpeedAvg * modifier, 127, true);
+  // filter.dispose();
 }
 
 var currentSpeed = NaN;
@@ -109,19 +103,14 @@ function drawSpeed(driver, speed, force) {
   if (!force && speed === currentSpeed) return;
   currentSpeed = speed;
 
-  driver.fillRect(12, 90, 52, 26, 0)
-
   var kmPh = !isNaN(speed) ? utils.mpsToKph(speed) : NaN;
-  driver.setCursor(18, height - 50 + offsetY);
-  driver.setTextColor(1, 0);
   var isNan =!isNaN(kmPh)
-  var sKmPh = isNan ? toFixed(kmPh, 1) : '-.-';
-  if(!isNan) {
-    driver.setTextSize(3);
-  } else {
-    driver.setTextSize(4);
-  }
-  write(driver, sKmPh)
+  var sKmPh = isNan ? toFixed(kmPh, 1).split('.')[0] : '-.-';
+
+  driver.setTextSize(4);
+  driver.setCursor(10, 12);
+  driver.setTextColor(1, 0);
+  write(driver, sKmPh);
 }
 
 function write(driver, string) {
