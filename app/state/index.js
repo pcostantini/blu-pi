@@ -21,7 +21,7 @@ var defaultValues = _.mapValues(averageSensorReaders, () => 0);
 module.exports.AverageSensorSteps = averageSensorSteps;
 module.exports.FromStream = function FromStream(events) {
   var gpsEvents = events
-    .filter(hasValidGpsSignal)
+    .filter(utils.isValidGpsEvent)
     .map(s => s.value)
     .share();
 
@@ -74,8 +74,6 @@ module.exports.FromStream = function FromStream(events) {
   return Rx.Observable.merge(stateStream, reducers, averages)
     .share();
 }
-
-const hasValidGpsSignal = s => !!s.value && s.value.point && s.value.point[0] !== null && s.name === 'Gps';
 
 // AVERAGE
 function AverageFromSnapshot(snapshot, sensorNames, bufferCount) {

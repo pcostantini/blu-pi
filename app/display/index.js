@@ -21,6 +21,9 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 		new GFX(size.height, size.width),     // rotate the 'glib' lib
 		nativeDriver);
 
+	// disable text wrapping
+	driver.setTextWrap(false);
+
 	// cycle screen when Next is pressed
 	events
 		.filter(s => current && !current.rerouteInput)

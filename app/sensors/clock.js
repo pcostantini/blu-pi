@@ -28,7 +28,7 @@ function GpsClock() {
             // });
             continue;
           }
-          
+
           if (data.class === 'TPV') {
             if(data.time) {
 
@@ -65,7 +65,8 @@ function GpsClock() {
     var cpuClockInited = false;
     serviceSocket.on('error', function (error) {
       if (error.code === 'ECONNREFUSED') {
-        // use timer clock if cannot connect to GPSD
+
+        // use timer if coudln't stablish GPSD connection
         console.log('clock.socket.REFUSED!', error);
 
         if(cpuClockInited) return;
