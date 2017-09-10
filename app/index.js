@@ -38,6 +38,7 @@ delay(333, function () {
   var _ = require('lodash');
   var Rx = require('rxjs');
   var hotswap = require('hotswap');
+  var utils = require('./utils');
 
   // a global hack!
   global.globalEvents = Rx.Observable.create((observer) => {
@@ -91,6 +92,7 @@ delay(333, function () {
   // continue previous session
   log('!6. reading previous session');
   var replay = db.readSensors();
+
   var replayComplete = replay.count();
   replay = config.demoScheduled ? ReplayWithSchedule(replay) : replay;
 
@@ -108,9 +110,26 @@ delay(333, function () {
 
   // clock, ticks and input
   var sensorsAndReplay = Rx.Observable.merge(replay, sensors);
-  var clock = sensors.filter(s => s.name === 'Clock');
+
+  var clock = require('./sensors/clock')()
+    .skipUntil(replayComplete)
+    .share();
   var ticks = Ticks(clock);
-  var all = Rx.Observable.merge(errors, input, sensorsAndReplay, global.globalEvents, ticks)
+
+  var gpsTicks = replay.filter(utils.isValidGpsEvent).share();
+  if(config.demoMode && !config.demoScheduled) {
+    Rx.Observable.merge(gpsTicks.first(), gpsTicks.last())
+      .startWith([])
+      .scan((acc, o) => acc.concat(o.timestamp))
+      .last()
+      .subscribe(acc => ticks.reset(Date.now() - (acc[1] - acc[0])));
+  } else if(!config.demoMode) {
+    // restart ticks using first valid gps event
+    gpsTicks.first().subscribe(o => ticks.reset(o.timestamp));
+  }
+
+  var all = Rx.Observable
+    .merge(errors, clock, ticks, input, sensorsAndReplay, global.globalEvents)
     .share();
 
   // state store or snapshot of latest events // defeats the purpose!

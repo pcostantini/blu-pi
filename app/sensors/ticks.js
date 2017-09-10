@@ -4,13 +4,13 @@ module.exports = function Ticks(clock) {
 
   var startTick = Date.now();
 
-  return clock
+  var ticks = clock
     .map(() => {
 
       var aMinute = 1000 * 60;
       var anHour = aMinute * 60;
       var aQuarter = 15;
-      
+
       var ticksSinceStart = Date.now() - startTick;
       var hours = Math.floor(ticksSinceStart / anHour);
       var minutes = Math.floor(ticksSinceStart / aMinute);
@@ -28,4 +28,9 @@ module.exports = function Ticks(clock) {
 
     });
 
+  ticks.reset = function(newStartTick) {
+    startTick = newStartTick;
+  };
+
+  return ticks;
 }
