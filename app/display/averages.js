@@ -4,12 +4,6 @@ module.change_code = 1;
 // next: averages - lower frequency
 // prev: averages - higher frequency
 
-// smaple seq:
-// SYS.* > SYS.CPU_TEMP > SYS.CPU_LOAD > SYS.MEMORY
-// SPEED.* > SPEED.odometer > SPEED.gps
-// TEMPs Exteral > (template / Magnometor Temp (barometer.pression))
-
-
 var _ = require('lodash');
 var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
