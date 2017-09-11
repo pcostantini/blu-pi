@@ -4,14 +4,26 @@ var utils = require('../utils');
 
 var minDistance = 0.025;
 
-// var anchor = null;
-var anchor = [
-    -34.567803,
-    -58.508071
-];
+var lastKnownGps = null;
+var anchor = null;
+// var anchor = [
+//     -34.567803,
+//     -58.508071
+// ];
+
+// HACK: Register for interval requests
+global.globalEvents
+    .filter(t => t.name === 'Interval.StartRequest')
+    .subscribe(t => {
+        console.log('Starting intervals @ ', lastKnownGps);
+        if(!lastKnownGps) return;
+        anchor = [lastKnownGps.latitude, lastKnownGps.longitude]
+    });
+
 
 function IntervalsFromGps(gpsStream) {
     var intervalStream = gpsStream
+        .do(gps => lastKnownGps = gps)
         .filter(o => anchor != null)
         // distance to anchor point
         .map(gps => [
@@ -62,7 +74,8 @@ function IntervalsFromGps(gpsStream) {
             name: 'Interval',
             value: {
                 anchor: anchor,
-                time: t
+                time: t,
+                timestamp: Date.now()
             }
         }))
         .share();
@@ -78,18 +91,6 @@ function IntervalsFromGps(gpsStream) {
               value: o
             }))
     ).share();
-}
-
-function toHHMMSS(ticks) {
-  var sec_num = ticks / 1000;
-  var hours   = Math.floor(sec_num / 3600);
-  var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-  var seconds = sec_num - (hours * 3600) - (minutes * 60);
-
-  if (hours   < 10) {hours   = "0"+hours;}
-  if (minutes < 10) {minutes = "0"+minutes;}
-  if (seconds < 10) {seconds = "0"+seconds;}
-  return hours+':'+minutes+':'+seconds;
 }
 
 module.exports = IntervalsFromGps;
