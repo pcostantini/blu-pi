@@ -9,6 +9,7 @@ var DisplayTypes = [
 	require('./overview'),
 	require('./averages'),
 	require('./map'),
+	require('./intervals'),
 	require('./screensaver'),
 	// require('./off'),
 	require('./menu')
