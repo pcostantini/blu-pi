@@ -70,7 +70,7 @@ function drawBackground(driver, state) {
   var speed = (state.Gps ? state.Gps.speed : 0) || 0;
   var radious = ((speed + 1) * Math.PI) * 2;
 
-  var filter = ScanlinesFilter(driver);
+  var filter = ScanlinesFilter(driver, 0);
   driver.fillRect(0, 54, 64, 74, 0);
   filter.dispose();
 
@@ -108,18 +108,25 @@ function drawSpeed(driver, speed, force) {
   var sKmPh = isNan ? toFixed(kmPh, 1).split('.')[0] : '-.-';
 
   driver.setTextSize(4);
-  driver.setCursor(10, 12);
+  driver.setCursor(10, 13);
   driver.setTextColor(1, 0);
   write(driver, sKmPh);
+
+  // shadow
+  driver.setCursor(10, 15);
+  driver.setTextColor(1, 1);
+  var filter1 = ScanlinesFilter(driver);
+  var filter = DottedFilter(driver);
+  write(driver, sKmPh);
+  filter.dispose();
+  filter1.dispose();
 }
 
 function write(driver, string) {
   var chars = string.split('');
-  var filter = DottedFilter(driver);
   chars.forEach((c) => {
     driver.write(c.charCodeAt(0));
   });
-  filter.dispose();
 }
 
 var r0 = Math.PI * Math.PI;
