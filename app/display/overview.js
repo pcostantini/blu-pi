@@ -87,15 +87,11 @@ function drawMap(driver, path) {
 
   if (!path || !path.points || path.points.length === 0) {
     // empty
-
-
-
     var lineSize = 14;
     var x1 = Math.round(mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2);
     var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
     driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
     driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
-
 
     return;
   }
@@ -151,7 +147,7 @@ function drawMapPoint(driver, value, stateStore) {
 }
 
 function drawSpeed(driver, speed) {
-  driver.setCursor(4, 4);
+  driver.setCursor(4, 5);
   driver.setTextSize(2);
 
   if (isNaN(speed)) {
