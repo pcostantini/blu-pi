@@ -2,10 +2,8 @@ var _ = require('lodash');
 var Rx = require('rxjs');
 var DistanceReducer = require('./distance');
 var PathReducer = require('./path');
+var IntervalsReduder = require('./intervals');
 var utils = require('../utils');
-
-
-// TODO: Extract averages to own file
 
 // averages configuration
 var averageSensorSteps = [1, 5, 30, 60, 60 * 5, 60 * 10];
@@ -29,7 +27,8 @@ module.exports.FromStream = function FromStream(events) {
   // into new (reduced) values
   var reducers = Rx.Observable.merge(
     PathReducer(gpsEvents),
-    DistanceReducer(gpsEvents)).share();
+    DistanceReducer(gpsEvents),
+    IntervalsReduder(gpsEvents)).share();
 
   // state stream (merged all reducers and events)
   var state = {};
