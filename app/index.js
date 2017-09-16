@@ -129,7 +129,8 @@ delay(333, function () {
       .merge(
         gpsTicks.take(1).map(a => a[0]),                    // first gps timestamp
         gpsTicks.defaultIfEmpty({ timestamp: Date.now() })  // no events? start with current timestamp
-      ).subscribe(o => ticks.reset(o.timestamp));
+      ).filter(o => !!o)
+       .subscribe(o => ticks.reset(o.timestamp));
   }
 
   var all = Rx.Observable

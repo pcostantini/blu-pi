@@ -6,6 +6,8 @@ var BaseDisplay = require('./base-display');
 var DottedFilter = require('./dotted-filter');
 var NoisyFilter = require('./noisy-filter');
 var utils = require('../utils');
+
+var refreshDisplayDelay = 1333;
 var width = 64;
 var height = 128;
 
@@ -16,7 +18,7 @@ function OverviewDisplay(driver, events, stateStore) {
 inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
-  this.refreshDisplayDelay = 3333;
+  this.refreshDisplayDelay = refreshDisplayDelay;
   this.lastTimeString = '';
 
   drawAll(driver, stateStore.getState());
@@ -37,10 +39,10 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     case 'Ticks':
       var sTime = getTimeString(e.value);
-      if (this.lastTimeString !== sTime) {
-        this.lastTimeString = sTime;
-        drawTime(driver, sTime);
-      }
+      if (this.lastTimeString === sTime) return;
+
+      this.lastTimeString = sTime;
+      drawTime(driver, sTime);
 
       break;
 
@@ -65,13 +67,16 @@ function drawAll(driver, state) {
   drawMap(driver, state.Path || { points: [] });
   drawDistance(driver, state.Distance);
 
+  driver.setCursor(30, height - 7);
+  write(driver, 'km');
+
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, barometer.pressure, state.CpuTemperature);
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
-var mapSize = [64, 73];
-var mapOffsets = [1, 30]
+var mapSize = [64, 68];
+var mapOffsets = [1, 34]
 var mapOffsetY = mapOffsets[1];
 var bounds = {
   width: mapSize[0] - 4,
@@ -91,7 +96,9 @@ function drawMap(driver, path) {
     var x1 = Math.round(mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2);
     var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
     driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
+    driver.drawLine(x1, 1 + y1, x1 + lineSize, 1 + y1 + lineSize, 1);
     driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
+    driver.drawCircle(x1 + lineSize / 2, 1 + y1 + lineSize / 2, lineSize / 2, 1);
 
     return;
   }
@@ -146,26 +153,32 @@ function drawMapPoint(driver, value, stateStore) {
 
 }
 
+var currentSpeedLabel = 0;
 function drawSpeed(driver, speed) {
-  driver.setCursor(4, 5);
-  driver.setTextSize(2);
+  speed = utils.mpsToKph(speed);
+  var isValid = speed >= 14;
+  var newLabel = isValid ? toFixed(speed, 1) : 'x-.-';
+  if (newLabel === currentSpeedLabel) return;
 
-  if (isNaN(speed)) {
-    write(driver, '-.-');
-  } else {
-    var s = toFixed(utils.mpsToKph(speed), 1);
-    write(driver, s);
-  }
+  currentSpeedLabel = newLabel;
+  driver.setTextSize(3);
+
+  var s = currentSpeedLabel.split('.');
+
+  driver.setCursor(30, 6);
+  write(driver, '.' + s[1]);
+  driver.setCursor(0, 6);
+  write(driver, s[0]);
 }
 
-const getValue = (temp) => temp ? temp.toFixed(1) : '?';
+const getValue = (temp) => temp ? temp.toFixed(1) : '..';
 function drawTemp(driver, temp, pressure, cpuTemp) {
   driver.setTextSize(1);
   if (temp || cpuTemp) {
     temp = getValue(temp);
     // cpuTemp = getValue(cpuTemp);
     var sTemp = temp + 'c '// + cpuTemp  + 'c';
-    driver.setCursor(0, 22);
+    driver.setCursor(0, 28);
     write(driver, sTemp);
   }
 
@@ -177,30 +190,24 @@ function drawTemp(driver, temp, pressure, cpuTemp) {
 }
 
 function drawAltitude(driver, altitude) {
-  var altText = !isNaN(altitude) ? (toFixed(altitude, 1)  + 'm') : '-';
+  var altText = !isNaN(altitude) ? (' ' + toFixed(altitude, 1) + 'm') : '...';
   var x = width - (altText.length * 6);
-  driver.setCursor(x, 22);
+  driver.setCursor(x, 28);
   driver.setTextSize(1);
   write(driver, altText);
 }
 
 function drawTime(driver, sTime) {
-    driver.setTextColor(1, 0);
-    driver.setTextSize(2);
-    driver.setCursor(0, height - 23);
+  driver.setTextColor(1, 0);
+  driver.setTextSize(2);
+  driver.setCursor(0, height - 24);
 
-    // right align
-    // var minX = 34;
-    // var x = mapSize[1] - ((sTime.length - 1) * 10 + 5);
-    // x = x < minX ? minX : x;
-    // driver.setCursor(x, height - 8);
-
-    write(driver, sTime);
+  write(driver, sTime);
 }
 
 function drawDistance(driver, distance) {
   distance = distance || 0;
-  var text = toFixed(distance, 2);
+  var text = (toFixed(distance, 1) + '----').substring(0, 5);
 
   driver.setTextColor(1, 0);
   driver.setTextSize(1);
