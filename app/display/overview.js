@@ -5,6 +5,7 @@ var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
 var DottedFilter = require('./dotted-filter');
 var NoisyFilter = require('./noisy-filter');
+var ScanlineFilter = require('./scanlines-filter');
 var utils = require('../utils');
 
 var refreshDisplayDelay = 1333;
@@ -62,6 +63,7 @@ module.exports = OverviewDisplay;
 function drawAll(driver, state) {
   state = state || {};
 
+  currentSpeedLabel = -1;
   drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
   drawTime(driver, getTimeString(state.Ticks));
   drawMap(driver, state.Path || { points: [] });
@@ -75,8 +77,8 @@ function drawAll(driver, state) {
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
-var mapSize = [64, 68];
-var mapOffsets = [1, 34]
+var mapSize = [64, 60];
+var mapOffsets = [1, 40]
 var mapOffsetY = mapOffsets[1];
 var bounds = {
   width: mapSize[0] - 4,
@@ -136,7 +138,6 @@ function drawMapPoint(driver, value, stateStore) {
     if (outCounter > 5) {
       outCounter = 0;
       var state = stateStore.getState();
-
       drawMapDebounced(driver, state.Path);
     }
 
@@ -178,7 +179,7 @@ function drawTemp(driver, temp, pressure, cpuTemp) {
     temp = getValue(temp);
     // cpuTemp = getValue(cpuTemp);
     var sTemp = temp + 'c '// + cpuTemp  + 'c';
-    driver.setCursor(0, 28);
+    driver.setCursor(0, 29);
     write(driver, sTemp);
   }
 
@@ -192,7 +193,7 @@ function drawTemp(driver, temp, pressure, cpuTemp) {
 function drawAltitude(driver, altitude) {
   var altText = !isNaN(altitude) ? (' ' + toFixed(altitude, 1) + 'm') : '...';
   var x = width - (altText.length * 6);
-  driver.setCursor(x, 28);
+  driver.setCursor(x, 29);
   driver.setTextSize(1);
   write(driver, altText);
 }
@@ -218,7 +219,9 @@ function drawDistance(driver, distance) {
 function write(driver, string) {
   var chars = string.split('');
   chars.forEach((c) => {
+    var f = c === 'x' ? DottedFilter(driver) : null;
     driver.write(c.charCodeAt(0));
+    if(f) f.dispose();
   });
 }
 
