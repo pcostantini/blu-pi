@@ -124,12 +124,11 @@ delay(333, function () {
       .last()
       .subscribe(acc => ticks.reset(Date.now() - (acc[1] - acc[0])));
   } else if(!config.demoMode) {
-    // restart ticks using first valid gps event
-    Rx.Observable
-      .merge(
-        gpsTicks.take(1).map(a => a[0]),                    // first gps timestamp
-        gpsTicks.defaultIfEmpty({ timestamp: Date.now() })  // no events? start with current timestamp
-      ).filter(o => !!o)
+    // restart ticks using first valid gps event or current timestamp
+    gpsTicks
+      .take(1).map(o => o.value.timestamp)
+      .defaultIfEmpty(Date.now)
+      .subscribe(ts => ticks.reset(ts));
        .subscribe(o => ticks.reset(o.timestamp));
   }
 
