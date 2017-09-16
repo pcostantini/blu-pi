@@ -13,8 +13,14 @@ module.exports = function DistanceReducer(gpsEvents) {
     .map(gps => [gps.latitude, gps.longitude])
     .scan((last, curr) => {
       if (last) {
-        var offset = GpsDistance(last[0], last[1], curr[0], curr[1]);
-        distance += offset;
+        // console.log('!!!!!!!!!!!', { last, curr })
+
+        try {
+          var offset = GpsDistance(last[0], last[1], curr[0], curr[1]);
+          distance += offset;
+        } catch(err) {
+          // do nothing
+        }
       }
       return curr;
     }, null)

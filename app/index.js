@@ -129,7 +129,6 @@ delay(333, function () {
       .take(1).map(o => o.value.timestamp)
       .defaultIfEmpty(Date.now)
       .subscribe(ts => ticks.reset(ts));
-       .subscribe(o => ticks.reset(o.timestamp));
   }
 
   var all = Rx.Observable
