@@ -92,8 +92,8 @@ delay(333, function () {
   // continue previous session
   log('!6. reading previous session');
   var replay = db.readSensors();
-
   var replayComplete = replay.count();
+
   replay = config.demoScheduled ? ReplayWithSchedule(replay) : replay;
 
   // sensors, do not activate the stream until replay is complete

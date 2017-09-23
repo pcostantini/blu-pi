@@ -158,7 +158,7 @@ var currentSpeedLabel = 0;
 function drawSpeed(driver, speed) {
   speed = utils.mpsToKph(speed);
   var isValid = speed >= 14;
-  var newLabel = isValid ? toFixed(speed, 1) : 'x-.-';
+  var newLabel = isValid ? toFixed(speed, 1) : dot + '-.-';
   if (newLabel === currentSpeedLabel) return;
 
   currentSpeedLabel = newLabel;
@@ -166,7 +166,8 @@ function drawSpeed(driver, speed) {
 
   var s = currentSpeedLabel.split('.');
 
-  driver.setCursor(30, 6);
+  // render from right to left
+  driver.setCursor(24, 6);
   write(driver, '.' + s[1]);
   driver.setCursor(0, 6);
   write(driver, s[0]);
@@ -216,12 +217,19 @@ function drawDistance(driver, distance) {
   write(driver, text);
 }
 
+var dot = '^';
 function write(driver, string) {
   var chars = string.split('');
   chars.forEach((c) => {
-    var f = c === 'x' ? DottedFilter(driver) : null;
+    var f = c === dot ? DottedFilter(driver) : null;
+    if(f) {
+      driver.setTextSize(2)
+    }
     driver.write(c.charCodeAt(0));
-    if(f) f.dispose();
+    if(f) {
+      driver.setTextSize(3)
+      f.dispose();
+    }
   });
 }
 
