@@ -13,26 +13,28 @@ var NoiseFilter = require('./noisy-filter');
 
 var offsetY = 5;
 var y = offsetY;
-var width = 19;
 var steps = require('../state').AverageSensorSteps;
-var currentAverageStep = steps[2];
+var currentAverageStep = steps[0];
 var currentAverageSet = 'Average_' + currentAverageStep;
 var layouts = [
   {
-    label: 'SPEED',
+    label: 'SPDi',
     layout: [
-      ['Gps', 40, 5]
-    ]
+      ['Gps', 40, 1]
+    ],
+    layoutWidth: 60
   }, {
-    label: 'SYS',
+    label: 'CORE.TEMP',
     layout: [
-      ['CpuLoad', 1, 0],
+      ['MagnometerTemperature', 50, 24],
       ['CpuTemperature', 77, 33],
-      ['MagnometerTemperature', 50, 24]
-    ]
+      ['CpuLoad', 1, 0]
+    ],
+    layoutWidth: 19
   }
 ]
 var currentLayout = _.first(layouts);
+var width = currentLayout.layoutWidth;
 
 function AveragesDisplay(driver, events, stateStore) {
   this.refreshDisplayDelay = 1000;
@@ -95,7 +97,7 @@ AveragesDisplay.prototype.init = function (driver, stateStore) {
     // 3 col samples
     for (var i = 0; i < currentLayout.layout.length; i++) {
       var layout = currentLayout.layout[i];
-      drawSample(driver, i * 22, y, e[layout[0]], layout[1], layout[2], tip);
+      drawSample(driver, i * currentLayout.layoutWidth, y, e[layout[0]], layout[1], layout[2], tip);
     }
 
     y = y + 1;
@@ -128,7 +130,7 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     for (var i = 0; i <= currentLayout.layout.length; i++) {
       var layout = currentLayout.layout[i];
       if (layout) {
-        drawSample(driver, i * 22, y, e.value[layout[0]], layout[1], layout[2], true);
+        drawSample(driver, i * currentLayout.layoutWidth + 1, y, e.value[layout[0]], layout[1], layout[2], true);
       }
     }
     // ...
@@ -162,6 +164,7 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
       var ix = layouts.indexOf(currentLayout);
       currentLayout = layouts[ix + 1];
       currentLayout = currentLayout ? currentLayout : layouts[0];
+      width = currentLayout.layoutWidth;
 
       // CONTINUE TO REDRAW
     case 'Input:B':
