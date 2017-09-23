@@ -168,9 +168,9 @@ function drawSpeed(driver, speed) {
 
   // render from right to left
   driver.setCursor(26, 6);
-  var f = DottedFilter(driver);
+  var f = s[1] === '-' ? null : DottedFilter(driver);
   write(driver, '.' + s[1]);
-  f.dispose();
+  if(f) f.dispose();
   driver.setCursor(0, 6);
   write(driver, s[0]);
 }
