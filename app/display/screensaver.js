@@ -28,8 +28,8 @@ ScreenSaverDisplay.prototype.processEvent = function (driver, e, stateStore) {
   switch (e.name) {
 
     case 'Gps':
-      var speed = e.value ? e.value.speed : NaN;
-      drawSpeed(driver, speed);
+      // var speed = e.value ? e.value.speed : NaN;
+      // drawSpeed(driver, speed);
       break;
 
     case 'MagnometerHeading':
@@ -60,7 +60,7 @@ function drawAll(driver, state) {
   if (!state) return;
   var speed = state.Gps ? state.Gps.speed : NaN;
   drawBackground(driver, state);
-  drawSpeed(driver, speed, true);
+  // drawSpeed(driver, speed, true);
 };
 
 var takeN = 3;

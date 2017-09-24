@@ -6,7 +6,14 @@ var IntervalsReduder = require('./intervals');
 var utils = require('../utils');
 
 // averages configuration
-var averageSensorSteps = [1, 5, 30, 60, 60 * 5, 60 * 10];
+var averageSensorSteps = [
+  1,      // a tick'
+  2,      // two ticks (seconds)
+  2 * 4,
+  2 * 4 * 6,
+  2 * 4 * 6 * 8,
+  2 * 4 * 6 * 8 * 10
+];
 var averageSensorReaders = {
   'CpuLoad': (sValue) => sValue[0],
   'CpuTemperature': (sValue) => sValue,

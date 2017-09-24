@@ -69,7 +69,7 @@ function drawAll(driver, state) {
   drawMap(driver, state.Path || { points: [] });
   drawDistance(driver, state.Distance);
 
-  driver.setCursor(30, height - 7);
+  driver.setCursor(38, height - 7);
   write(driver, 'km');
 
   var barometer = state.Barometer || {};
@@ -167,21 +167,25 @@ function drawSpeed(driver, speed) {
   var s = currentSpeedLabel.split('.');
 
   // render from right to left
-  driver.setCursor(24, 6);
+  driver.setCursor(26, 6);
+  var f = s[1] === '-' ? null : DottedFilter(driver);
   write(driver, '.' + s[1]);
+  if(f) f.dispose();
   driver.setCursor(0, 6);
   write(driver, s[0]);
 }
 
-const getValue = (temp) => temp ? temp.toFixed(1) : '..';
+const getValue = (t) => t ? Math.round(t) + 'c' : '..';
+var currentTemp = ''
 function drawTemp(driver, temp, pressure, cpuTemp) {
   driver.setTextSize(1);
   if (temp || cpuTemp) {
-    temp = getValue(temp);
-    // cpuTemp = getValue(cpuTemp);
-    var sTemp = temp + 'c '// + cpuTemp  + 'c';
-    driver.setCursor(0, 29);
-    write(driver, sTemp);
+    var newCurrentTemp = getValue(cpuTemp);
+    if(newCurrentTemp === currentTemp) return;
+
+    currentTemp = newCurrentTemp;
+    driver.setCursor(0, 31);
+    write(driver, newCurrentTemp);
   }
 
   // if (pressure) {
@@ -192,9 +196,9 @@ function drawTemp(driver, temp, pressure, cpuTemp) {
 }
 
 function drawAltitude(driver, altitude) {
-  var altText = !isNaN(altitude) ? (' ' + toFixed(altitude, 1) + 'm') : '...';
+  var altText = !isNaN(altitude) ? (' ' + Math.round(altitude) + 'm') : '...';
   var x = width - (altText.length * 6);
-  driver.setCursor(x, 29);
+  driver.setCursor(x, 31);
   driver.setTextSize(1);
   write(driver, altText);
 }
@@ -209,7 +213,7 @@ function drawTime(driver, sTime) {
 
 function drawDistance(driver, distance) {
   distance = distance || 0;
-  var text = (toFixed(distance, 1) + '----').substring(0, 5);
+  var text = toFixed(distance, 2);
 
   driver.setTextColor(1, 0);
   driver.setTextSize(1);
