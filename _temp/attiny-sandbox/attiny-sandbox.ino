@@ -24,13 +24,21 @@ void setup() {
   reset();
 }
 
+long lastDebounceTime = 0;  // the last time the output pin was toggled
+long debounceDelay = 10;    // the debounce time; increase if the output flickers
 int state = LOW;
 bool ping() {
-  // TODO: Debounce
-  bool newState = !digitalRead(SWITCH);
-  bool ping = (state != newState && newState == HIGH);
-  state = newState;
-  return ping;
+
+  //filter out any noise by setting a time buffer
+  if ( (millis() - lastDebounceTime) > debounceDelay) {
+    bool newState = !digitalRead(SWITCH);
+    bool ping = (state != newState && newState == HIGH);
+    state = newState;
+    if(ping) lastDebounceTime = millis();
+    return ping;
+  }
+
+  return false;
 }
 
 void loop() {
