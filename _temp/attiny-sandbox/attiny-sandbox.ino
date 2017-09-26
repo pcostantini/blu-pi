@@ -7,7 +7,9 @@ int fadeAmount = 3;    // how many points to fade the LED by
 
 int oneSec = 1000;
 unsigned long last;
-unsigned int lup;
+unsigned int lup = 0;     // wheel revolutions
+unsigned int distance = 0;// in meters
+int wheelC = 2136;        // 700cc x 28mm
 
 //
 // the setup routine runs once when you press reset:
@@ -55,7 +57,10 @@ void loop() {
 }
 
 void updateAndSend() {
-  // todo:
+  distance = lup * wheelC;
+
+  // TODO: Calculate speed
+  // TODO: Send speed (& distance?)
 }
 
 void reset() {
