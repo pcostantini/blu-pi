@@ -1,4 +1,7 @@
 #include <TinyWireS.h>
+#ifndef TWI_RX_BUFFER_SIZE
+#define TWI_RX_BUFFER_SIZE ( 16 )
+#endif
 
 #define I2C_SLAVE_ADDRESS 0x13
 #define MAX_TICK 500
@@ -11,10 +14,20 @@ int fadeAmount = 3;    // how many points to fade the LED by
 
 unsigned int lup = 0;     // wheel revolutions
 unsigned int distance = 0;// in meters
+uint8_t speed = 0;
 int wheelC = 2136;        // 700cc x 28mm
 
+volatile uint8_t i2c_regs[] =
+{
+    0, //older 8
+    0 //younger 8
+};
+
+volatile byte reg_position = 0;
+const byte reg_size = sizeof(i2c_regs);
+
 void requestEvent() {
-  TinyWireS.send(distance);
+  TinyWireS.send(speed);
 }
 
 void setup() {
@@ -22,7 +35,7 @@ void setup() {
   TinyWireS.onRequest(requestEvent);
 
   // initialize the LED pin as an output.
-  // pinMode(LED, OUTPUT);
+  pinMode(LED, OUTPUT);
   // initialize the SWITCH pin as an input.
   pinMode(SWITCH, INPUT);
   // ...with a pullup
@@ -32,8 +45,8 @@ void setup() {
 
 
 long lastDebounceTime = 0;  // the last time the output pin was toggled
-long debounceDelay = 10;    // the debounce time; increase if the output flickers
-int state = HIGH;
+long debounceDelay = 15;    // the debounce time; increase if the output flickers
+int state = LOW;
 bool ping() {
 
   //filter out any noise by setting a time buffer
@@ -55,6 +68,11 @@ void loop() {
     // !!!
     lup++;
     distance = lup * wheelC;
+    speed++;    // TODO
+
+//    i2c_regs[0] = speed >> 8;
+//    i2c_regs[1] = speed & 0xFF;
+    
     brightness = 255;
   }
 
@@ -63,7 +81,40 @@ void loop() {
     brightness = brightness - fadeAmount;
   }
 
-  // analogWrite(LED, brightness);
+  analogWrite(LED, brightness);
 
   delay(1);
 }
+
+
+/*
+volatile unsigned long Data1;//this is the data you are sending
+volatile byte SendCount;
+volatile uint8_t sendByte;
+
+void requestEvent()
+{  
+
+  SendCount++; //increment this
+  switch (SendCount)
+  {
+    case 1:
+      Data1 = GetMyData();
+      //Data1 = 55555;
+      sendByte = Data1 & 0xFF;
+      break;
+    case 2:
+      sendByte = Data1 >> 8;
+      break;
+    case 3:
+      sendByte = Data1 >> 16;
+      break;
+    case 4:
+      sendByte = Data1 >> 24;
+      SendCount=0;
+      break;
+  }
+
+  TinyWireS.send(sendByte);
+}
+*/
