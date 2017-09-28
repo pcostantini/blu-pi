@@ -1,3 +1,7 @@
+#include <TinyWireS.h>
+
+#define I2C_SLAVE_ADDRESS 0x13
+#define MAX_TICK 500
 
 #define SWITCH 3
 #define LED 4
@@ -5,28 +9,31 @@
 int brightness = 0;    // how bright the LED is
 int fadeAmount = 3;    // how many points to fade the LED by
 
-int oneSec = 1000;
-unsigned long last;
 unsigned int lup = 0;     // wheel revolutions
 unsigned int distance = 0;// in meters
 int wheelC = 2136;        // 700cc x 28mm
 
-//
-// the setup routine runs once when you press reset:
+void requestEvent() {
+  TinyWireS.send(distance);
+}
+
 void setup() {
+  TinyWireS.begin(I2C_SLAVE_ADDRESS);
+  TinyWireS.onRequest(requestEvent);
+
   // initialize the LED pin as an output.
-  pinMode(LED, OUTPUT);
+  // pinMode(LED, OUTPUT);
   // initialize the SWITCH pin as an input.
   pinMode(SWITCH, INPUT);
   // ...with a pullup
   digitalWrite(SWITCH, HIGH);
-
-  reset();
 }
+
+
 
 long lastDebounceTime = 0;  // the last time the output pin was toggled
 long debounceDelay = 10;    // the debounce time; increase if the output flickers
-int state = LOW;
+int state = HIGH;
 bool ping() {
 
   //filter out any noise by setting a time buffer
@@ -34,7 +41,7 @@ bool ping() {
     bool newState = !digitalRead(SWITCH);
     bool ping = (state != newState && newState == HIGH);
     state = newState;
-    if(ping) lastDebounceTime = millis();
+    if (ping) lastDebounceTime = millis();
     return ping;
   }
 
@@ -42,16 +49,13 @@ bool ping() {
 }
 
 void loop() {
+  unsigned long currentMillis = millis();
+
   if (ping()) {
     // !!!
     lup++;
+    distance = lup * wheelC;
     brightness = 255;
-  }
-
-  if ( (millis() - last) > oneSec) {
-    // every one sec, update value and send it!
-    updateAndSend();
-    reset();
   }
 
   if (brightness > 0) {
@@ -59,19 +63,7 @@ void loop() {
     brightness = brightness - fadeAmount;
   }
 
-  analogWrite(LED, brightness);
+  // analogWrite(LED, brightness);
 
   delay(1);
 }
-
-void updateAndSend() {
-  distance = lup * wheelC;
-
-  // TODO: Calculate speed
-  // TODO: Send speed (& distance?)
-}
-
-void reset() {
-  last = millis();
-}
-
