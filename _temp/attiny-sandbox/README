@@ -1,0 +1,5 @@
+Arduino IDE ATTINY Board definitions:
+https://raw.githubusercontent.com/damellis/attiny/ide-1.6.x-boards-manager/package_damellis_attiny_index.json
+
+TinyWireS lib:
+https://github.com/rambo/TinyWire/tree/master/TinyWireS
