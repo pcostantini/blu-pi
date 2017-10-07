@@ -1,27 +1,30 @@
 #include <TinyWireS.h>
-#include <math.h>
 
+// Config
+#define SWITCH 3
+#define LED 4
+float wheelRadius = 0.33995;        // 700cc x 28mm
+int revolutionTimeout = 1500;
+
+// I2C Setup
+#define I2C_SLAVE_ADDRESS 0x13
 #ifndef TWI_RX_BUFFER_SIZE
 #define TWI_RX_BUFFER_SIZE ( 16 )
 #endif
 
-#define I2C_SLAVE_ADDRESS 0x13
-
-#define SWITCH 3
-#define LED 4
-
+// LED Pulse
 int brightness = 0;    // how bright the LED is
 int fadeAmount = 3;    // how many points to fade the LED by
 unsigned long lastFadeUpdate = 0;
 
-float wheelRadius = 0.33995;        // 700cc x 28mm
-int revolutionTimeout = 1500;
-float maxSpeed = 60;
-
+// Speed!
 float speed;
 volatile byte rotation;
 float timetaken, rpm, dtime;
 unsigned long pevtime;
+
+// Data to transfer
+float maxSpeed = 60;
 uint8_t speedAsByte;
 
 void requestEvent() {
@@ -45,17 +48,17 @@ void setup() {
   pevtime = 0;
 }
 
-
+// Check wheel rotation with debounce
 long lastDebounceTime = 0;  // the last time the output pin was toggled
 long debounceDelay = 15;    // the debounce time; increase if the output flickers
 int state = LOW;
-bool ping() {
+bool ping(unsigned long currentMillis) {
   //filter out any noise by setting a time buffer
-  if ( (millis() - lastDebounceTime) > debounceDelay) {
+  if ( (currentMillis - lastDebounceTime) > debounceDelay) {
     bool newState = !digitalRead(SWITCH);
     bool ping = (state != newState && newState == HIGH);
     state = newState;
-    if (ping) lastDebounceTime = millis();
+    if (ping) lastDebounceTime = currentMillis;
     return ping;
   }
 
@@ -68,7 +71,7 @@ void loop() {
   
   unsigned long currentMillis = millis();
 
-  if (ping()) {
+  if (ping(currentMillis)) {
     brightness = 255;
 
     rotation++;
@@ -97,6 +100,7 @@ void loop() {
     speedAsByte = (((float(100) / maxSpeed) * lSpeed) / 100) * 255;
   }
 
+  // LED Pulse
   if(currentMillis - lastFadeUpdate > 5) {
 
     if (brightness > 0) {
@@ -108,6 +112,4 @@ void loop() {
     lastFadeUpdate = currentMillis;
   }
 
-  //tws_delay(1);
 }
-
