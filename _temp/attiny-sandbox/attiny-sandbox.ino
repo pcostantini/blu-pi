@@ -63,6 +63,9 @@ bool ping() {
 }
 
 void loop() {
+
+  TinyWireS_stop_check();
+  
   unsigned long currentMillis = millis();
 
   if (ping()) {
@@ -94,7 +97,7 @@ void loop() {
     speedAsByte = (((float(100) / maxSpeed) * lSpeed) / 100) * 255;
   }
 
-  if(currentMillis - lastFadeUpdate > 10) {
+  if(currentMillis - lastFadeUpdate > 5) {
 
     if (brightness > 0) {
       // reduce pulse
@@ -106,7 +109,5 @@ void loop() {
   }
 
   //tws_delay(1);
-
-  TinyWireS_stop_check();
 }
 
