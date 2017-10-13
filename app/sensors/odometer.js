@@ -1,94 +1,47 @@
-var GPIO = require('onoff').Gpio;
 var Rx = require('rxjs');
+var i2c = require('i2c');
 
-function OdometerObservable(gpioPin) {
+// Reads distance and current speed from ATTINY85 using I2C
+
+var address = 0x13;
+var refreshDelay = 1000;
+var byteRefreshDelay = 10;
+
+function OdometerObservable() {
   return Rx.Observable.create(function (observer) {
-    
-    var ts;
-    var reedVal;
+    var buffer = [];
+    var wire = new i2c(address, { device: '/dev/i2c-1' });
 
-    var reed = new GPIO(gpioPin, 'in', 'both');
-    reed.watch(function (err, value) {
+    function continuousRead(callback) {
+      wire.readByte((err, byte) => {
         if(err) {
-           throw err;
-        }
+          console.log('err', err);
+          setTimeout(() => continuousRead(callback), refreshDelay);
+        } else {
+          buffer.push(byte);
+          var last = buffer.slice(-2);
+          if(last[0] === 0x11 && last[1] === 0x22) {
+            // sequence complete
+            var data = buffer.slice(0, -2);
+            buffer = [];
+            callback({
+              speed: (data[0] | (data[1] << 8)) / 100,          // km/h
+              distance: (data[2] | (data[3] << 8)) / 1000       // km
+            });
 
-        onReedSwitchEvent(value);
-        if(value == 0) {
-          onWheelRevolution();
-        }
-    });
-
-    // WATCH GPIO CHANGES
-
-    function onReedSwitchEvent(newValue) {
-      reedVal = newValue;
-      ts = new Date();
-
-      // emit
-    }
-
-    function onWheelRevolution() {
-      console.log('whiii!');
-
-      var event = {
-        type: 'wheelContact',
-        timestamp: new Date()
-      };
-
-      observer.next( { name: 'Odometer', value: event } );
-
-      // emit
-      // observer....
-    }
-
-
-
-    var radius = 13.5;// tire radius (in inches)
-    var circumference = 2*3.14*radius;
-
-    var mph;
-    
-    var timer;// time between one full rotation (in ms)
-    var maxReedCounter = 100;//min time (in ms) of one rotation (for debouncing)
-    var reedCounter = maxReedCounter;
-
-    function calculate() {
-      if (reedVal){//if reed switch is closed
-        if (reedCounter == 0){//min time between pulses has passed
-          mph = (56.8*circumference) / timer;//calculate miles per hour
-          timer = 0;//reset timer
-          reedCounter = maxReedCounter;//reset reedCounter
-        }
-        else{
-          if (reedCounter > 0){//don't let reedCounter go negative
-            reedCounter -= 1;//decrement reedCounter
+            // read again in...
+            setTimeout(() => continuousRead(callback), refreshDelay);
+          } else {
+            // read next byte
+            setTimeout(() => continuousRead(callback), byteRefreshDelay);
           }
         }
-      }
-      else{//if reed switch is open
-        if (reedCounter > 0){//don't let reedCounter go negative
-          reedCounter -= 1;//decrement reedCounter
-        }
-      }
-      if (timer > 2000){
-        mph = 0;//if no new pulses from reed switch- tire is still, set mph to 0
-      }
-      else{
-        timer += 1;//increment timer
-      }
-
-      console.log('speed:', {
-        mph: mph
       });
     }
 
-    // EXIT CLEANUP
-    // TODO: test!
-    process.on('SIGINT', function () {
-        reed.unexport();
-        process.exit();
-    });
+    // read continuously and emit
+    continuousRead(status => observer.next({ name: 'Odometer', value: status }));
+
   });
 }
 

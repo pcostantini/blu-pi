@@ -3,20 +3,23 @@ var _ = require('lodash');
 
 module.exports = function bootstrap(sensorsConfig) {
 
-  // var odometerPin = 25 //2;
-  // var odometer = require('./sensors/odometer')(odometerPin);
-  // ... odometer.subscribe(console.log);
-
   var sensors = Rx.Observable.merge(
 
+    // GPS
     safeRequire('./sensors/gps')(),
 
+    // Odometer and velocimeter
+    safeRequire('./sensors/odometer')(),
+
+    // LSM303 - 3X Accelerometer & Magnometer
     safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
 
+    // BMP085 - Temp and Pressure
     (sensorsConfig.temperature)
       ? safeRequire('./sensors/barometer')(sensorsConfig.temperature)
       : Rx.Observable.empty(),
 
+    // Wifi scanner (naaa!)
     (sensorsConfig.indiscreet)
       ? require('./sensors/wifi')(sensorsConfig.indiscreet.wifi)
       : Rx.Observable.empty(),
