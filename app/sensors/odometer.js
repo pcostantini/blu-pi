@@ -42,7 +42,7 @@ function OdometerObservable() {
     // read continuously and emit
     continuousRead(status => observer.next({ name: 'Odometer', value: status }));
 
-  });
+  }).share();
 }
 
 module.exports = OdometerObservable;
