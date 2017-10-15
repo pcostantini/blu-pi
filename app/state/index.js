@@ -7,22 +7,22 @@ var utils = require('../utils');
 
 // averages configuration
 var averageSensorSteps = [
-  1,      // a tick'
+  1,      // a tick (one second)
   2,      // two ticks (seconds)
   2 * 4,
   2 * 4 * 6,
   2 * 4 * 6 * 8,
   2 * 4 * 6 * 8 * 10
 ];
-var averageSensorReaders = {
-  'CpuLoad': (sValue) => sValue[0],
-  'CpuTemperature': (sValue) => sValue,
-  'MagnometerTemperature': (sValue) => sValue.temp,
-  'Gps': (sValue) => utils.mpsToKph(sValue.speed || 0)
+var averageSensorConfig = {
+  'CpuLoad':               ['CpuLoad', o => o[0]],
+  'CpuTemperature':        ['CpuTemperature', o => o],
+  'MagnometerTemperature': ['MagnometerTemperature', o => o.temp],
+  'SpeedGps':              ['Gps', o => utils.mpsToKph(o.speed || 0)],
+  'SpeedOdometer':         ['Odometer', o => o.speed || 0]
 };
 
-var averageSensorNames = _.keys(averageSensorReaders);
-var defaultValues = _.mapValues(averageSensorReaders, () => 0);
+var defaultValues = _.mapValues(averageSensorConfig, () => 0);
 module.exports.AverageSensorSteps = averageSensorSteps;
 module.exports.FromStream = function FromStream(events) {
   var gpsEvents = events
@@ -48,13 +48,14 @@ module.exports.FromStream = function FromStream(events) {
     .share();
 
   // every 1 snapshot capture (?)
+  var averageSensorNames = _.values(averageSensorConfig).map( g => g[0]);
   var oneSecSnapshot = Rx.Observable.timer(0, 1000)
     .map(() => _.pick(state, averageSensorNames))
     .map((snapshotUnnormalized) =>
-      _.mapValues(snapshotUnnormalized, (value, sensor) => averageSensorReaders[sensor](value)))
-    .map((snapshot) => _.assign({}, defaultValues, snapshot));
+      _.mapValues(averageSensorConfig, (config) => getFromSnapshot(snapshotUnnormalized, config)))
+    .map((snapshot) => _.assign({}, defaultValues, snapshot))
 
-  var averagesStreams = averageSensorSteps.map(t => AverageFromSnapshot(oneSecSnapshot, averageSensorNames, t))
+  var averagesStreams = averageSensorSteps.map(bufferCount => AverageFromSnapshot(oneSecSnapshot, bufferCount))
   var averages = Rx.Observable
     .from(averagesStreams)
     .mergeAll()
@@ -82,7 +83,7 @@ module.exports.FromStream = function FromStream(events) {
 }
 
 // AVERAGE
-function AverageFromSnapshot(snapshot, sensorNames, bufferCount) {
+function AverageFromSnapshot(snapshot, bufferCount) {
   return snapshot
     .bufferCount(bufferCount)
     .map(buf => _.reduce(buf, (avgSnapshot, item, ix, buf) =>
@@ -93,4 +94,11 @@ function AverageFromSnapshot(snapshot, sensorNames, bufferCount) {
       name: ['Average', bufferCount].join('_'),
       value: s
     }));
+}
+
+function getFromSnapshot(snapshot, config) {
+  var sensorName = config[0];
+  var sensorValueFun = config[1];
+  var sensorValue = snapshot[sensorName];
+  return sensorValue ? sensorValueFun(sensorValue) : 0
 }

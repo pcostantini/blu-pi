@@ -20,9 +20,10 @@ var layouts = [
   {
     label: 'SPDi',
     layout: [
-      ['Gps', 40, 1]
+      ['SpeedGps', 40, 0],
+      ['SpeedOdometer', 40, 0]
     ],
-    layoutWidth: 60
+    layoutWidth: 30
   }, {
     label: 'SYS.CORE',
     layout: [
