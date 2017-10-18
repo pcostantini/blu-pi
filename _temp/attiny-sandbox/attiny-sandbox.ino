@@ -107,12 +107,17 @@ void loop() {
     dtime = currentMillis;
     if (rotation >= 2)
     {
+      // calc rpm
       timetaken = currentMillis - pevtime; //time in millisec
       rpm = (1000 / timetaken) * 60;
       pevtime = currentMillis;
       rotation = 0;
+      
+      // calc speed
+      speed = round((wheelCirc * rpm * 3600) / 1000);
+      i2c_regs[0] = lowByte(speed);
+      i2c_regs[1] = highByte(speed);
     }
-
   }
 
   // drop to zero if no revolutions were detected after a while
@@ -121,11 +126,8 @@ void loop() {
     rpm = 0;
     speed = 0;
     dtime = currentMillis;
-  } else {
-    // calc speed
-    speed = (wheelRadius * rpm * 0.37699) * 10;
-    i2c_regs[0] = lowByte(speed);
-    i2c_regs[1] = highByte(speed);
+    i2c_regs[0] = 0;
+    i2c_regs[1] = 0;
   }
 
   // LED Pulse
