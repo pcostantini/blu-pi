@@ -28,4 +28,4 @@ other parts
 
 # NOTES
 
-check [NOTES.txt](./notes.txt)
+check [NOTES.txt](./NOTES)

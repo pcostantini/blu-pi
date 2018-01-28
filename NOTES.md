@@ -1,7 +1,7 @@
+ require('./app/sensors/odometer')().subscribe(console.log);
+
+
 ethernet debugger plug!
-- 8 (as the rainbow colors)
-
-
 ETH0				PI-GPIOs		PLUG--->PROTOBOARD1
 					vi				0		orange *
 					ground			0		blue *
