@@ -43,7 +43,7 @@ var config = {
       temp: 3000
     },
     cpu: 3000,
-    // temperature: 3000,
+    temperature: 3000,
     memory: 10000
   },
 };
