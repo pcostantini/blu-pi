@@ -3,33 +3,12 @@ log('!1. reading config...');
 var config = require('./config');
 console.log('\tblu-pi!', config);
 
-// TODO: emit 'config' event using config object
-
 // display drivers
 console.log('!2. driver displays');
-var displayDrivers = config.displayDrivers
-  .map((driverName) => {
-    console.log('..instantiating: ' + driverName);
-    var DriverType = require(driverName);
-    try {
-      var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
-    } catch (e) {
-      // console.log('error', e)
-      return {
-        inited: () => true,
-        clear: () => true,
-        display: () => true,
-        drawPixel: (x, y, color) => true,
-        invert: (invert) => false,
-        dim: (dimmed) => true
-      };
-    }
-
-    return driverInstance;
-  });
-
-var unifiedDisplayDriver = getUnifiedDriver(displayDrivers);
-global.displayDriver = unifiedDisplayDriver;
+var displayDriver = global.displayDriver =
+  getUnifiedDriver(
+    config.displayDrivers
+      .map(instantiateDriver));
 
 // continue app init after display drivers are started
 delay(333, function () {
@@ -96,21 +75,20 @@ delay(333, function () {
 
   replay = config.demoScheduled ? ReplayWithSchedule(replay) : replay;
 
-  // sensors, do not activate the stream until replay is complete
   log('!6. sensors init');
-  var sensors = config.demoScheduled
-    ? Rx.Observable.empty()
-    : SensorsBootstrap(config.sensors).skipUntil(replayComplete).share();
+  var sensors = !config.demoScheduled
+    // do not activate the stream until replay is complete
+    ? SensorsBootstrap(config.sensors).skipUntil(replayComplete).share()
+    // ignore sensors on replay
+    : Rx.Observable.empty();
 
-  // persist
+  // persistence
   if (config.persist) {
     errors.subscribe(e => db.insert(e));
     sensors.subscribe(e => db.insert(e));
   }
 
   // clock, ticks and input
-  var sensorsAndReplay = Rx.Observable.merge(replay, sensors);
-
   var clock = require('./sensors/clock')()
     .skipUntil(replayComplete)
     .share();
@@ -132,13 +110,12 @@ delay(333, function () {
   }
 
   var all = Rx.Observable
-    .merge(errors, clock, ticks, input, sensorsAndReplay, global.globalEvents)
+    .merge(errors, clock, ticks, input, replay, sensors, global.globalEvents)
     .share();
 
   // state store or snapshot of latest events // defeats the purpose!
   log('!7. state reducers');
   var state = StateReducer.FromStream(all);
-  var allPlusState = Rx.Observable.merge(all, state);
 
   // state store
   var stateStored = null;
@@ -146,16 +123,16 @@ delay(333, function () {
     set: (state) => stateStored = state,
     getState: () => stateStored
   };
-  allPlusState.filter((s) => s.name === 'State')
-    .subscribe((s) => stateStore.set(s.value));
+  state.subscribe((s) => stateStore.set(s.value));
 
 
   // DISPLAY
   var ui = null;
+  var allPlusState = Rx.Observable.merge(all, state);
   replayComplete.subscribe((cnt) => {
     log('!8. processed %s events', cnt);
     log('!9. init displays. NOT!');
-    ui = Display(unifiedDisplayDriver, config.displaySize, allPlusState, stateStore);
+    ui = Display(displayDriver, config.displaySize, allPlusState, stateStore);
   });
 
   // STATE LOG
@@ -173,10 +150,10 @@ delay(333, function () {
         _.omitBy(state, (s, key) => key === 'Averages' || key === 'Path'));
 
       console.log('State.Path', { length: state.Path ? state.Path.length : 0 });
-      console.log('State.Averages', _.keys(state.Averages).map(k => ({
-        Step: k,
-        Points: state.Averages[k].length
-      })));
+      // console.log('State.Averages', _.keys(state.Averages).map(k => ({
+      //   Step: k,
+      //   Points: state.Averages[k].length
+      // })));
 
 
     });
@@ -194,13 +171,13 @@ function log(msg, arg) {
     console.log(msg);
   }
 
-  if (unifiedDisplayDriver && unifiedDisplayDriver.inited()) {
+  if (displayDriver && displayDriver.inited()) {
     y = y + 6;
-    unifiedDisplayDriver.drawPixel(x, y, 1);
-    unifiedDisplayDriver.drawPixel(x + 1, y + 1, 1);
-    unifiedDisplayDriver.drawPixel(x, y + 1, 1);
-    unifiedDisplayDriver.drawPixel(x + 1, y, 1);
-    unifiedDisplayDriver.display();
+    displayDriver.drawPixel(x, y, 1);
+    displayDriver.drawPixel(x + 1, y + 1, 1);
+    displayDriver.drawPixel(x, y + 1, 1);
+    displayDriver.drawPixel(x + 1, y, 1);
+    displayDriver.display();
   }
 }
 
@@ -208,14 +185,33 @@ function delay(time, func) {
   setTimeout(func, time);
 }
 
-function getUnifiedDriver(drivers) {
-  return {
-    inited: () => (displayDrivers.filter((d, ix) => d.inited).length) === displayDrivers.length,
-    clear: () => displayDrivers.map((d) => d.clear()),
-    display: () => displayDrivers.map((d) => d.display()),
-    drawPixel: (x, y, color) => displayDrivers.map((d) => d.drawPixel(x, y, color)),
-    invert: (invert) => displayDrivers.map((d) => d.invert(invert)),
-    dim: (dimmed) => displayDrivers.map((d) => d.dim(dimmed))
-  };
+function instantiateDriver (driverName) {
+  console.log('..instantiating: ' + driverName);
+  var DriverType = require(driverName);
+  try {
+    var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
+  } catch (e) {
+    // console.log('error', e)
+    return {
+      inited: () => true,
+      clear: () => true,
+      display: () => true,
+      drawPixel: (x, y, color) => true,
+      invert: (invert) => false,
+      dim: (dimmed) => true
+    };
+  }
+
+  return driverInstance;
 }
 
+function getUnifiedDriver(drivers) {
+  return {
+    inited: () => (drivers.filter((d, ix) => d.inited).length) === drivers.length,
+    clear: () => drivers.map((d) => d.clear()),
+    display: () => drivers.map((d) => d.display()),
+    drawPixel: (x, y, color) => drivers.map((d) => d.drawPixel(x, y, color)),
+    invert: (invert) => drivers.map((d) => d.invert(invert)),
+    dim: (dimmed) => drivers.map((d) => d.dim(dimmed))
+  };
+}

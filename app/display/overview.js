@@ -29,31 +29,40 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
   switch (e.name) {
     case 'Distance':
-      drawDistance(driver, e.value);
+      drawDistance(driver, e.value, 0);
       break;
 
     case 'Gps':
       drawMapPoint(driver, e.value, stateStore);
-      drawSpeed(driver, e.value ? e.value.speed : NaN);
-      drawAltitude(driver, e.value ? e.value.altitude : NaN);
+      // drawSpeed(driver, e.value ? e.value.speed : NaN);
+      // drawAltitude(driver, e.value ? e.value.altitude : NaN);
+      break;
+
+    case 'Odometer':
+
+      drawSpeed(driver, e.value.speed);
+      drawDistance(driver, e.value.distance, 1);
       break;
 
     case 'Ticks':
-      var sTime = getTimeString(e.value);
-      if (this.lastTimeString === sTime) return;
-
-      this.lastTimeString = sTime;
-      drawTime(driver, sTime);
-
+      drawTime(driver, getTimeString(e.value));
       break;
 
     case 'Barometer':
-      drawTemp(driver, e.value.temperature, e.value.pressure, stateStore.getState().CpuTemperature);
+      drawTemp(driver, e.value.temperature, stateStore.getState().CpuTemperature);
       break;
 
-    case 'Input:B':
-      zoom(driver, stateStore);
-      break;
+    // case 'Input:A':
+    //   zoom(driver, stateStore, -1);
+    //   break;
+
+    // case 'Input:B':
+    //   zoom(driver, stateStore);
+    //   break;
+
+    // case 'Input:C':
+    //   zoom(driver, stateStore);
+    //   break;
 
   }
 };
@@ -67,18 +76,17 @@ function drawAll(driver, state) {
   drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
   drawTime(driver, getTimeString(state.Ticks));
   drawMap(driver, state.Path || { points: [] });
-  drawDistance(driver, state.Distance);
-
-  driver.setCursor(38, height - 7);
-  write(driver, 'km');
+  drawDistance(driver, state.Distance, 0);
+  // drawDistance(driver, state.Odometer ? state.Odometer.distance : 0, 1);
 
   var barometer = state.Barometer || {};
-  drawTemp(driver, barometer.temperature, barometer.pressure, state.CpuTemperature);
-  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
+  drawTemp(driver, barometer.temperature, state.CpuTemperature);
+  // drawSecondTemp(driver, state.CpuTemperature);
+  // drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
-var mapSize = [64, 60];
-var mapOffsets = [1, 40]
+var mapSize = [64, 68];
+var mapOffsets = [1, 32]
 var mapOffsetY = mapOffsets[1];
 var bounds = {
   width: mapSize[0] - 4,
@@ -86,14 +94,14 @@ var bounds = {
   zoom: 1
 };
 
-var drawMapDebounced = _.debounce(drawMap, 1000);
+var drawMapDebounced = _.debounce(drawMap, 1333);
 
 function drawMap(driver, path) {
-  console.log('OverviewDisplay:drawMap');
+
   drawMapCanvas(driver);
 
+  // empty ?
   if (!path || !path.points || path.points.length === 0) {
-    // empty
     var lineSize = 14;
     var x1 = Math.round(mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2);
     var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
@@ -106,11 +114,12 @@ function drawMap(driver, path) {
   }
 
   var pathPoints = path.points;
-  var initialCoord = pathPoints[0];
+  var initialCoord = pathPoints[0]; // _.last(pathPoints)
   initBounds(bounds, initialCoord);
 
-  // render with delay
-  setTimeout(() => renderWholePath(driver, pathPoints, mapOffsets), 100);
+  setTimeout(() =>
+    renderWholePath(driver, pathPoints, mapOffsets),
+    33);
 }
 
 function drawMapCanvas(driver) {
@@ -121,7 +130,7 @@ function drawMapCanvas(driver) {
 }
 
 var outCounter = 0;
-function drawMapPoint(driver, value, stateStore) {
+function drawMapPoint(driver, value, stateStore, lazyFocus) {
 
   var coord = [value.latitude, value.longitude];
   if (!bounds.lonLeft) {
@@ -134,57 +143,67 @@ function drawMapPoint(driver, value, stateStore) {
     pixel.x < 0 || pixel.y < 0) {
     // relocate
     // console.log('..out!')
-    outCounter++;
-    if (outCounter > 5) {
-      outCounter = 0;
-      var state = stateStore.getState();
-      drawMapDebounced(driver, state.Path);
+
+    if(!lazyFocus) {
+      outCounter++;
+      if (outCounter > 5) {
+        outCounter = 0;
+        var state = stateStore.getState();
+        drawMapDebounced(driver, state.Path);
+      }
     }
 
     return;
   }
 
-
   var filter = DottedFilter(driver);
-  driver.drawPixel(
-    pixel.x + mapOffsets[0],
-    pixel.y + mapOffsets[1],
-    1);
+  driver.drawPixel(pixel.x + mapOffsets[0], pixel.y + mapOffsets[1], 1);
   filter.dispose();
-
 }
 
-var currentSpeedLabel = 0;
+var currentSpeedLabel = '';
 function drawSpeed(driver, speed) {
   speed = utils.mpsToKph(speed);
   var isValid = speed >= 14;
   var newLabel = isValid ? toFixed(speed, 1) : dot + '-.-';
-  if (newLabel === currentSpeedLabel) return;
 
+  //.
+  if (newLabel === currentSpeedLabel) return;
   currentSpeedLabel = newLabel;
-  driver.setTextSize(3);
 
   var s = currentSpeedLabel.split('.');
+  driver.setTextSize(2);
 
   // render from right to left
-  driver.setCursor(26, 6);
-  var f = s[1] === '-' ? null : DottedFilter(driver);
+  driver.setCursor(41, 6);
+  if(s[1] !== '-') driver.setTextSize(2);
+  // var f = s[1] === '-' ? null : DottedFilter(driver);
   write(driver, '.' + s[1]);
-  if(f) f.dispose();
-  driver.setCursor(0, 6);
+  // if(f) f.dispose();
+
+
+  driver.setTextSize(3);
+  driver.setCursor(12, 6);
   write(driver, s[0]);
 }
 
-const getValue = (t) => t ? Math.round(t) + 'c' : '..';
-var currentTemp = ''
-function drawTemp(driver, temp, pressure, cpuTemp) {
-  driver.setTextSize(1);
+var currentTemp = '';
+function drawTemp(driver, temp, cpuTemp) {
+
   if (temp || cpuTemp) {
     var newCurrentTemp = getValue(cpuTemp);
-    if(newCurrentTemp === currentTemp) return;
 
+    // .
+    if(newCurrentTemp === currentTemp) return;
     currentTemp = newCurrentTemp;
-    driver.setCursor(0, 31);
+
+    driver.setTextSize(1);
+
+    // driver.setCursor(0, 31);
+    var x = width - (newCurrentTemp.length * 6) + 2;
+    driver.setCursor(x, 22);
+
+
     write(driver, newCurrentTemp);
   }
 
@@ -195,29 +214,45 @@ function drawTemp(driver, temp, pressure, cpuTemp) {
   // }
 }
 
-function drawAltitude(driver, altitude) {
-  var altText = !isNaN(altitude) ? (' ' + Math.round(altitude) + 'm') : '...';
-  var x = width - (altText.length * 6);
-  driver.setCursor(x, 31);
-  driver.setTextSize(1);
-  write(driver, altText);
+var lastSecondTemp = '';
+function drawSecondTemp(driver, temp) {
+    var newCurrentTemp = getValue(temp);
+
+    // .
+    if(newCurrentTemp === lastSecondTemp) return;
+    lastSecondTemp = newCurrentTemp;
+
+    var x = width - (newCurrentTemp.length * 6);
+
+    driver.setCursor(x, 31);
+    driver.setTextSize(1);
+    write(driver, newCurrentTemp);
 }
 
+var lastTimeText = "";
 function drawTime(driver, sTime) {
+  // .
+  if(lastTimeText === sTime) return;
+  lastTimeText = sTime;
+
   driver.setTextColor(1, 0);
   driver.setTextSize(2);
-  driver.setCursor(0, height - 24);
-
+  driver.setCursor(6, height - 24);
   write(driver, sTime);
 }
 
-function drawDistance(driver, distance) {
-  distance = distance || 0;
-  var text = toFixed(distance, 2);
+var lastDistance = "";
+function drawDistance(driver, distance, pos) {
+  var text = toFixed(distance || 0, 2);
+  if(lastDistance === text) return;
+  lastDistance = text;
 
   driver.setTextColor(1, 0);
   driver.setTextSize(1);
-  driver.setCursor(0, height - 7);
+  driver.setCursor(
+    width - 6 * text.length,
+    height - 7 - pos * 8);
+
   write(driver, text);
 }
 
@@ -353,15 +388,20 @@ function convertGeoToPixel(latitude, longitude,
   return { x: x, y: y };
 }
 
-function zoom(driver, stateStore) {
+function zoom(driver, stateStore, modif) {
+  modif = modif === -1 ? -1 : 1;
   // abort/return false if path is unexistint
   console.log('zoom', bounds);
   var state = stateStore.getState();
   if (state && state.Path && state.Path.points) {
-    bounds.zoom += 1;
-    if (bounds.zoom > 5) bounds.zoom = 1;
+    bounds.zoom += 1// * modif;
+
+    if (bounds.zoom > 6) bounds.zoom = 1;
+    // if (bounds.zoom == 0) bounds.zoom = 5;
 
     drawMapCanvas(driver);
     renderWholePath(driver, state.Path.points, mapOffsets);
   }
 }
+
+const getValue = (t) => t ? Math.round(t) + 'c' : '..';
