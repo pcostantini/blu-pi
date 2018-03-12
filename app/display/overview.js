@@ -144,7 +144,7 @@ function drawMapPoint(driver, value, stateStore, lazyFocus) {
     // relocate
     // console.log('..out!')
 
-    if(!lazyFocus) {
+    if (!lazyFocus) {
       outCounter++;
       if (outCounter > 5) {
         outCounter = 0;
@@ -172,40 +172,32 @@ function drawSpeed(driver, speed) {
   currentSpeedLabel = newLabel;
 
   var s = currentSpeedLabel.split('.');
-  driver.setTextSize(2);
+  // driver.setTextSize(2);
 
   // render from right to left
-  driver.setCursor(41, 6);
-  if(s[1] !== '-') driver.setTextSize(2);
-  // var f = s[1] === '-' ? null : DottedFilter(driver);
-  write(driver, '.' + s[1]);
-  // if(f) f.dispose();
-
-
   driver.setTextSize(3);
+  driver.setCursor(36, 6);
+  // if(s[1] !== '-') driver.setTextSize(3);
+  write(driver, '.' + s[1]);
+
+
+  // driver.setTesetTextSizextSize(3);
   driver.setCursor(12, 6);
   write(driver, s[0]);
 }
 
 var currentTemp = '';
 function drawTemp(driver, temp, cpuTemp) {
+  temp = temp || cpuTemp || 0;
+  var newCurrentTemp = getValue(cpuTemp);
+  if (newCurrentTemp === currentTemp) return;
 
-  if (temp || cpuTemp) {
-    var newCurrentTemp = getValue(cpuTemp);
-
-    // .
-    if(newCurrentTemp === currentTemp) return;
-    currentTemp = newCurrentTemp;
-
-    driver.setTextSize(1);
-
-    // driver.setCursor(0, 31);
-    var x = width - (newCurrentTemp.length * 6) + 2;
-    driver.setCursor(x, 22);
-
-
-    write(driver, newCurrentTemp);
-  }
+  currentTemp = newCurrentTemp;
+  // var x = width - (newCurrentTemp.length * 6) + 2;
+  var x = 0;
+  driver.setCursor(x, 22);
+  driver.setTextSize(1);
+  write(driver, newCurrentTemp);
 
   // if (pressure) {
   //   driver.setCursor(0, 33);
@@ -216,23 +208,23 @@ function drawTemp(driver, temp, cpuTemp) {
 
 var lastSecondTemp = '';
 function drawSecondTemp(driver, temp) {
-    var newCurrentTemp = getValue(temp);
+  var newCurrentTemp = getValue(temp);
 
-    // .
-    if(newCurrentTemp === lastSecondTemp) return;
-    lastSecondTemp = newCurrentTemp;
+  // .
+  if (newCurrentTemp === lastSecondTemp) return;
+  lastSecondTemp = newCurrentTemp;
 
-    var x = width - (newCurrentTemp.length * 6);
+  var x = width - (newCurrentTemp.length * 6);
 
-    driver.setCursor(x, 31);
-    driver.setTextSize(1);
-    write(driver, newCurrentTemp);
+  driver.setCursor(x, 31);
+  driver.setTextSize(1);
+  write(driver, newCurrentTemp);
 }
 
 var lastTimeText = "";
 function drawTime(driver, sTime) {
   // .
-  if(lastTimeText === sTime) return;
+  if (lastTimeText === sTime) return;
   lastTimeText = sTime;
 
   driver.setTextColor(1, 0);
@@ -244,7 +236,7 @@ function drawTime(driver, sTime) {
 var lastDistance = "";
 function drawDistance(driver, distance, pos) {
   var text = toFixed(distance || 0, 2);
-  if(lastDistance === text) return;
+  if (lastDistance === text) return;
   lastDistance = text;
 
   driver.setTextColor(1, 0);
@@ -261,11 +253,11 @@ function write(driver, string) {
   var chars = string.split('');
   chars.forEach((c) => {
     var f = c === dot ? DottedFilter(driver) : null;
-    if(f) {
+    if (f) {
       driver.setTextSize(2)
     }
     driver.write(c.charCodeAt(0));
-    if(f) {
+    if (f) {
       driver.setTextSize(3)
       f.dispose();
     }

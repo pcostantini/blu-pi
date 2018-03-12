@@ -9,20 +9,25 @@ module.exports = function DistanceReducer(gpsEvents) {
   var distance = 0;
 
   return gpsEvents
-    .filter(GpsNoiseFilter(GpsNoiseFilter.DefaultSpeedThreshold))
+    .filter(
+      GpsNoiseFilter(
+        GpsNoiseFilter.DefaultSpeedThreshold))
     .map(gps => [gps.latitude, gps.longitude])
     .scan((last, curr) => {
       if (last) {
         // console.log('!!!!!!!!!!!', { last, curr })
-
-        try {
-          var offset = GpsDistance(last[0], last[1], curr[0], curr[1]);
-          distance += offset;
-        } catch(err) {
-          // do nothing
-        }
+        var offset = getNewOffset(last, curr);
+        distance += offset;
       }
       return curr;
     }, null)
     .map(() => ({ name: 'Distance', value: distance }));
 };
+
+function getNewOffset(last, curr) {
+  try {
+    return GpsDistance(last[0], last[1], curr[0], curr[1]);
+  } catch(err) {
+    return 0;
+  }
+}
