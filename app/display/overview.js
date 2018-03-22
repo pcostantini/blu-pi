@@ -34,8 +34,8 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     case 'Gps':
       drawMapPoint(driver, e.value, stateStore);
-      // drawSpeed(driver, e.value ? e.value.speed : NaN);
-      // drawAltitude(driver, e.value ? e.value.altitude : NaN);
+      drawSpeed(driver, e.value ? e.value.speed : NaN);
+      drawAltitude(driver, e.value ? e.value.altitude : NaN);
       break;
 
     case 'Odometer':
@@ -50,6 +50,11 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     case 'Barometer':
       drawTemp(driver, e.value.temperature, stateStore.getState().CpuTemperature);
+      break;
+
+    case 'CpuTemperature':
+      var barometer = stateStore.getState().Barometer || {};
+      drawTemp(driver, barometer.temperature, e.value);
       break;
 
     // case 'Input:A':
@@ -81,8 +86,7 @@ function drawAll(driver, state) {
 
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, state.CpuTemperature);
-  // drawSecondTemp(driver, state.CpuTemperature);
-  // drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
+  drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
 var mapSize = [64, 68];
@@ -175,15 +179,19 @@ function drawSpeed(driver, speed) {
   // driver.setTextSize(2);
 
   // render from right to left
-  driver.setTextSize(3);
-  driver.setCursor(36, 6);
+  driver.setTextSize(2);
+  driver.setCursor(42, 12);
   // if(s[1] !== '-') driver.setTextSize(3);
   write(driver, '.' + s[1]);
 
 
-  // driver.setTesetTextSizextSize(3);
+  driver.setTextSize(3);
   driver.setCursor(12, 6);
   write(driver, s[0]);
+}
+
+function drawAltitude() {
+  // not implemented!
 }
 
 var currentTemp = '';
@@ -194,8 +202,7 @@ function drawTemp(driver, temp, cpuTemp) {
 
   currentTemp = newCurrentTemp;
   // var x = width - (newCurrentTemp.length * 6) + 2;
-  var x = 0;
-  driver.setCursor(x, 22);
+  driver.setCursor(2, 33);
   driver.setTextSize(1);
   write(driver, newCurrentTemp);
 
@@ -204,21 +211,6 @@ function drawTemp(driver, temp, cpuTemp) {
   //   var pressureLabel = (Math.round(pressure * 10) / 10) + ' Pa';
   //   write(driver, pressureLabel);
   // }
-}
-
-var lastSecondTemp = '';
-function drawSecondTemp(driver, temp) {
-  var newCurrentTemp = getValue(temp);
-
-  // .
-  if (newCurrentTemp === lastSecondTemp) return;
-  lastSecondTemp = newCurrentTemp;
-
-  var x = width - (newCurrentTemp.length * 6);
-
-  driver.setCursor(x, 31);
-  driver.setTextSize(1);
-  write(driver, newCurrentTemp);
 }
 
 var lastTimeText = "";
@@ -252,14 +244,14 @@ var dot = '^';
 function write(driver, string) {
   var chars = string.split('');
   chars.forEach((c) => {
-    var f = c === dot ? DottedFilter(driver) : null;
+    var f = c === dot;// ? DottedFilter(driver) : null;
     if (f) {
       driver.setTextSize(2)
     }
     driver.write(c.charCodeAt(0));
     if (f) {
       driver.setTextSize(3)
-      f.dispose();
+      // f.dispose();
     }
   });
 }
