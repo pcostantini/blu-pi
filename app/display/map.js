@@ -57,7 +57,7 @@ MapDisplay.prototype.processEvent = function (driver, e, stateStore) {
           console.log('..redraw')
           var state = stateStore.getState();
           driver.clear();
-          renderWholePath(driver, state.Path.points);
+          renderWholePath(driver, state.Path ? state.Path.points : []);
           return;
         }
       }

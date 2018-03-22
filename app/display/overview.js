@@ -33,7 +33,7 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       break;
 
     case 'Gps':
-      drawMapPoint(driver, e.value, stateStore);
+      drawMapPoint(driver, e.value, stateStore.getState().Path);
       drawSpeed(driver, e.value ? e.value.speed : NaN);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
       break;
@@ -106,6 +106,7 @@ function drawMap(driver, path) {
 
   // empty ?
   if (!path || !path.points || path.points.length === 0) {
+    console.log('Empty?')
     var lineSize = 14;
     var x1 = Math.round(mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2);
     var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
@@ -134,7 +135,7 @@ function drawMapCanvas(driver) {
 }
 
 var outCounter = 0;
-function drawMapPoint(driver, value, stateStore, lazyFocus) {
+function drawMapPoint(driver, value, fullPath, lazyFocus) {
 
   var coord = [value.latitude, value.longitude];
   if (!bounds.lonLeft) {
@@ -151,9 +152,10 @@ function drawMapPoint(driver, value, stateStore, lazyFocus) {
     if (!lazyFocus) {
       outCounter++;
       if (outCounter > 5) {
+        console.log('out!')
         outCounter = 0;
-        var state = stateStore.getState();
-        drawMapDebounced(driver, state.Path);
+        console.log('full.path?', fullPath);
+        drawMapDebounced(driver, fullPath);
       }
     }
 
@@ -312,6 +314,8 @@ function renderWholePath(driver, path, offsets) {
   bounds.lonLeft = lowLongitude;
   bounds.lonDelta = lonDelta;
   bounds.latBottomDegree = latitude * Math.PI / 180;
+
+  drawMapCanvas(driver);
 
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
