@@ -50,6 +50,8 @@ MapDisplay.prototype.processEvent = function (driver, e, stateStore) {
         console.log('..out!')
         this.outCounter++;
         if (this.outCounter > 5) {
+
+          // draw whole map!
           this.outCounter = 0;
 
           console.log('..redraw')
@@ -60,7 +62,10 @@ MapDisplay.prototype.processEvent = function (driver, e, stateStore) {
         }
       }
 
-      driver.drawPixel(pixel.x, pixel.y, 1);
+      // draw point!
+      drawPoint(driver, pixel);
+
+
       break;
 
     case 'Input:B':
@@ -120,8 +125,13 @@ function renderWholePath(driver, path) {
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
   path.forEach((coord) => {
     var pixel = getPixelCoordinate(coord, bounds);
-    driver.drawPixel(pixel.x, pixel.y, 1);
+
+    drawPoint(driver, pixel);
   });
+}
+
+function drawPoint(driver, pixel) {
+  driver.drawCircle(pixel.x-2, pixel.y-2, 1, 1, 1);
 }
 
 // graph functions
