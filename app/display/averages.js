@@ -29,7 +29,7 @@ var layouts = [
     layout: [
       ['MagnometerTemperature', 50, 24],
       ['CpuTemperature', 77, 33],
-      ['CpuLoad', 1, 0]
+      ['CpuLoad', 1.5, 0]
     ],
     layoutWidth: 19
   }
@@ -131,7 +131,7 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     for (var i = 0; i <= currentLayout.layout.length; i++) {
       var layout = currentLayout.layout[i];
       if (layout) {
-        drawSample(driver, i * currentLayout.layoutWidth + 3, y, e.value[layout[0]], layout[1], layout[2], true);
+        drawSample(driver, i * currentLayout.layoutWidth, y, e.value[layout[0]], layout[1], layout[2], true);
       }
     }
     // ...

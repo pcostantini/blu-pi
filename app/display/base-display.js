@@ -85,14 +85,15 @@ function drawBit(driver, bit) {
   driver.fillRect(1, 0, 3, 3, bit ? 1 : 0);
 }
 
+var cpuThreshold = 1.5;
 function drawCpu(driver, cpuState) {
   var maxBarWidth = BaseDisplay.prototype.width - 2;
-  var cpu = cpuState[0] < 1 ? cpuState[0] : 1;
-  var cpuWidth = Math.round((maxBarWidth / 1) * (cpu));
+  var cpu = cpuState[0] < cpuThreshold ? cpuState[0] : cpuThreshold;
+  var cpuWidth = Math.round((maxBarWidth / cpuThreshold) * (cpu));
 
   var filter = DottedFilter(driver);
   driver.fillRect(0, 0, BaseDisplay.prototype.height, 5, true);
-  driver.fillRect(cpuWidth + 1, 1, maxBarWidth - cpuWidth, 2, false);
+  driver.fillRect(cpuWidth + 1, 0, maxBarWidth - cpuWidth + 1, 3, false);
   filter.dispose();
 
   driver.drawLine(0, 3, BaseDisplay.prototype.width, 3, 1);

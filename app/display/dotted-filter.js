@@ -7,7 +7,9 @@ function Dotted(driver) {
 
     if ((x + y) % 2 === 1) {
       driver._drawPixelDotted(x, y, color);
-    }
+    } /*else {
+      driver._drawPixelDotted(x, y, false);
+    }*/
 
   };
 

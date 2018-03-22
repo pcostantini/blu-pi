@@ -29,7 +29,7 @@ IntervalsDisplay.prototype.init = function (driver, stateStore) {
     driver.setTextColor(1, 0);
 
     if(lastTs !== 0) {
-        intervalRequestedScreen(driver);
+        clearDisplay(driver);
         var last = _.takeRight(stateStore.getState().Intervals || [], maxSize);
         last.forEach((i) => pushInterval(driver, i));
     } else {
@@ -41,10 +41,12 @@ IntervalsDisplay.prototype.init = function (driver, stateStore) {
         driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
 
         driver.setTextSize(1);
-        driver.setCursor(26, 84)
-        write(driver, 'no');
-        driver.setCursor(4, 92)
-        write(driver, 'intervals');
+        driver.setCursor(14, 104)
+        write(driver, 'please');
+        driver.setCursor(17, 112)
+        write(driver, 'start');
+        driver.setCursor(8, 120)
+        write(driver, 'interval');
     }
 }
 
@@ -61,7 +63,7 @@ IntervalsDisplay.prototype.processEvent = function (driver, e, stateStore) {
         // request start recording new interval, right now and here!
         global.globalEvents_generator.next({ name: 'Interval.StartRequest' });
         lastTs = Date.now();
-        intervalRequestedScreen(driver);
+        clearDisplay(driver);
     }
 };
 
@@ -100,7 +102,7 @@ function drawDrawer(driver) {
     driver.drawRect(0, y, 64, 2, true);
 }
 
-function intervalRequestedScreen(driver) {
+function clearDisplay(driver) {
     driver.clear();
     var filterA = DottedFilter(driver);
     var filterB = ScanlinesFilter(driver);
@@ -113,9 +115,21 @@ function intervalRequestedScreen(driver) {
 
 // draw text
 function write(driver, string) {
+
     var chars = string.split('');
+    var last = '';
     chars.forEach((c) => {
+        // if(c === ':') {
+        //     var pos = driver.getCursor();
+        //     driver.setCursor(pos[0] - 4, pos[1]);
+        // }
+
+        // if(last === ':') {
+        //     var pos = driver.getCursor();
+        //     driver.setCursor(pos[0] - 4, pos[1]);
+        // }
         driver.write(c.charCodeAt(0));
+        last = c;
     });
 }
 

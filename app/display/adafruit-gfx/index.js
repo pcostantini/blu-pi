@@ -411,6 +411,10 @@ var Adafruit_GFX = function (width, height) {
     }
   };
 
+  Adafruit_GFX.prototype.getCursor = function() {
+    return [cursor_x, cursor_y];
+  };
+
   Adafruit_GFX.prototype.setCursor = function (x, y) {
     cursor_x = x;
     cursor_y = y;

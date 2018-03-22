@@ -4,14 +4,14 @@ var _ = require('lodash');
 var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
 var noisyFilter = require('./noisy-filter');
-
+var DottedFilter = require('./dotted-filter');
 var width = 64;
 var height = 128;
 
 var bounds = {
   width: width,
   height: height,
-  zoom: 1
+  zoom: 2
 };
 
 function MapDisplay(driver, events, stateStore) {
@@ -63,12 +63,13 @@ MapDisplay.prototype.processEvent = function (driver, e, stateStore) {
       }
 
       // draw point!
-      drawPoint(driver, pixel);
+      drawPoint(driver, pixel, true);
 
 
       break;
 
     case 'Input:B':
+    case 'Input:LongB':
       this.cycle(driver, this.stateStore);
       break;
   }
@@ -123,15 +124,21 @@ function renderWholePath(driver, path) {
 
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
-  path.forEach((coord) => {
+  path.forEach((coord, ix) => {
     var pixel = getPixelCoordinate(coord, bounds);
 
-    drawPoint(driver, pixel);
+    drawPoint(driver, pixel, (ix === path.length - 1));
   });
 }
 
-function drawPoint(driver, pixel) {
-  driver.drawCircle(pixel.x-2, pixel.y-2, 1, 1, 1);
+function drawPoint(driver, pixel, isCurrent) {
+  if(isCurrent) {
+    driver.drawCircle(pixel.x, pixel.y, 1, 1);
+  } else {
+    var filter = new DottedFilter(driver);
+    driver.drawCircle(pixel.x, pixel.y, 1, 1)
+    filter.dispose();
+  }
 }
 
 // graph functions
