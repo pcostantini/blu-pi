@@ -118,16 +118,18 @@ delay(333, function () {
   var state = StateReducer.FromStream(all);
 
   // state store
-  var stateStored = null;
+  var lastStateScan = null;
   var stateStore = {
-    set: (state) => stateStored = state,
-    getState: () => stateStored
+    set: (state) => lastStateScan = state,
+    getState: () => lastStateScan
   };
-  state.subscribe((s) => stateStore.set(s.value));
+  state.subscribe((s) => {
+    // scan
+    stateStore.set(s.value);
+  });
 
 
   // DISPLAY
-  var ui = null;
   var allPlusState = Rx.Observable.merge(all, state);
   replayComplete.subscribe((cnt) => {
     log('!8. processed %s events', cnt);
