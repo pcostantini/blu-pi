@@ -83,7 +83,7 @@ MapDisplay.prototype.cycle = function (driver, stateStore) {
     if (bounds.zoom > 4) bounds.zoom = 1;
 
     driver.clear();
-    renderWholePath(driver, state.Path.points);
+    renderWholePath(driver, state.Path.points, bounds.zoom);
 
     return bounds.zoom !== 1;
   }
@@ -92,7 +92,7 @@ MapDisplay.prototype.cycle = function (driver, stateStore) {
 };
 
 
-function renderWholePath(driver, path) {
+function renderWholePath(driver, path, zoom) {
   if (!path || path.length == 0) {
 
     var lineSize = 14;
@@ -127,16 +127,17 @@ function renderWholePath(driver, path) {
   path.forEach((coord, ix) => {
     var pixel = getPixelCoordinate(coord, bounds);
 
-    drawPoint(driver, pixel, (ix === path.length - 1));
+    drawPoint(driver, pixel, (ix === path.length - 1), zoom);
   });
 }
 
-function drawPoint(driver, pixel, isCurrent) {
+function drawPoint(driver, pixel, isCurrent, zoom) {
+  var radious = Math.ceil(zoom / 2); // Math.max(zoom, 1)
   if(isCurrent) {
-    driver.drawCircle(pixel.x, pixel.y, 1, 1);
+    driver.drawCircle(pixel.x, pixel.y, radious, radious);
   } else {
     var filter = new DottedFilter(driver);
-    driver.drawCircle(pixel.x, pixel.y, 1, 1)
+    driver.drawCircle(pixel.x, pixel.y, radious, radious)
     filter.dispose();
   }
 }
