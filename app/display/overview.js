@@ -106,7 +106,7 @@ function drawMap(driver, path) {
 
   // empty ?
   if (!path || !path.points || path.points.length === 0) {
-    console.log('Empty?')
+    console.log('Empty!')
     var lineSize = 14;
     var x1 = Math.round(mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2);
     var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
@@ -152,9 +152,8 @@ function drawMapPoint(driver, value, fullPath, lazyFocus) {
     if (!lazyFocus) {
       outCounter++;
       if (outCounter > 5) {
-        console.log('out!')
         outCounter = 0;
-        console.log('full.path?', fullPath);
+        console.log('out!')
         drawMapDebounced(driver, fullPath);
       }
     }
@@ -182,7 +181,7 @@ function drawSpeed(driver, speed) {
 
   // render from right to left
   driver.setTextSize(2);
-  driver.setCursor(42, 12);
+  driver.setCursor(42, 13);
   // if(s[1] !== '-') driver.setTextSize(3);
   write(driver, '.' + s[1]);
 

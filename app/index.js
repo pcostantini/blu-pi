@@ -123,7 +123,9 @@ delay(333, function () {
     set: (state) => stateStored = state,
     getState: () => stateStored
   };
-  state.subscribe((s) => stateStore.set(s.value));
+  state
+    .filter(s => s.name === 'State')
+    .subscribe(s => stateStore.set(s.value));
 
 
   // DISPLAY
