@@ -3,7 +3,7 @@
 
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-  <title>blu-pi test display</title>
+  <title>blu-pi web display</title>
   <style>
     body {
       font-family: 'sans serif';
@@ -128,6 +128,10 @@
       // and update...
       updateCanvas();
     });
+
+    socket.on('dim', function(dimmed) {
+      canvas.style.opacity = dimmed ? '0.5' : '1';
+    })
 
 
     // input
