@@ -9,11 +9,11 @@ var menu = require('../menu');
 console.log('the menu is:', menu)
 
 // add 'title'
-menu = [{ name: 'menu', command: () => { } }]
+menu = [{ name: '///', command: () => { } }]
   .concat(menu);
 var width = 64;
 var height = 128;
-var lineHeight = 12;
+var lineHeight = 17
 var state = { position: 0 };
 
 function MenuDisplay(driver, events, stateStore) {
@@ -62,7 +62,7 @@ module.exports = MenuDisplay;
 
 function clearSelection(driver, menu, state) {
   var y = 10 + state.position * lineHeight;
-  driver.fillRect(2, y + 3, 4, 4, false); // clear old box
+  driver.fillRect(60, y, 4, 4, false); // clear old box
 }
 
 function drawSelection(driver, menu, state) {
@@ -104,18 +104,18 @@ function drawMenuItem(driver, item, state) {
 
   var y = item.y === 10 ? 94 : item.y;
   var filter = DottedFilter(driver);
-    driver.fillRect(0, y - lineHeight, 64, lineHeight + 4, 0);
+  driver.fillRect(0, y - lineHeight, 64, lineHeight + 32, 0);
   filter.dispose();
 
-  driver.setCursor(8, item.y);
+  driver.setCursor(4, item.y);
   write(driver, item.text);
 
   if (item.selected) {
     if (state.executing) {
-      driver.fillRect(0, item.y + 2, 9, 9, true);
+      driver.fillRect(58, item.y, 9, 9, true);
     } else {
-      driver.fillRect(0, item.y + 2, 8, 9, false);
-      driver.fillRect(2, item.y + 4, 4, 4, true);
+      driver.fillRect(58, item.y, 8, 9, false);
+      driver.fillRect(60, item.y, 4, 4, true);
     }
   }
 }

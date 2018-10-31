@@ -138,6 +138,9 @@ var outCounter = 0;
 function drawMapPoint(driver, value, fullPath, lazyFocus) {
 
   var coord = [value.latitude, value.longitude];
+  if(!coord[0]) return;
+
+  // console.log('drawMapPoint', coord)
   if (!bounds.lonLeft) {
     initBounds(bounds, coord);
   }

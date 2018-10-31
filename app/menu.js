@@ -10,22 +10,23 @@ var menu = [
       dimmed = !dimmed;
       global.displayDriver.dim(dimmed);
     }
-  }, /*{
-    name: 'led-',
-    command: bash(
-      'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
-      'sudo echo 0 >/sys/class/leds/led1/brightness')
-  },*/ {
-    name: 'restart',
-    command: () => process.exit()
   }, {
-    name: 'cycle db',
+    name: 'new',
     command: () => {
       var fs = require('fs');
       fs.writeFile('./cycle.forced', '', () => {
         process.exit(0);
       });
-    }
+    },
+  /*{
+    name: 'led-',
+    command: bash(
+      'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
+      'sudo echo 0 >/sys/class/leds/led1/brightness')
+  */
+  }, {
+    name: 'kill',
+    command: () => process.exit()
   }, {
     name: 'wif-r',
     command: bash(
@@ -40,7 +41,7 @@ var menu = [
   }, {
     name: 'off',
     command: () => {
-      bash('sudo reboot')();
+      // bash('sudo reboot')();
       bash('sudo shutdown -h -H -t 0 0')();
     }
   }/*, {
