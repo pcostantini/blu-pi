@@ -1,9 +1,11 @@
-var _ = require('lodash');
+var fs = require('fs');
 var exec = require('child_process').exec;
+var _ = require('lodash');
 
 var dimmed = false;
 var paused = false;
-var menu = [
+
+module.exports = [
   {
     name: 'dim',
     command: () => {
@@ -11,22 +13,14 @@ var menu = [
       global.displayDriver.dim(dimmed);
     }
   }, {
+    name: 'reload'
+  }, {
     name: 'new',
     command: () => {
-      var fs = require('fs');
       fs.writeFile('./cycle.forced', '', () => {
         process.exit(0);
       });
     },
-  /*{
-    name: 'led-',
-    command: bash(
-      'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
-      'sudo echo 0 >/sys/class/leds/led1/brightness')
-  */
-  }, {
-    name: 'kill',
-    command: () => process.exit()
   }, {
     name: 'wif-r',
     command: bash(
@@ -44,25 +38,9 @@ var menu = [
       // bash('sudo reboot')();
       bash('sudo shutdown -h -H -t 0 0')();
     }
-  }/*, {
-    name: 'tetris',
-    command: function () {
-      var TetrisDisplay = require('./display/tetris.js');
-
-      global.globalEvents_generator.next({
-        type: 'change_display',
-        value: TetrisDisplay
-      })
-    }
-  }*/
+  }
 ];
 
-module.exports = menu;
-
-// function executeItem(menuItem) {
-//   console.log('running menuItem', menuItem);
-//   var output = menuItem.command();
-// }
 
 function bash(cmd) {
   return () => {
