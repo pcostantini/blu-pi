@@ -1,7 +1,9 @@
 // credit: https://communities.intel.com/message/237095#237095
 var SSD1306 = require('./ssd1306_h.js');
 
-var i2c = require('i2c');
+var RaspiI2C = require('raspi-i2c');
+var I2C = RaspiI2C.I2C;
+var i2c = new I2C();
 
 // the memory buffer for the LCD
 //static uint8_t buffer[SSD1306.LCDHEIGHT * SSD1306.LCDWIDTH / 8] = { 
@@ -73,24 +75,24 @@ buffer = [
 
 var OLED = function()
 {
-  var i2cDevice = '/dev/i2c-1';
   var wire = null;
-	
+
 	  //Protected functions
   //----------------------------------------
   var ssd1306_command = function(c) { 
     var control = 0x00;   // Co = 0, D/C = 0
-    wire.writeBytes(control, [c], function() {});
+    wire.write(0x3D, control, new Buffer([c]), function() {});
   }
 
   var ssd1306_data = function(c) {
     var control = 0x40;   // Co = 0, D/C = 1
-    wire.writeBytes(control, [c], function() {});
+    wire.write(0x3D, control, new Buffer([c]), function() {});
 }
   
 OLED.prototype.init = function()
 {
-	wire = new i2c(SSD1306.I2C_ADDRESS, {device: i2cDevice, debug: false}); // point to your i2c address, debug provides REPL interface
+	//wire = new i2c(SSD1306.I2C_ADDRESS, {device: i2cDevice, debug: false}); // point to your i2c address, debug provides REPL interface
+  wire =  i2c;
   var vccstate = SSD1306.SWITCHCAPVCC;
   var _vccstate = vccstate;
   //var _i2caddr = i2caddr;
@@ -151,7 +153,7 @@ OLED.prototype.display = function() {
 
  // upgrade to 400KHz! I2C
   for (var i=0; i<(SSD1306.LCDWIDTH*SSD1306.LCDHEIGHT/8); i+=16) {
-    wire.writeBytes(0x40,buffer.slice(i,i+16), function() {});// send a bunch of data in one xmission (128-bit chunks)
+    wire.write(0x3D, 0x40, new Buffer(buffer.slice(i,i+16)), function() {});// send a bunch of data in one xmission (128-bit chunks)
   }
 }
 
