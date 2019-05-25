@@ -1,3 +1,5 @@
+# rasperrypi burn
+
 # set to 8mhz
 sudo gpio -g mode 22 out
 sudo gpio -g write 22 0
