@@ -4,8 +4,6 @@ var argv = minimist(process.argv.slice(2));
 var demoFile = argv.demoFile;
 var demoMode = argv.demo || argv.d || !!demoFile;
 var persist = !demoMode;
-var demoScheduled = !!(demoMode && argv.demoScheduled);
-var logState = argv.log || argv.consoleLog;
 var displaySize = { width: 128, height: 64 };
 
 if (!demoFile) {
@@ -15,9 +13,7 @@ if (!demoFile) {
 
 var config = {
   displaySize: displaySize,
-  logState: logState,
   demoMode: demoMode,
-  demoScheduled: demoScheduled,
   persist: persist,
   persistBuffer: 0,
   inputDrivers: [
@@ -30,7 +26,7 @@ var config = {
   ],
   dbFile:
   demoMode ? demoFile
-    : './data/current.sqlite3',
+    : `./data/session-${Date.now()}.sqlite3`,
   sensors: {
     // refresh times
     // indiscreet: {

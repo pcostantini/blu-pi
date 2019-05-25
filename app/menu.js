@@ -1,9 +1,11 @@
-var _ = require('lodash');
+var fs = require('fs');
 var exec = require('child_process').exec;
+var _ = require('lodash');
 
 var dimmed = false;
 var paused = false;
-var menu = [
+
+module.exports = [
   {
     name: 'dim',
     command: () => {
@@ -13,56 +15,30 @@ var menu = [
   }, {
     name: 'new',
     command: () => {
-      var fs = require('fs');
-      fs.writeFile('./cycle.forced', '', () => {
-        process.exit(0);
-      });
+      process.exit(0);
+      // fs.writeFile('./cycle.forced', '', () => {
+      // });
     },
-  /*{
-    name: 'led-',
-    command: bash(
-      'sudo echo 0 >/sys/class/leds/led0/brightness\n' +
-      'sudo echo 0 >/sys/class/leds/led1/brightness')
-  */
-  }, {
-    name: 'kill',
-    command: () => process.exit()
   }, {
     name: 'wif-r',
-    command: bash(
-      'sudo ifdown wlan0\n' +
-      'sudo ifup wlan0')
+    command: () => {
+      bash(['sudo ifdown wlan0',
+            'sleep 1',
+            'sudo ifup wlan0'].join('\n'));
+    }
   }, {
-    name: 'rebut',
+    name: 'rebut!',
     command: () => {
       bash('sudo reboot')();
-      process.exit(0);
     }
   }, {
-    name: 'off',
+    name: 'OFF!',
     command: () => {
-      // bash('sudo reboot')();
       bash('sudo shutdown -h -H -t 0 0')();
     }
-  }/*, {
-    name: 'tetris',
-    command: function () {
-      var TetrisDisplay = require('./display/tetris.js');
-
-      global.globalEvents_generator.next({
-        type: 'change_display',
-        value: TetrisDisplay
-      })
-    }
-  }*/
+  }
 ];
 
-module.exports = menu;
-
-// function executeItem(menuItem) {
-//   console.log('running menuItem', menuItem);
-//   var output = menuItem.command();
-// }
 
 function bash(cmd) {
   return () => {

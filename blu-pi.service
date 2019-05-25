@@ -1,0 +1,14 @@
+[Unit]
+Description=Blu-Pi Gps Bike computer
+#After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+User=pi
+WorkingDirectory=/home/pi/blu-pi/
+ExecStart=/bin/bash start.sh
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

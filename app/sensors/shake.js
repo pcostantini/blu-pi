@@ -46,9 +46,8 @@ function ShakeSensor() {
                 if (timeDifference > options.timeout) {
                     lastTime = new Date();
                     var value = { x: lastX, y: lastY, z: lastZ };
-                    console.log('Shake!', value)
                     observer.next({
-                        name: 'Input:Shake',
+                        name: 'Shake!',
                         value: value
                     });
                 }

@@ -9,13 +9,10 @@ module.exports = function DistanceReducer(gpsEvents) {
   var distance = 0;
 
   return gpsEvents
-    .filter(
-      GpsNoiseFilter(
-        GpsNoiseFilter.DefaultSpeedThreshold))
+    .filter(GpsNoiseFilter(GpsNoiseFilter.DefaultSpeedThreshold))
     .map(gps => [gps.latitude, gps.longitude])
     .scan((last, curr) => {
       if (last) {
-        // console.log('!!!!!!!!!!!', { last, curr })
         var offset = getNewOffset(last, curr);
         distance += offset;
       }

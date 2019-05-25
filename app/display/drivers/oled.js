@@ -27,9 +27,9 @@ function Oled(width, height) {
     }, 55);
 
     exitHook(function () {
-      console.log('.OledDriver:Cleanup');
       oled.clear();
       oled.display();
+      console.log('.OledDriver:Cleanup');
     });
 
     return oled;

@@ -9,7 +9,7 @@ module.exports.observe = function observe(gpioPin) {
   return Rx.Observable.create(function (observer) {
 
     try {
-      console.log('Registering GPIO #' + gpioPin);
+      // . console.log('Registering GPIO #' + gpioPin);
       rpio.open(gpioPin, rpio.INPUT, rpio.POLL_BOTH);
       rpio.poll(gpioPin, () => {
         var state = rpio.read(gpioPin) ? 'up' : 'down';

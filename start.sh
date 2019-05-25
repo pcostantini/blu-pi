@@ -1,4 +1,4 @@
-#!/bin/bash -f
+#!/bin/bash
 
 SCREEN_NAME=blu
 
@@ -9,5 +9,4 @@ SCREEN_NAME=blu
 screen -dmS "$SCREEN_NAME"
 screen -S "$SCREEN_NAME" -X stuff "./start_and_watch_for_cycle.sh $(printf \\r)"
 
-printf "Starting... now you can view blu-pi with :\n"
-printf "$ screen -dr -S $SCREEN_NAME\n"
+printf "Starting... now you can view blu-pi with: $ screen -dr -S $SCREEN_NAME"

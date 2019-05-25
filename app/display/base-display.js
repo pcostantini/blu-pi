@@ -45,14 +45,14 @@ function BaseDisplay(driver, events, stateStore) {
     bit = !bit;
     drawBit(driver, bit);
 
-    // update and repeat
+    // update
     driver.display();
 
-    if (self.refreshDisplayDelay) {
-      self.timeout = setTimeout(
-        redraw.bind(null, self),
-        self.refreshDisplayDelay);
-    }
+    if (!self.refreshDisplayDelay) return;
+
+    self.timeout = setTimeout(
+      () => redraw(self),
+      self.refreshDisplayDelay);
 
   })(self);
 }
