@@ -5,32 +5,20 @@ console.log('\tblu-pi!', config);
 
 // display drivers
 console.log('!2. driver displays');
-var displayDriver = global.displayDriver =
-  getUnifiedDriver(
-    config.displayDrivers
-      .map(instantiateDriver));
+var displayDrivers = config.displayDrivers.map(instantiateDriver);
+var displayDriver = global.displayDriver = getUnifiedDriver(displayDrivers);
 
 // continue app init after display drivers are started
 delay(333, function () {
 
   log('!3. importing stuff...');
-  var _ = require('lodash');
+
   var Rx = require('rxjs');
-  var hotswap = require('hotswap');
-  var utils = require('./utils');
 
   // a global hack!
-  global.globalEvents = Rx.Observable.create((observer) => {
+  var globalEvents = global.globalEvents = Rx.Observable.create((observer) => {
     global.globalEvents_generator = observer;
   }).share();
-
-  log('!3. importing more stuff...');
-  var SensorsBootstrap = require('./bootstrap_sensors');
-  var Persistence = require('./persistence');
-  var Display = require('./display');
-  var StateReducer = require('./state');
-  var Ticks = require('./sensors/ticks');
-  var ReplayWithSchedule = require('./replay_scheduled');
 
   // error handling
   var errors = Rx.Observable.create(function (observer) {
@@ -46,23 +34,36 @@ delay(333, function () {
     });
   });
 
+  log('!3. importing more stuff...');
+
+  require('hotswap')
+  var Clock = require('./sensors/clock')
+  var Ticks = require('./sensors/ticks');
+  var SensorsBootstrap = require('./bootstrap_sensors');
+  var Persistence = require('./persistence');
+  var Display = require('./display');
+  var StateReducer = require('./state');
+  // var ReplayWithSchedule = require('./replay_scheduled');
+  // var utils = require('./utils');
+
   // input with ts
   log('!4. input(s) init');
-  var inputInstances = config.inputDrivers.map((driverName) => {
+  
+  var inputDrivers = config.inputDrivers.map((driverName) => {
     console.log('..initing input: ' + driverName);
     try {
-      var Driver = require(driverName);
-      return Driver();
+      return require(driverName)();
     } catch (e) {
-      // console.log('init.err!', e);
+      console.log('init.err!', e);
       return Rx.Observable.empty();
     }
   });
-  var input = Rx.Observable.from(inputInstances)
+
+  var input = Rx.Observable.from(inputDrivers)
     .mergeAll()
     .map((s) => ({ name: s.name, value: Date.now() }));
 
-  input.subscribe(console.log);
+  // .input.subscribe(console.log);
 
   // storage
   log('!5. persistence', config.persist);
@@ -73,14 +74,12 @@ delay(333, function () {
   var replay = db.readSensors();
   var replayComplete = replay.count();
 
-  replay = config.demoScheduled ? ReplayWithSchedule(replay) : replay;
+  // replay = config.demoScheduled ? ReplayWithSchedule(replay) : replay;
 
   log('!6. sensors init');
-  var sensors = !config.demoScheduled
-    // do not activate the stream until replay is complete
-    ? SensorsBootstrap(config.sensors).skipUntil(replayComplete).share()
-    // ignore sensors on replay
-    : Rx.Observable.empty();
+  var sensors = config.demo
+    ? Rx.Observable.empty()            // no sensors on demo mode
+    : SensorsBootstrap(config.sensors)  //.skipUntil(replayComplete).share()
 
   // persistence
   if (config.persist) {
@@ -89,47 +88,30 @@ delay(333, function () {
   }
 
   // clock, ticks and input
-  var clock = require('./sensors/clock')()
-    .skipUntil(replayComplete)
-    .share();
+  var clock = Clock();
   var ticks = Ticks(clock);
-
-  var gpsTicks = replay.filter(utils.isValidGpsEvent).share();
-  if(config.demoMode && !config.demoScheduled) {
-    Rx.Observable.merge(gpsTicks.first(), gpsTicks.last())
-      .startWith([])
-      .scan((acc, o) => acc.concat(o.timestamp))
-      .last()
-      .subscribe(acc => ticks.reset(Date.now() - (acc[1] - acc[0])));
-  } else if(!config.demoMode) {
-    // restart ticks using first valid gps event or current timestamp
-    gpsTicks
-      .take(1).map(o => o.value.timestamp)
-      .defaultIfEmpty(Date.now)
-      .subscribe(ts => ticks.reset(ts));
-  }
-
-  var all = Rx.Observable
-    .merge(errors, clock, ticks, input, replay, sensors, global.globalEvents)
-    .share();
+  // ... ticks.subscribe((ts) => console.log(ts.value));
 
   // state store or snapshot of latest events // defeats the purpose!
   log('!7. state reducers');
+
+  var all = Rx.Observable
+    .merge(errors, clock, ticks, input, replay, sensors, globalEvents)
+    .share();
+
   var state = StateReducer.FromStream(all);
 
   // state store
-  var lastStateScan = null;
-  var stateStore = {
-    set: (state) => lastStateScan = state,
-    getState: () => lastStateScan
-  };
+  var stateStore = (function() {
+    var stateScan = null;
+    state
+      .filter(s => s.name === 'State')
+      .subscribe(s => stateScan = s.value);
+    return {
+      getState: () => stateScan
+    }
+  })();
   
-  // scan state
-  state
-    .filter(s => s.name === 'State')
-    .subscribe(s => stateStore.set(s.value));
-
-
   // DISPLAY
   var allPlusState = Rx.Observable.merge(all, state);
   replayComplete.subscribe((cnt) => {
@@ -138,32 +120,21 @@ delay(333, function () {
     ui = Display(displayDriver, config.displaySize, allPlusState, stateStore);
   });
 
-  // STATE LOG
-  if (config.logState) {
-    state
-      .throttle(ev => Rx.Observable.interval(1000))
-      .subscribe(console.log);
-  }
-
   input.filter((e) => e.name === 'Input:Space')
     .subscribe(() => {
-      var state = stateStore.getState();
-      console.log(
-        'State',
-        _.omitBy(state, (s, key) => key === 'Averages' || key === 'Path'));
-
-      console.log('State.Path', { length: state.Path ? state.Path.length : 0 });
-      // console.log('State.Averages', _.keys(state.Averages).map(k => ({
-      //   Step: k,
-      //   Points: state.Averages[k].length
-      // })));
-
-
+      
+      var stateCopy = Object.assign({}, stateStore.getState());
+      console.log('State.Path', { length: stateCopy.Path ? stateCopy.Path.length : 0 });
+      console.log('State.Averages', stateCopy.Averages);
+      delete stateCopy.Averages;
+      delete stateCopy.Path;
+      console.log('State', stateCopy);
     });
 
-  log('!. =)');
+  log('!0. =)');
 });
 
+// Helpers
 var x = 6;
 var y = 6;
 function log(msg, arg) {

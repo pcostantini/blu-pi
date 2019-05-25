@@ -30,6 +30,8 @@ module.exports.FromStream = function FromStream(events) {
     .map(s => s.value)
     .share();
 
+  // gpsEvents.subscribe(e =>  console.log(e.value));
+
   // calculate and reduce main stream of events
   // into new (reduced) values
   var reducers = Rx.Observable.merge(

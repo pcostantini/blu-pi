@@ -13,29 +13,27 @@ module.exports = [
       global.displayDriver.dim(dimmed);
     }
   }, {
-    name: 'reload'
-  }, {
     name: 'new',
     command: () => {
-      fs.writeFile('./cycle.forced', '', () => {
-        process.exit(0);
-      });
+      process.exit(0);
+      // fs.writeFile('./cycle.forced', '', () => {
+      // });
     },
   }, {
     name: 'wif-r',
-    command: bash(
-      'sudo ifdown wlan0\n' +
-      'sudo ifup wlan0')
-  }, {
-    name: 'rebut',
     command: () => {
-      bash('sudo reboot')();
-      process.exit(0);
+      bash(['sudo ifdown wlan0',
+            'sleep 1',
+            'sudo ifup wlan0'].join('\n'));
     }
   }, {
-    name: 'off',
+    name: 'rebut!',
     command: () => {
-      // bash('sudo reboot')();
+      bash('sudo reboot')();
+    }
+  }, {
+    name: 'OFF!',
+    command: () => {
       bash('sudo shutdown -h -H -t 0 0')();
     }
   }

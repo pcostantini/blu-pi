@@ -81,12 +81,12 @@ var OLED = function()
   //----------------------------------------
   var ssd1306_command = function(c) { 
     var control = 0x00;   // Co = 0, D/C = 0
-    wire.write(0x3D, control, new Buffer([c]), function() {});
+    wire.write(0x3D, control, Buffer.from([c]), function() {});
   }
 
   var ssd1306_data = function(c) {
     var control = 0x40;   // Co = 0, D/C = 1
-    wire.write(0x3D, control, new Buffer([c]), function() {});
+    wire.write(0x3D, control, Buffer.from([c]), function() {});
 }
   
 OLED.prototype.init = function()
@@ -153,7 +153,7 @@ OLED.prototype.display = function() {
 
  // upgrade to 400KHz! I2C
   for (var i=0; i<(SSD1306.LCDWIDTH*SSD1306.LCDHEIGHT/8); i+=16) {
-    wire.write(0x3D, 0x40, new Buffer(buffer.slice(i,i+16)), function() {});// send a bunch of data in one xmission (128-bit chunks)
+    wire.write(0x3D, 0x40, Buffer.from(buffer.slice(i,i+16)), function() {});// send a bunch of data in one xmission (128-bit chunks)
   }
 }
 

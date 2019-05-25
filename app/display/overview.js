@@ -8,7 +8,7 @@ var NoisyFilter = require('./noisy-filter');
 var ScanlineFilter = require('./scanlines-filter');
 var utils = require('../utils');
 
-var refreshDisplayDelay = 1333;
+var refreshDisplayDelay = 999;
 var width = 64;
 var height = 128;
 

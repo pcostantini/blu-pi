@@ -8,27 +8,30 @@ module.exports = function bootstrap(sensorsConfig) {
     // GPS
     safeRequire('./sensors/gps')(),
 
+    // TODO: Read from config.js and safeRequire each item
+    // TODO: ? Move sensors init params to constants within sensor code
+
     // Odometer and velocimeter
-    safeRequire('./sensors/odometer')(),
+    // safeRequire('./sensors/odometer')(),
 
     // LSM303 - 3X Accelerometer & Magnometer
-    safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
+    // safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
 
     // BMP085 - Temp and Pressure
-    (sensorsConfig.temperature)
-      ? safeRequire('./sensors/barometer')(sensorsConfig.temperature)
-      : Rx.Observable.empty(),
+    // (sensorsConfig.temperature)
+    //   ? safeRequire('./sensors/barometer')(sensorsConfig.temperature)
+    //   : Rx.Observable.empty(),
 
-    // Wifi scanner (naaa!)
-    (sensorsConfig.indiscreet)
-      ? require('./sensors/wifi')(sensorsConfig.indiscreet.wifi)
-      : Rx.Observable.empty(),
+    // Wifi scanner
+    // (sensorsConfig.indiscreet)
+    //   ? require('./sensors/wifi')(sensorsConfig.indiscreet.wifi)
+    //   : Rx.Observable.empty(),
 
     // sys
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),
     require('./sensors/cpu_load')(sensorsConfig.cpu),
-    require('./sensors/memory')(sensorsConfig.memory))
-  .share();
+    require('./sensors/memory')(sensorsConfig.memory)
+  ).share();
 
   // timestamp!
   return sensors
