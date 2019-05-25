@@ -4,19 +4,24 @@
 // Config
 #define SWITCH 3
 #define LED 4
-float wheelRadius = 0.33995;        // 700cc x 28mm
+
+// README
+// read speed, report current speed to i2c
+// api: using i2c you can request the distance, and start time
+
+float wheelRadius = 0.33995; // 700cc x 28mm
 float wheelCirc = 0;
 int revolutionTimeout = 1500;
 
 // LED Pulse
-int brightness = 0;    // how bright the LED is
-int fadeAmount = 3;    // how many points to fade the LED by
+int brightness = 0; // how bright the LED is
+int fadeAmount = 3; // how many points to fade the LED by
 unsigned long lastFadeUpdate = 0;
 
 // I2C Setup
 #define I2C_SLAVE_ADDRESS 0x13
 #ifndef TWI_RX_BUFFER_SIZE
-#define TWI_RX_BUFFER_SIZE ( 16 )
+#define TWI_RX_BUFFER_SIZE (16)
 #endif
 
 // Speed!
@@ -29,18 +34,18 @@ unsigned long pevtime;
 // Data to transfer
 // We are reading byte to byte, so we need a way to mark the end/start of each "byte stream"
 volatile uint8_t i2c_regs[] =
-{
-  0x00,   // speed low byte
-  0x00,   // speed high byte
-  0x00,   // distance low byte
-  0x00,   // distance high byte
-  0x11,   // this two mark the end
-  0x22
-};
+    {
+        0x00, // speed low byte
+        0x00, // speed high byte
+        0x00, // distance low byte
+        0x00, // distance high byte
+        0x11, // this two mark the end
+        0x22};
 volatile byte reg_position;
 const byte reg_size = sizeof(i2c_regs);
 
-void requestEvent() {
+void requestEvent()
+{
   TinyWireS.send(i2c_regs[reg_position]);
   // Increment the reg position on each read, and loop back to zero
   reg_position++;
@@ -50,7 +55,8 @@ void requestEvent() {
   }
 }
 
-void setup() {
+void setup()
+{
   TinyWireS.begin(I2C_SLAVE_ADDRESS);
   TinyWireS.onRequest(requestEvent);
 
@@ -71,39 +77,44 @@ void setup() {
 }
 
 // Check wheel rotation with debounce
-long lastDebounceTime = 0;  // the last time the output pin was toggled
-long debounceDelay = 15;    // the debounce time; increase if the output flickers
+long lastDebounceTime = 0; // the last time the output pin was toggled
+long debounceDelay = 15;   // the debounce time; increase if the output flickers
 int state = LOW;
-bool ping(unsigned long currentMillis) {
+bool ping(unsigned long currentMillis)
+{
   //filter out any noise by setting a time buffer
-  if ( (currentMillis - lastDebounceTime) > debounceDelay) {
+  if ((currentMillis - lastDebounceTime) > debounceDelay)
+  {
     bool newState = !digitalRead(SWITCH);
     bool ping = (state != newState && newState == HIGH);
     state = newState;
-    if (ping) lastDebounceTime = currentMillis;
+    if (ping)
+      lastDebounceTime = currentMillis;
     return ping;
   }
 
   return false;
 }
 
-void loop() {
+void loop()
+{
 
   TinyWireS_stop_check();
 
   unsigned long currentMillis = millis();
 
-  if (ping(currentMillis)) {
+  if (ping(currentMillis))
+  {
     brightness = 255;
 
     rotation++;
     distance += wheelCirc;
 
     int distanceInt = round(distance);
-    
+
     i2c_regs[2] = lowByte(distanceInt);
     i2c_regs[3] = highByte(distanceInt);
-    
+
     dtime = currentMillis;
     if (rotation >= 2)
     {
@@ -112,7 +123,7 @@ void loop() {
       rpm = (1000 / timetaken) * 60;
       pevtime = currentMillis;
       rotation = 0;
-      
+
       // calc speed
       speed = round((wheelCirc * rpm * 3600) / 1000);
       i2c_regs[0] = lowByte(speed);
@@ -121,7 +132,8 @@ void loop() {
   }
 
   // drop to zero if no revolutions were detected after a while
-  if (currentMillis - dtime > revolutionTimeout)  {
+  if (currentMillis - dtime > revolutionTimeout)
+  {
     // reset
     rpm = 0;
     speed = 0;
@@ -131,9 +143,13 @@ void loop() {
   }
 
   // LED Pulse
-  if (currentMillis - lastFadeUpdate > 5) {
+  // int pulse = 100 / 24 * speed;
+  // analogWrite(LED, pulse);
+  if (currentMillis - lastFadeUpdate > 5)
+  {
 
-    if (brightness > 0) {
+    if (brightness > 0)
+    {
       // reduce pulse
       brightness = brightness - fadeAmount;
     }
@@ -141,5 +157,4 @@ void loop() {
     analogWrite(LED, brightness);
     lastFadeUpdate = currentMillis;
   }
-
 }
