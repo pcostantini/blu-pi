@@ -143,7 +143,7 @@ void loop()
   }
 
   // LED Pulse
-  // int pulse = 100 / 24 * speed;
+  // int pulse = min(100 / 24 * speed, 255);
   // analogWrite(LED, pulse);
   if (currentMillis - lastFadeUpdate > 5)
   {
