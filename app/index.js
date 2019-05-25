@@ -123,10 +123,11 @@ delay(333, function () {
     set: (state) => lastStateScan = state,
     getState: () => lastStateScan
   };
-  state.subscribe((s) => {
-    // scan
-    stateStore.set(s.value);
-  });
+  
+  // scan state
+  state
+    .filter(s => s.name === 'State')
+    .subscribe(s => stateStore.set(s.value));
 
 
   // DISPLAY
