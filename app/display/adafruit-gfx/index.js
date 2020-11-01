@@ -468,7 +468,7 @@ var Adafruit_GFX = function (width, height) {
     return _height;
   };
 
-  Adafruit_GFX.prototype.invertDisplay = function (i) {
+  Adafruit_GFX.prototype.invert = function (i) {
     // Do nothing, must be subclassed if supported
   };
 };

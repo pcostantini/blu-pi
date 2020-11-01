@@ -22,7 +22,9 @@ function Oled(width, height) {
     var oled = new SSD1306();
     setTimeout(() => {
       oled.init();
+      oled.dim();
       oled.clear();
+      oled.display();
       oled.inited = true;
     }, 55);
 
