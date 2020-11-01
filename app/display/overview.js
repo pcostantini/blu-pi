@@ -199,7 +199,7 @@ function drawAltitude() {
 }
 
 var currentTemp = '';
-function drawTemp(driver, temp, cpuTemp) {
+function drawTemp(driver, temp, cpuTemp, ambientPressure) {
   temp = temp || cpuTemp || 0;
   var newCurrentTemp = getValue(cpuTemp);
   if (newCurrentTemp === currentTemp) return;
@@ -210,11 +210,11 @@ function drawTemp(driver, temp, cpuTemp) {
   driver.setTextSize(1);
   write(driver, newCurrentTemp);
 
-  // if (pressure) {
-  //   driver.setCursor(0, 33);
-  //   var pressureLabel = (Math.round(pressure * 10) / 10) + ' Pa';
-  //   write(driver, pressureLabel);
-  // }
+  if (ambientPressure) {
+    driver.setCursor(0, 33);
+    var pressureLabel = (Math.round(ambientPressure * 10) / 10) + ' Pa';
+    write(driver, pressureLabel);
+  }
 }
 
 var lastTimeText = "";
