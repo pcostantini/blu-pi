@@ -47,7 +47,10 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 	var currentIx = 0;
 	var current = null;
 	function loadScreen(ix) {
-		var disposed = current ? current.dispose() : false;
+		if (current) {
+			console.log('disposing screen!');
+			current.dispose();
+		}
 
 		var DisplayType = DisplayTypes[ix];
 		console.log('Display:Cycling Screen', { ix: ix });
