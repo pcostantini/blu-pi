@@ -7,6 +7,8 @@ console.log('\tblu-pi!', config);
 console.log('!2. driver displays');
 var displayDrivers = config.displayDrivers.map(instantiateDriver);
 var displayDriver = global.displayDriver = getUnifiedDriver(displayDrivers);
+displayDriver.invert();
+displayDriver.display();
 
 // continue app init after display drivers are started
 delay(333, function () {
@@ -48,7 +50,7 @@ delay(333, function () {
 
   // input with ts
   log('!4. input(s) init');
-  
+
   var inputDrivers = config.inputDrivers.map((driverName) => {
     console.log('..initing input: ' + driverName);
     try {
@@ -104,7 +106,7 @@ delay(333, function () {
   var state = StateReducer.FromStream(all);
 
   // state store
-  var stateStore = (function() {
+  var stateStore = (function () {
     var stateScan = null;
     state
       .filter(s => s.name === 'State')
@@ -113,7 +115,7 @@ delay(333, function () {
       getState: () => stateScan
     }
   })();
-  
+
   // DISPLAY
   var allPlusState = Rx.Observable.merge(all, state);
   replayComplete.subscribe((cnt) => {
@@ -124,12 +126,19 @@ delay(333, function () {
 
   input.filter((e) => e.name === 'Input:Space')
     .subscribe(() => {
-      
-      var stateCopy = Object.assign({}, stateStore.getState());
-      console.log('State.Path', { length: stateCopy.Path ? stateCopy.Path.length : 0 });
-      console.log('State.Averages', stateCopy.Averages);
-      delete stateCopy.Averages;
-      delete stateCopy.Path;
+
+      // var stateCopy = Object.assign({}, stateStore.getState());
+      const state = stateStore.getState();
+      const stateCopy = {
+        ...state,
+        Path: (state.Path || []).length,
+        Averages: null
+      };
+
+      // console.log('State.Path', { length: stateCopy.Path ? stateCopy.Path.length : 0 });
+      // console.log('State.Averages', stateCopy.Averages);
+      // delete stateCopy.Averages;
+      // delete stateCopy.Path;
       console.log('State', stateCopy);
     });
 
@@ -161,7 +170,7 @@ function delay(time, func) {
   setTimeout(func, time);
 }
 
-function instantiateDriver (driverName) {
+function instantiateDriver(driverName) {
   console.log('..instantiating: ' + driverName);
   var DriverType = require(driverName);
   try {
@@ -185,9 +194,13 @@ function getUnifiedDriver(drivers) {
   return {
     inited: () => (drivers.filter((d, ix) => d.inited).length) === drivers.length,
     clear: () => drivers.map((d) => d.clear()),
-    display: () => drivers.map((d) => d.display()),
+    display: () => drivers
+      .filter((d => d.inited && !!d.invert))
+      .map((d) => d.display()),
     drawPixel: (x, y, color) => drivers.map((d) => d.drawPixel(x, y, color)),
-    invert: (invert) => drivers.map((d) => d.invert(invert)),
+    invert: (invert) => drivers
+      .filter((d => d.inited && !!d.invert))
+      .map((d) => d.invert(invert)),
     dim: (dimmed) => drivers.map((d) => d.dim(dimmed))
   };
 }

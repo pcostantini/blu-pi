@@ -73,31 +73,29 @@ buffer = [
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 
-var OLED = function()
-{
+var OLED = function () {
   var wire = null;
 
-	  //Protected functions
+  //Protected functions
   //----------------------------------------
-  var ssd1306_command = function(c) { 
+  var ssd1306_command = function (c) {
     var control = 0x00;   // Co = 0, D/C = 0
-    wire.write(0x3D, control, Buffer.from([c]), function() {});
+    wire.write(0x3D, control, Buffer.from([c]), function () { });
   }
 
-  var ssd1306_data = function(c) {
+  var ssd1306_data = function (c) {
     var control = 0x40;   // Co = 0, D/C = 1
-    wire.write(0x3D, control, Buffer.from([c]), function() {});
-}
-  
-OLED.prototype.init = function()
-{
-	//wire = new i2c(SSD1306.I2C_ADDRESS, {device: i2cDevice, debug: false}); // point to your i2c address, debug provides REPL interface
-  wire =  i2c;
-  var vccstate = SSD1306.SWITCHCAPVCC;
-  var _vccstate = vccstate;
-  //var _i2caddr = i2caddr;
+    wire.write(0x3D, control, Buffer.from([c]), function () { });
+  }
 
-// I2C Init - make sure in  400 KHz I2C mode,
+  OLED.prototype.init = function () {
+    //wire = new i2c(SSD1306.I2C_ADDRESS, {device: i2cDevice, debug: false}); // point to your i2c address, debug provides REPL interface
+    wire = i2c;
+    var vccstate = SSD1306.SWITCHCAPVCC;
+    var _vccstate = vccstate;
+    //var _i2caddr = i2caddr;
+
+    // I2C Init - make sure in  400 KHz I2C mode,
 
 
     // Init sequence for 128x64 OLED module
@@ -111,10 +109,10 @@ OLED.prototype.init = function()
     ssd1306_command(SSD1306.SETSTARTLINE | 0x0);            // line #0
     ssd1306_command(SSD1306.CHARGEPUMP);                    // 0x8D
     if (vccstate == SSD1306.EXTERNALVCC) {
-		ssd1306_command(0x10);
-	} else { 
-		ssd1306_command(0x14);
-	}
+      ssd1306_command(0x10);
+    } else {
+      ssd1306_command(0x14);
+    }
     ssd1306_command(SSD1306.MEMORYMODE);                    // 0x20
     ssd1306_command(0x00);                                  // 0x0 act like ks0108
     ssd1306_command(SSD1306.SEGREMAP | 0x1);
@@ -122,115 +120,112 @@ OLED.prototype.init = function()
     ssd1306_command(SSD1306.SETCOMPINS);                    // 0xDA
     ssd1306_command(0x12);
     ssd1306_command(SSD1306.SETCONTRAST);                   // 0x81
-    if (vccstate == SSD1306.EXTERNALVCC) { 
-		ssd1306_command(0x9F);
-	} else { 
-		ssd1306_command(0xCF);
-	}
+    if (vccstate == SSD1306.EXTERNALVCC) {
+      ssd1306_command(0x9F);
+    } else {
+      ssd1306_command(0xCF);
+    }
     ssd1306_command(SSD1306.SETPRECHARGE);                  // 0xd9
-    if (vccstate == SSD1306.EXTERNALVCC) { 
-	  ssd1306_command(0x22);
-	} else {
-	  ssd1306_command(0xF1);
-	}
+    if (vccstate == SSD1306.EXTERNALVCC) {
+      ssd1306_command(0x22);
+    } else {
+      ssd1306_command(0xF1);
+    }
     ssd1306_command(SSD1306.SETVCOMDETECT);                 // 0xDB
     ssd1306_command(0x40);
     ssd1306_command(SSD1306.DISPLAYALLON_RESUME);           // 0xA4
     ssd1306_command(SSD1306.NORMALDISPLAY);                 // 0xA6
 
-  
-  ssd1306_command(SSD1306.DISPLAYON);//--turn on oled panel	
-}
 
-OLED.prototype.display = function() {
-  ssd1306_command(SSD1306.COLUMNADDR);
-  ssd1306_command(0);   // Column start address (0 = reset)
-  ssd1306_command(127); // Column end address (127 = reset)
-
-  ssd1306_command(SSD1306.PAGEADDR);
-  ssd1306_command(0); // Page start address (0 = reset)
-  ssd1306_command((SSD1306.LCDHEIGHT == 64) ? 7 : 3); // Page end address
-
- // upgrade to 400KHz! I2C
-  for (var i=0; i<(SSD1306.LCDWIDTH*SSD1306.LCDHEIGHT/8); i+=16) {
-    wire.write(0x3D, 0x40, Buffer.from(buffer.slice(i,i+16)), function() {});// send a bunch of data in one xmission (128-bit chunks)
+    ssd1306_command(SSD1306.DISPLAYON);//--turn on oled panel	
   }
-}
 
-OLED.prototype.setBuffer = function(newBuffer) {
-  buffer = newBuffer;
-}
+  OLED.prototype.display = function () {
+    ssd1306_command(SSD1306.COLUMNADDR);
+    ssd1306_command(0);   // Column start address (0 = reset)
+    ssd1306_command(127); // Column end address (127 = reset)
 
-OLED.prototype.clear = function()
-{
-	for(var i in buffer)
-	{
-		buffer[i] = 0x00;	
-	}
-}
+    ssd1306_command(SSD1306.PAGEADDR);
+    ssd1306_command(0); // Page start address (0 = reset)
+    ssd1306_command((SSD1306.LCDHEIGHT == 64) ? 7 : 3); // Page end address
 
-OLED.prototype.invert = function(inv)
-{
-  if (inv) {
-    ssd1306_command(SSD1306.INVERTDISPLAY);
-  } else {
-    ssd1306_command(SSD1306.NORMALDISPLAY);
+    // upgrade to 400KHz! I2C
+    for (var i = 0; i < (SSD1306.LCDWIDTH * SSD1306.LCDHEIGHT / 8); i += 16) {
+      wire.write(0x3D, 0x40, Buffer.from(buffer.slice(i, i + 16)), function () { });// send a bunch of data in one xmission (128-bit chunks)
+    }
   }
-}
 
-OLED.prototype.dim = function(dim) {
-  var contrast;
+  OLED.prototype.setBuffer = function (newBuffer) {
+    buffer = newBuffer;
+  }
 
-  if (dim) {
-    contrast = 0; // Dimmed display
-  } else {
-    //if (_vccstate == SSD1306.EXTERNALVCC) {
+  OLED.prototype.clear = function () {
+    for (var i in buffer) {
+      buffer[i] = 0x00;
+    }
+  }
+
+  OLED.prototype.invert = function (inv) {
+    if (inv) {
+      ssd1306_command(SSD1306.INVERTDISPLAY);
+    } else {
+      ssd1306_command(SSD1306.NORMALDISPLAY);
+    }
+  }
+
+  OLED.prototype.dim = function (dim) {
+    var contrast;
+
+    if (dim) {
+      contrast = 0; // Dimmed display
+    } else {
+      //if (_vccstate == SSD1306.EXTERNALVCC) {
       //contrast = 0x9F;
-    //} else {
+      //} else {
       contrast = 0xCF;
-	  contrast = 0x64;
-	  // contrast = 0x01;
-    //}
+      // contrast = 0x64;
+      // contrast = 0x01;
+      //}
+    }
+    // the range of contrast to too small to be really useful
+    // it is useful to dim the display
+    ssd1306_command(SSD1306.SETCONTRAST);
+    ssd1306_command(contrast);
   }
-  // the range of contrast to too small to be really useful
-  // it is useful to dim the display
-  ssd1306_command(SSD1306.SETCONTRAST);
-  ssd1306_command(contrast);
-}
 
-OLED.prototype.drawPixel = function(x, y, color) {
+  OLED.prototype.drawPixel = function (x, y, color) {
 
-  // check rotation, move pixel around if necessary
-  //switch (getRotation()) {
-  switch (3) {
-  case 1:
-    x = [y, y = x][0];//swap(x, y);
-    x = SSD1306.LCDWIDTH - x - 1;
-    break;
-  case 2:
-    x = SSD1306.LCDWIDTH - x - 1;
-    y = SSD1306.LCDHEIGHT - y - 1;
-    break;
-  case 3:
-    x = [y, y = x][0];//swap(x, y);
-    y = SSD1306.LCDHEIGHT - y - 1;
-    break;
-  }  
+    // check rotation, move pixel around if necessary
+    //switch (getRotation()) {
+    switch (1) {
+      case 1:
+        x = [y, y = x][0];//swap(x, y);
+        x = SSD1306.LCDWIDTH - x - 1;
+        break;
+      case 2:
+        x = SSD1306.LCDWIDTH - x - 1;
+        y = SSD1306.LCDHEIGHT - y - 1;
+        break;
+      case 3:
+        x = [y, y = x][0];//swap(x, y);
+        y = SSD1306.LCDHEIGHT - y - 1;
+        break;
+    }
 
-  if ((x < 0) || (x >= SSD1306.LCDWIDTH) || (y < 0) || (y >= SSD1306.LCDHEIGHT))
-    return;
+    if ((x < 0) || (x >= SSD1306.LCDWIDTH) || (y < 0) || (y >= SSD1306.LCDHEIGHT))
+      return;
 
-  // x is which column
-  if (color == SSD1306.WHITE) {
-    buffer[x+ (y/8>>0)*SSD1306.LCDWIDTH] |= (1 << (y&7)); //(a/b>>0) is Inter divison
-  } else {
-    buffer[x+ (y/8>>0)*SSD1306.LCDWIDTH] &= ~(1 << (y&7));
+    // x is which column
+    if (color == SSD1306.WHITE) {
+      buffer[x + (y / 8 >> 0) * SSD1306.LCDWIDTH] |= (1 << (y & 7)); //(a/b>>0) is Inter divison
+    } else {
+      buffer[x + (y / 8 >> 0) * SSD1306.LCDWIDTH] &= ~(1 << (y & 7));
+    }
+
   }
-  
-}
 
 
-  
+
 }
 
 module.exports = OLED;

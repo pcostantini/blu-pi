@@ -15,16 +15,15 @@ module.exports = [
   }, {
     name: 'new',
     command: () => {
-      process.exit(0);
-      // fs.writeFile('./cycle.forced', '', () => {
-      // });
-    },
+      global.displayDriver.invert(true);
+      setTimeout(() => process.exit(0), 333);
+    }
   }, {
     name: 'wif-r',
     command: () => {
       bash(['sudo ifdown wlan0',
-            'sleep 1',
-            'sudo ifup wlan0'].join('\n'));
+        'sleep 1',
+        'sudo ifup wlan0'].join('\n'));
     }
   }, {
     name: 'rebut!',
