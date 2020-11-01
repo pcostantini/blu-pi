@@ -45,7 +45,7 @@ delay(333, function () {
   var Persistence = require('./persistence');
   var Display = require('./display');
   var StateReducer = require('./state');
-  // var ReplayWithSchedule = require('./replay_scheduled');
+  var ReplayWithSchedule = require('./replay_scheduled');
   // var utils = require('./utils');
 
   // input with ts
@@ -76,11 +76,15 @@ delay(333, function () {
   var replay = db.readSensors();
   var replayComplete = replay.count();
 
-  // replay = config.demoScheduled ? ReplayWithSchedule(replay) : replay;
+  // load previous session
+  // or load replay
+  replay = !config.demoScheduled
+    ? replay
+    : ReplayWithSchedule(replay);
 
   log('!6. sensors init');
   var sensors = config.demo
-    ? Rx.Observable.empty()            // no sensors on demo mode
+    ? Rx.Observable.empty()             // no sensors on demo mode
     : SensorsBootstrap(config.sensors)  //.skipUntil(replayComplete).share()
 
   // persistence
@@ -92,11 +96,9 @@ delay(333, function () {
   // clock, ticks and input
   var clock = Clock();
   var ticks = Ticks(clock);
-  // ... ticks.subscribe((ts) => console.log(ts.value));
 
   // state store or snapshot of latest events // defeats the purpose!
   log('!7. state reducers');
-
   var all = Rx.Observable
     .merge(errors, clock, ticks, input, replay, sensors, globalEvents)
     .share();
