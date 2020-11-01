@@ -2,6 +2,7 @@ var minimist = require('minimist');
 var argv = minimist(process.argv.slice(2));
 
 var demoFile = argv.demoFile;
+var demoScheduled = !!argv.demoScheduled
 var demoMode = argv.demo || argv.d || !!demoFile;
 var persist = !demoMode;
 var displaySize = { width: 128, height: 64 };
@@ -14,6 +15,7 @@ if (!demoFile) {
 var config = {
   displaySize: displaySize,
   demoMode: demoMode,
+  demoScheduled: demoScheduled,
   persist: persist,
   persistBuffer: 0,
   inputDrivers: [
