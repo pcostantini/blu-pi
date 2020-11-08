@@ -2,8 +2,8 @@
 #include <math.h>
 
 // Config
-#define SWITCH 3
-#define LED 4
+#define SWITCH 4
+#define LED 1 // 1-Trinket 4-ATTIny85
 
 // README
 // read speed, report current speed to i2c
@@ -15,7 +15,7 @@ int revolutionTimeout = 1500;
 
 // LED Pulse
 int brightness = 0; // how bright the LED is
-int fadeAmount = 3; // how many points to fade the LED by
+int fadeAmount = 12; // how many points to fade the LED by
 unsigned long lastFadeUpdate = 0;
 
 // I2C Setup
@@ -106,6 +106,7 @@ void loop()
   if (ping(currentMillis))
   {
     brightness = 255;
+    analogWrite(LED, brightness);
 
     rotation++;
     distance += wheelCirc;
@@ -152,6 +153,7 @@ void loop()
     {
       // reduce pulse
       brightness = brightness - fadeAmount;
+      if (brightness < 0) brightness = 0;
     }
 
     analogWrite(LED, brightness);
