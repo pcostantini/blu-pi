@@ -8,7 +8,7 @@ var NoisyFilter = require('./noisy-filter');
 var ScanlineFilter = require('./scanlines-filter');
 var utils = require('../utils');
 
-var refreshDisplayDelay = 999;
+var refreshDisplayDelay = 500;
 var width = 64;
 var height = 128;
 
@@ -34,7 +34,7 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     case 'Gps':
       drawMapPoint(driver, e.value, stateStore.getState().Path);
-      drawSpeed(driver, e.value ? e.value.speed : NaN);
+      drawSpeed(driver, e.value ? e.value.speed : 0);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
       break;
 
@@ -78,18 +78,17 @@ function drawAll(driver, state) {
   state = state || {};
 
   currentSpeedLabel = -1;
-  drawSpeed(driver, state.Gps ? state.Gps.speed : NaN);
-  drawTime(driver, getTimeString(state.Ticks));
   drawMap(driver, state.Path || { points: [] });
+  drawSpeed(driver, state.Gps ? state.Gps.speed : 0);
   drawDistance(driver, state.Distance, 0);
-  // drawDistance(driver, state.Odometer ? state.Odometer.distance : 0, 1);
+  drawTime(driver, getTimeString(state.Ticks));
 
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, state.CpuTemperature);
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
-var mapSize = [64, 68];
+var mapSize = [64, 70];
 var mapOffsets = [1, 32]
 var mapOffsetY = mapOffsets[1];
 var bounds = {
@@ -110,10 +109,17 @@ function drawMap(driver, path) {
     var lineSize = 14;
     var x1 = Math.round(mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2);
     var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
-    driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
-    driver.drawLine(x1, 1 + y1, x1 + lineSize, 1 + y1 + lineSize, 1);
+
     driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
-    driver.drawCircle(x1 + lineSize / 2, 1 + y1 + lineSize / 2, lineSize / 2, 1);
+    driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
+
+    x1 += 1;
+    y1 += 1;
+
+    var filter = ScanlineFilter(driver, 2)
+    driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
+    driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
+    filter.dispose();
 
     return;
   }
@@ -122,16 +128,17 @@ function drawMap(driver, path) {
   var initialCoord = pathPoints[0]; // _.last(pathPoints)
   initBounds(bounds, initialCoord);
 
-  setTimeout(() =>
-    renderWholePath(driver, pathPoints, mapOffsets),
-    33);
+  setTimeout(
+    () => renderWholePath(driver, pathPoints, mapOffsets), 33);
 }
 
 function drawMapCanvas(driver) {
-  driver.fillRect(0, mapOffsetY - 1, mapSize[0], mapSize[1] + 2, 0);
-  var filter = NoisyFilter(driver);
-  driver.drawRect(0, mapOffsetY - 1, mapSize[0], mapSize[1] + 2, 1);
-  filter.dispose();
+  // var f2 = NoisyFilter(driver, 1);
+  driver.fillRect(0, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 0);
+  var f1 = ScanlineFilter(driver, 2)
+  driver.drawRect(0, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 1);
+  f1.dispose();
+  // f2.dispose();
 }
 
 var outCounter = 0;
@@ -164,7 +171,7 @@ function drawMapPoint(driver, value, fullPath, lazyFocus) {
     return;
   }
 
-  var filter = DottedFilter(driver);
+  var filter = ScanlineFilter(driver, 2);
   driver.drawPixel(pixel.x + mapOffsets[0], pixel.y + mapOffsets[1], 1);
   filter.dispose();
 }
@@ -172,26 +179,38 @@ function drawMapPoint(driver, value, fullPath, lazyFocus) {
 var currentSpeedLabel = '';
 function drawSpeed(driver, speed) {
   speed = utils.mpsToKph(speed);
-  var isValid = speed >= 14;
-  var newLabel = isValid ? toFixed(speed, 1) : dot + '-.-';
+  var isValid = speed >= 1;
+  var newLabel = isValid ? toFixed(speed, 1) : '0.0';
+  newLabel = (newLabel.length === 3)
+    ? '0' + newLabel
+    : newLabel;
 
   //.
   if (newLabel === currentSpeedLabel) return;
   currentSpeedLabel = newLabel;
 
-  var s = currentSpeedLabel.split('.');
-  // driver.setTextSize(2);
-
-  // render from right to left
-  driver.setTextSize(2);
-  driver.setCursor(42, 13);
-  // if(s[1] !== '-') driver.setTextSize(3);
-  write(driver, '.' + s[1]);
-
 
   driver.setTextSize(3);
-  driver.setCursor(12, 6);
-  write(driver, s[0]);
+  driver.setCursor(6, 6);
+  write(driver, newLabel.split('.')[0]);
+  driver.setTextSize(2);
+  driver.setCursor(39, 8);
+  write(driver, '.' + newLabel.split('.')[1]);
+}
+
+var lastDistance = "";
+function drawDistance(driver, distance, pos) {
+  var text = toFixed(distance || 0, 2);
+  if (lastDistance === text) return;
+  lastDistance = text;
+
+  driver.setTextColor(1, 0);
+  driver.setTextSize(1);
+  driver.setCursor(
+    1 + width - 6 * text.length,
+    height - 23);
+
+  write(driver, text);
 }
 
 function drawAltitude() {
@@ -206,7 +225,7 @@ function drawTemp(driver, temp, cpuTemp, ambientPressure) {
 
   currentTemp = newCurrentTemp;
   // var x = width - (newCurrentTemp.length * 6) + 2;
-  driver.setCursor(2, 33);
+  driver.setCursor(1, mapOffsetY + mapSize[1] - 6);
   driver.setTextSize(1);
   write(driver, newCurrentTemp);
 
@@ -225,39 +244,27 @@ function drawTime(driver, sTime) {
 
   driver.setTextColor(1, 0);
   driver.setTextSize(2);
-  driver.setCursor(6, height - 24);
+  driver.setCursor(6, height - 14);
+  var filter = ScanlineFilter(driver, 1);
   write(driver, sTime);
-}
-
-var lastDistance = "";
-function drawDistance(driver, distance, pos) {
-  var text = toFixed(distance || 0, 2);
-  if (lastDistance === text) return;
-  lastDistance = text;
-
-  driver.setTextColor(1, 0);
-  driver.setTextSize(1);
-  driver.setCursor(
-    width - 6 * text.length,
-    height - 7 - pos * 8);
-
-  write(driver, text);
+  filter.dispose();
 }
 
 var dot = '^';
 function write(driver, string) {
   var chars = string.split('');
-  chars.forEach((c) => {
-    var f = c === dot;// ? DottedFilter(driver) : null;
-    if (f) {
-      driver.setTextSize(2)
-    }
-    driver.write(c.charCodeAt(0));
-    if (f) {
-      driver.setTextSize(3)
-      // f.dispose();
-    }
-  });
+  chars.forEach((c) => driver.write(c.charCodeAt(0)));
+  // chars.forEach((c) => {
+  //   var f = c === dot;// ? DottedFilter(driver) : null;
+  //   if (f) {
+  //     driver.setTextSize(2)
+  //   }
+  //   driver.write(c.charCodeAt(0));
+  //   if (f) {
+  //     driver.setTextSize(3)
+  //     // f.dispose();
+  //   }
+  // });
 }
 
 function toFixed(value, precision) {
@@ -321,19 +328,16 @@ function renderWholePath(driver, path, offsets) {
 
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
-  var filter = DottedFilter(driver);
+  var filter = NoisyFilter(driver, .5);
   path.forEach((coord) => {
     var pixel = getPixelCoordinate(coord, bounds);
-
     var isOut = pixel.x > mapSize[0] || pixel.y > mapSize[1] ||
       pixel.x < 0 || pixel.y < 0;
 
-    if (isOut) {
-      return;
-    }
-
+    if (isOut) return;
     driver.drawPixel(pixel.x + offsets[0], pixel.y + offsets[1], 1);
   });
+
   filter.dispose();
 }
 
