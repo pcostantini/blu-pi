@@ -40,7 +40,7 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
     case 'Input:LongB':
 
       state.executing = true;
-      driver.invert(true);
+      // driver.invert(true);
       drawSelection(driver, menu, state);
 
 
@@ -53,7 +53,7 @@ MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
       // restore state
       setTimeout(() => {
-        driver.invert(false);
+        // driver.invert(false);
         drawSelection(driver, menu, state);
       }, 1000);
 

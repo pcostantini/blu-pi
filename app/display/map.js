@@ -15,7 +15,6 @@ var bounds = {
 };
 
 function MapDisplay(driver, events, stateStore) {
-  // noisyFilter(driver);
   BaseDisplay.call(this, driver, events, stateStore);
   this.outCounter = 0;
 }
@@ -65,7 +64,6 @@ MapDisplay.prototype.processEvent = function (driver, e, stateStore) {
       // draw point!
       drawPoint(driver, pixel, true);
 
-
       break;
 
     case 'Input:B':
@@ -101,7 +99,6 @@ function renderWholePath(driver, path, zoom) {
     driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
     driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
 
-
   }
 
   var lowLongitude = _.minBy(path, (s) => s[1])[1];
@@ -133,12 +130,16 @@ function renderWholePath(driver, path, zoom) {
 
 function drawPoint(driver, pixel, isCurrent, zoom) {
   var radious = Math.ceil(zoom / 2); // Math.max(zoom, 1)
-  if(isCurrent) {
-    driver.drawCircle(pixel.x, pixel.y, radious, radious);
-  } else {
-    var filter = new DottedFilter(driver);
-    driver.drawCircle(pixel.x, pixel.y, radious, radious)
-    filter.dispose();
+  try {
+    if(isCurrent) {
+      driver.drawCircle(pixel.x, pixel.y, radious, radious);
+    } else {
+      var filter = new DottedFilter(driver);
+      driver.drawCircle(pixel.x, pixel.y, radious, radious)
+      filter.dispose();
+    }
+  } catch(ex) {
+    console.log(ex)
   }
 }
 

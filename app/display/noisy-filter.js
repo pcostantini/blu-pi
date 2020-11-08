@@ -1,6 +1,6 @@
 module.change_code = 1;
 
-function Noisy(driver) {
+function Noisy(driver, mod) {
   // rewrite drivers draw pixel
   driver._drawPixel = driver.drawPixel;
   driver.drawPixel = function (x, y, color) {
@@ -9,10 +9,7 @@ function Noisy(driver) {
     if (!!color)
       driver._drawPixel(x + 1, y + 1, false);
 
-    if (
-      Math.random() > .17
-      || !color
-    ) {
+    if (Math.random() > (.17 * mod) || !color ) {
 
       // noise
       var r = randOffset(x, y);
