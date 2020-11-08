@@ -162,7 +162,7 @@ function delay(time, func) {
 }
 
 function instantiateDriver (driverName) {
-  console.log('..instantiating: ' + driverName);
+  console.log('..initing: ' + driverName);
   var DriverType = require(driverName);
   try {
     var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
