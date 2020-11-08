@@ -11,8 +11,8 @@ module.exports = function bootstrap(sensorsConfig) {
     // TODO: Read from config.js and safeRequire each item
     // TODO: ? Move sensors init params to constants within sensor code
 
-    // Odometer and velocimeter
-    // safeRequire('./sensors/odometer')(),
+    // Odometer/Velocimeter
+    safeRequire('./sensors/odometer')(),
 
     // LSM303 - 3X Accelerometer & Magnometer
     // safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),

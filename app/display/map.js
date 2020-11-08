@@ -78,7 +78,7 @@ MapDisplay.prototype.cycle = function (driver, stateStore) {
   var state = stateStore.getState();
   if (state && state.Path && state.Path.points) {
     bounds.zoom += 1;
-    if (bounds.zoom > 4) bounds.zoom = 1;
+    if (bounds.zoom > 8) bounds.zoom = 1;
 
     driver.clear();
     renderWholePath(driver, state.Path.points, bounds.zoom);
@@ -106,11 +106,12 @@ function renderWholePath(driver, path, zoom) {
   var latitude = _.minBy(path, (s) => s[0])[0];
 
   // zoom on last point only
+  var angle = 0.013
   if (bounds.zoom > 1) {
     var last = _.last(path);
-    lowLongitude = last[1] - 0.01 / bounds.zoom;
-    maxLongitude = last[1] + 0.01 / bounds.zoom;
-    latitude = last[0] - 0.02 / bounds.zoom;
+    lowLongitude = last[1] - angle / bounds.zoom;
+    maxLongitude = last[1] + angle / bounds.zoom;
+    latitude = last[0] - (angle * 2) / bounds.zoom;
   }
 
   var lonDelta = maxLongitude - lowLongitude;
@@ -122,9 +123,10 @@ function renderWholePath(driver, path, zoom) {
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
   path.forEach((coord, ix) => {
-    var pixel = getPixelCoordinate(coord, bounds);
-
-    drawPoint(driver, pixel, (ix === path.length - 1), zoom);
+    drawPoint(
+      driver, 
+      getPixelCoordinate(coord, bounds), // pixel
+      (ix === path.length - 1), zoom);
   });
 }
 
@@ -132,6 +134,7 @@ function drawPoint(driver, pixel, isCurrent, zoom) {
   var radious = Math.ceil(zoom / 2); // Math.max(zoom, 1)
   try {
     if(isCurrent) {
+    // ?
       driver.drawCircle(pixel.x, pixel.y, radious, radious);
     } else {
       var filter = new DottedFilter(driver);
@@ -163,7 +166,7 @@ function getPixelCoordinate(coord, bounds) {
 }
 
 function initBounds(bounds, initialCoord) {
-  bounds.zoom = 1;
+  bounds.zoom = 6;
   bounds.lonLeft = initialCoord[1] - 0.01;
   bounds.lonDelta = 0.02;
   bounds.latBottomDegree = (initialCoord[0] - 0.02) * Math.PI / 180;

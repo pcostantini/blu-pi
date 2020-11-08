@@ -43,6 +43,9 @@ function asTrackEvents(sensorEvents) {
 }
 
 const isGps = (s) => s.sensor === 'Gps' && !!s.data;
+const isTemp = (s) => s.sensor === 'Barometer' && !!s.data;
+// const isCadence
+
 const asPoint = (s) => ({
   ts: s.data.timestamp,
   lat: s.data.latitude,
@@ -50,12 +53,13 @@ const asPoint = (s) => ({
   el: s.data.altitude
 });
 
-const isTemp = (s) => s.sensor === 'Barometer' && !!s.data;
 const asTemp = (s) => ({
   ts: s.data.timestamp,
   temp: s.data.temperature,
   pres: s.data.pressure
 });
+
+// const asCadence
 
 function asGpxObject(trackPoints, activityName) {
   var gpx = {
@@ -74,7 +78,7 @@ function asGpxObject(trackPoints, activityName) {
         name: {
           '$t': activityName
         },
-        trkseg: trackPoints.map(toTrkpt)
+        trkseg: trackPoints.map(toTrkSegment)
       }
     }
   };
@@ -84,7 +88,7 @@ function asGpxObject(trackPoints, activityName) {
 
 const toIso = (ts) => new Date(ts).toISOString();
 
-const toTrkpt = (e) => _.extend(
+const toTrkSegment = (e) => _.extend(
   {
     trkpt: _.extend(
       {
@@ -97,15 +101,19 @@ const toTrkpt = (e) => _.extend(
           '$t': toIso(e.ts)
         }
       },
-      toExtensions(e))
+      asExtensions(e))
   });
 
-const toExtensions = (e) => {
+const asExtensions = (e) => {
   var extensions = [];
 
   // Temperature
   if(_.isNumber(e.temp)) {
     extensions.push([ 'gpxtpx:atemp', { '$t': e.temp } ]);
+  }
+
+  if(_.isNumber(e.cadence)) {
+    extensions.push([ 'gpxtpx:cad', { }])
   }
 
   if(!extensions.length) return null;
