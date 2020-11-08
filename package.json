@@ -28,6 +28,8 @@
   },
   "optionalDependencies": {
     "bmp085": "^0.3.2",
+    "coffee-script": "^1.12.7",
+    "i2c": "^0.2.4",
     "pi-temperature": "^1.0.0",
     "rpio": "^1.0.11"
   },
