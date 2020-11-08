@@ -18,12 +18,12 @@ module.exports = function ReplayWithSchedule(sensors) {
             return true;
         });
 
-        sensors = sensors.map(o => _.assign({ offset: o.timestamp - offset }, o));
-
         sensors.first()
             .subscribe(o => offset = o.timestamp);
 
-        sensors.subscribe(
+        sensors
+            .map(o => _.assign({ offset: o.timestamp - offset }, o))
+            .subscribe(
                 o => Rx.Scheduler.async.schedule(() => {
                     var delayedO = _.assign({}, o, { timestamp: new Date().getTime() });
                     observer.next(delayedO);
