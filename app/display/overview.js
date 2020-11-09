@@ -34,14 +34,17 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     case 'Gps':
       drawMapPoint(driver, e.value, stateStore.getState().Path);
-      drawSpeed(driver, e.value ? e.value.speed : 0);
+      // drawSpeed(driver, e.value ? e.value.speed : 0);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
       break;
 
     case 'Odometer':
-
       drawSpeed(driver, e.value.speed);
       drawDistance(driver, e.value.distance, 1);
+      break;
+
+    case 'Cadence':
+      drawCadence(driver, e.value.cadence);
       break;
 
     case 'Ticks':
@@ -79,7 +82,9 @@ function drawAll(driver, state) {
 
   currentSpeedLabel = -1;
   drawMap(driver, state.Path || { points: [] });
-  drawSpeed(driver, state.Gps ? state.Gps.speed : 0);
+  // drawSpeed(driver, state.Gps ? state.Gps.speed : 0);
+  drawSpeed(driver, state.Odometer.speed);
+  drawCadence(driver, state.Cadence ? state.Cadence.cadence : 0);
   drawDistance(driver, state.Distance, 0);
   drawTime(driver, getTimeString(state.Ticks));
 
@@ -135,7 +140,7 @@ function drawMap(driver, path) {
 function drawMapCanvas(driver) {
   // var f2 = NoisyFilter(driver, 1);
   driver.fillRect(0, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 0);
-  var f1 = ScanlineFilter(driver, 2)
+  var f1 = DottedFilter(driver)
   driver.drawRect(0, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 1);
   f1.dispose();
   // f2.dispose();
@@ -145,7 +150,7 @@ var outCounter = 0;
 function drawMapPoint(driver, value, fullPath, lazyFocus) {
 
   var coord = [value.latitude, value.longitude];
-  if(!coord[0]) return;
+  if (!coord[0]) return;
 
   // console.log('drawMapPoint', coord)
   if (!bounds.lonLeft) {
@@ -191,11 +196,25 @@ function drawSpeed(driver, speed) {
 
 
   driver.setTextSize(3);
-  driver.setCursor(6, 6);
+  driver.setCursor(8, 6);
   write(driver, newLabel.split('.')[0]);
   driver.setTextSize(2);
-  driver.setCursor(39, 8);
+  driver.setCursor(41, 8);
   write(driver, '.' + newLabel.split('.')[1]);
+}
+
+var currentCadenceLabel = '';
+function drawCadence(driver, cadence) {
+  var newLabel = (cadence || 0).toString();
+  if (newLabel.length === 1) newLabel = "0" + newLabel;
+  if (currentCadenceLabel === newLabel) {
+    return;
+  }
+
+  currentCadenceLabel = newLabel;
+  driver.setTextSize(2);
+  driver.setCursor(41, 28);
+  write(driver, newLabel);
 }
 
 var lastDistance = "";
@@ -208,7 +227,7 @@ function drawDistance(driver, distance, pos) {
   driver.setTextSize(1);
   driver.setCursor(
     1 + width - 6 * text.length,
-    height - 23);
+    height - 7);
 
   write(driver, text);
 }
@@ -225,15 +244,15 @@ function drawTemp(driver, temp, cpuTemp, ambientPressure) {
 
   currentTemp = newCurrentTemp;
   // var x = width - (newCurrentTemp.length * 6) + 2;
-  driver.setCursor(1, mapOffsetY + mapSize[1] - 6);
-  driver.setTextSize(1);
+  driver.setCursor(0, 28);
+  driver.setTextSize(1)
   write(driver, newCurrentTemp);
 
-  if (ambientPressure) {
-    driver.setCursor(0, 33);
-    var pressureLabel = (Math.round(ambientPressure * 10) / 10) + ' Pa';
-    write(driver, pressureLabel);
-  }
+  // if (ambientPressure) {
+  //   driver.setCursor(0, 33);
+  //   var pressureLabel = (Math.round(ambientPressure * 10) / 10) + ' Pa';
+  //   write(driver, pressureLabel);
+  // }
 }
 
 var lastTimeText = "";
@@ -244,7 +263,7 @@ function drawTime(driver, sTime) {
 
   driver.setTextColor(1, 0);
   driver.setTextSize(2);
-  driver.setCursor(6, height - 14);
+  driver.setCursor(6, height - 23);
   var filter = ScanlineFilter(driver, 1);
   write(driver, sTime);
   filter.dispose();

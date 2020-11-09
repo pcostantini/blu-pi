@@ -19,7 +19,8 @@ var averageSensorConfig = {
   'CpuTemperature':        ['CpuTemperature', o => o],
   'MagnometerTemperature': ['MagnometerTemperature', o => o.temp],
   'SpeedGps':              ['Gps', o => utils.mpsToKph(o.speed || 0)],
-  'SpeedOdometer':         ['Odometer', o => o.speed || 0]
+  'SpeedOdometer':         ['Odometer', o => o.speed || 0],
+  'Cadence':               ['Cadence', o => o.cadence || 0]
 };
 
 var defaultValues = _.mapValues(averageSensorConfig, () => 0);

@@ -18,9 +18,10 @@ var currentAverageStep = steps[0];
 var currentAverageSet = 'Average_' + currentAverageStep;
 var layouts = [
   {
-    label: 'SPDi',
+    label: 'SPD',
     layout: [
-      ['SpeedGps', 40, 0],
+      // ['SpeedGps', 40, 0],
+      ['Cadence', 100, 40],
       ['SpeedOdometer', 40, 0]
     ],
     layoutWidth: 30

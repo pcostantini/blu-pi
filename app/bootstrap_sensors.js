@@ -8,11 +8,11 @@ module.exports = function bootstrap(sensorsConfig) {
     // GPS
     safeRequire('./sensors/gps')(),
 
-    // TODO: Read from config.js and safeRequire each item
-    // TODO: ? Move sensors init params to constants within sensor code
-
     // Odometer/Velocimeter
     safeRequire('./sensors/odometer')(),
+
+    // BLE (cadence, speed, power...)
+    safeRequire('./sensors/ble_sensors')(),
 
     // LSM303 - 3X Accelerometer & Magnometer
     // safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
