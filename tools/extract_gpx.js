@@ -22,20 +22,37 @@ if (!activityName) {
 
 // read
 var db = new Persistence(dbFilePath, true);
-var events = db.readSensors();
+var events = db.readSensors()
+
 var track = events.filter(is('Gps')).map(asPoint);
 var temp = events.filter(is('Barometer')).map(asTemp);
+var speed = events.filter(is('Odometer')).map(asSpeed);
+var cadence = events.filter(is('Cadence')).map(asCadence);
 
-var all = Rx.Observable.merge(track, temp);
-var allPointsSeed = { points: [], lastTemperature: null };
+// merge all events into valid track (lat/long) events
+// if not gps points, generate dummy one with default coord
+var all = Rx.Observable.merge(track, temp, speed, cadence);
+var allPointsSeed = { points: [], temp: null, speed: null, cadence: null };
 var allPoints = all.scan((ac, item) => {
   if (item.ts && item.lat !== undefined) {
     ac.points.push(
-      _.extend({ temp: ac.lastTemperature }, item));
+      _.extend({ 
+        temp: ac.temp,
+        speed: ac.speed,
+        cadence: ac.cadence
+      }, item));
   }
 
   if (item.temp !== undefined) {
-    ac.lastTemperature = item.temp;
+    ac.temp = item.temp;
+  }
+
+  if (item.speed !== undefined) {
+    ac.speed = item.speed;
+  }
+
+  if (item.cadence !== undefined) {
+    ac.cadence = item.cadence;
   }
 
   return ac;
@@ -50,9 +67,6 @@ allPoints.last().subscribe(result => {
   console.log(xml);
 
 });
-
-
-
 
 // helpers
 function is(sensorName) {
@@ -75,5 +89,19 @@ function asTemp(s) {
     ts: s.timestamp,
     temp: s.value.temperature,
     pres: s.value.pressure
+  };
+}
+
+function asCadence(s) {
+  return {
+    ts: s.timestamp,
+    cadence: s.value.cadence
+  };
+}
+
+function asSpeed(s) {
+  return {
+    ts: s.timestamp,
+    speed: s.value.speed / 3.6
   };
 }

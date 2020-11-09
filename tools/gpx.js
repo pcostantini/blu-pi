@@ -2,7 +2,7 @@ var xml2json = require('xml2json');
 var _ = require('lodash');
 
 const CreatorName = 'blu-pi';
-const CreatorVersion = '0.2';
+const CreatorVersion = '0.3';
 
 function read(sensorEvents, activityName) {
   var items = asTrackEvents(sensorEvents)
@@ -33,10 +33,12 @@ function asTrackEvents(sensorEvents) {
                     .map(asPoint);
   var temp = events.filter(isTemp)
                    .map(asTemp);
+  var cadence = events.filter(isCadence)
+                      .map(asCadence);
 
   // TODO: obtain temp values within track points only
   var trackTemp = temp.filter(s => s.ts >= track[0].ts);
-  var all = track.concat(trackTemp);
+  var all = track.concat(trackTemp).concat(cadence);
   var sorted = all.sort((a,b) => a.ts - b.ts);
 
   return sorted;
@@ -44,7 +46,7 @@ function asTrackEvents(sensorEvents) {
 
 const isGps = (s) => s.sensor === 'Gps' && !!s.data;
 const isTemp = (s) => s.sensor === 'Barometer' && !!s.data;
-// const isCadence
+const isCadence = (s) => s.sensor === 'Cadence' && !!s.data.cadence;
 
 const asPoint = (s) => ({
   ts: s.data.timestamp,
@@ -59,7 +61,10 @@ const asTemp = (s) => ({
   pres: s.data.pressure
 });
 
-// const asCadence
+const asCadence = (s) => ({
+  ts: s.data.timestamp,
+  cadence: s.data.cadence
+});
 
 function asGpxObject(trackPoints, activityName) {
   var gpx = {
@@ -107,13 +112,16 @@ const toTrkSegment = (e) => _.extend(
 const asExtensions = (e) => {
   var extensions = [];
 
-  // Temperature
   if(_.isNumber(e.temp)) {
     extensions.push([ 'gpxtpx:atemp', { '$t': e.temp } ]);
   }
 
   if(_.isNumber(e.cadence)) {
-    extensions.push([ 'gpxtpx:cad', { }])
+    extensions.push([ 'gpxtpx:cad', { '$t': e.cadence }])
+  }
+
+  if(_.isNumber(e.speed)) {
+    extensions.push([ 'gpxtpx:speed', { '$t': e.speed }])
   }
 
   if(!extensions.length) return null;
