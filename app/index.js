@@ -85,7 +85,7 @@ delay(333, function () {
   log('!6. sensors init');
   var sensors = config.demo
     ? Rx.Observable.empty()             // no sensors on demo mode
-    : SensorsBootstrap(config.sensors)  //.skipUntil(replayComplete).share()
+    : SensorsBootstrap(config.sensors).skipUntil(replayComplete).share()
 
   // persistence
   if (config.persist) {
@@ -176,7 +176,7 @@ function instantiateDriver(driverName) {
   try {
     var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
   } catch (e) {
-    // console.log('error', e)
+    console.log('instantiateDriver:error!', e)
     return {
       inited: () => true,
       clear: () => true,
@@ -195,7 +195,7 @@ function getUnifiedDriver(drivers) {
     inited: () => (drivers.filter((d, ix) => d.inited).length) === drivers.length,
     clear: () => drivers.map((d) => d.clear()),
     display: () => drivers
-      .filter((d => d.inited && !!d.invert))
+      .filter((d => d.inited))
       .map((d) => d.display()),
     drawPixel: (x, y, color) => drivers.map((d) => d.drawPixel(x, y, color)),
     invert: (invert) => drivers

@@ -83,8 +83,10 @@ WebDisplay.prototype.init = function() {
 
   // open socket server
   var self = this;
-  var io = SocketIo.listen(server);
-  io.sockets.on('connection', function (socket) {
+  self.io = SocketIo.listen(server);
+  self.io.sockets.on('connection', function (socket) {
+    console.log('WebDisplay:connected', socket.handshake)
+
     // send buffer on connect
     socket.emit('buffer', self.buffer);
 
@@ -94,8 +96,7 @@ WebDisplay.prototype.init = function() {
     });
 
   });
-
-  this.io = io;
+  
   server.listen(httpPort);
   this.inited = true;
 }
