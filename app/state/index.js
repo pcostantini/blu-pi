@@ -81,10 +81,10 @@ module.exports.FromStream = function FromStream(events) {
   });
 
   // combine all
-  // return Rx.Observable.merge(stateStream, reducers, averages)
-  //   .share();
+  return Rx.Observable.merge(stateStream, reducers, averages)
+    .share();
 
-  return stateStream.share();
+  // return stateStream.share();
 }
 
 // AVERAGE
