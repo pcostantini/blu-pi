@@ -1,20 +1,22 @@
 var noble = require('@abandonware/noble');
 var Rx = require('rxjs');
 
-const peripheralIdOrAddress = 'e7:5e:d5:4f:11:1d';
 const UINT16_MAX = 65536;  // 2^16
 const UINT32_MAX = 4294967296;  // 2^32
 const updateRatio = 0.85; // Percent ratio between old/new stats
 const wheelSize = 2130;
 
-function BleSensors() {
+function BleSensors(deviceAddresses) {
   return Rx.Observable.create(function (observer) {
     console.log('ble:init()')
-    init(observer);
+    init(observer, deviceAddresses);
   }).share();
 }
 
-function init(observer) {
+function init(observer, deviceAddresses) {
+
+  var cadenceAddress = deviceAddresses.cadence;
+
   noble.on('stateChange', function (state) {
     if (state === 'poweredOn') {
       console.log('ble:on!')
@@ -25,7 +27,7 @@ function init(observer) {
   });
 
   noble.on('discover', function (peripheral) {
-    if (peripheral.id === peripheralIdOrAddress || peripheral.address === peripheralIdOrAddress) {
+    if (peripheral.id === cadenceAddress || peripheral.address === cadenceAddress) {
 
       console.log('ble:found:', [peripheral.id, peripheral.advertisement]);
       noble.stopScanning();

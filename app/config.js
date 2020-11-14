@@ -30,10 +30,12 @@ var config = {
   demoMode ? demoFile
     : `./data/session-${Date.now()}.sqlite3`,
   sensors: {
-    // refresh times
     // indiscreet: {
     //   wifi: 5000
     // },
+    bleSensors: {
+      cadence: 'e7:5e:d5:4f:11:1d',
+    },
     lsm303: {
       acceleration: 0,
       axes: 0,

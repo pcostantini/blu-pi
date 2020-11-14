@@ -12,7 +12,7 @@ module.exports = function bootstrap(sensorsConfig) {
     safeRequire('./sensors/odometer')(),
 
     // BLE (cadence, speed, power...)
-    safeRequire('./sensors/ble_sensors')(),
+    safeRequire('./sensors/ble_sensors')(sensorsConfig.bleSensors),
 
     // LSM303 - 3X Accelerometer & Magnometer
     // safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
