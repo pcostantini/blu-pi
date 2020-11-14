@@ -118,8 +118,6 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     // NEW AVERAGE EVENT
 
-    // return
-    // Average event
     if (y >= 120) y = offsetY;
 
     // bottom drawer
@@ -128,7 +126,7 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
     // clear line
     driver.drawLine(0, y, 64, y, false, true);
 
-    // 3 col samples
+    // col samples
     for (var i = 0; i <= currentLayout.layout.length; i++) {
       var layout = currentLayout.layout[i];
       if (layout) {

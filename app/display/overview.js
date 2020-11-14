@@ -213,7 +213,7 @@ function drawCadence(driver, cadence) {
 
   currentCadenceLabel = newLabel;
   driver.setTextSize(2);
-  driver.setCursor(41, 28);
+  driver.setCursor(41, 30);
   write(driver, newLabel);
 }
 
@@ -244,7 +244,7 @@ function drawTemp(driver, temp, cpuTemp, ambientPressure) {
 
   currentTemp = newCurrentTemp;
   // var x = width - (newCurrentTemp.length * 6) + 2;
-  driver.setCursor(0, 28);
+  driver.setCursor(0, 30);
   driver.setTextSize(1)
   write(driver, newCurrentTemp);
 
