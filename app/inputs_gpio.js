@@ -11,7 +11,7 @@ function GpioInputs() {
   var gpioB = 17;
   var gpioC = 27;
 
-  var longPressDelay = 1000;
+  var longPressDelay = 750;
 
   var inputA = mapInput('A', gpio.observe(gpioA).share());
   var inputB = mapInput('B', gpio.observe(gpioB).share());

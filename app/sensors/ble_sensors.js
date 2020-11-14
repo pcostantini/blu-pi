@@ -16,6 +16,7 @@ function BleSensors(deviceAddresses) {
 function init(observer, deviceAddresses) {
 
   var cadenceAddress = deviceAddresses.cadence;
+  var previousSample, midSample, currentSample, bluetoothStats, hasWheel, hasCrank, startDistance;
 
   noble.on('stateChange', function (state) {
     if (state === 'poweredOn') {
@@ -26,18 +27,19 @@ function init(observer, deviceAddresses) {
     }
   });
 
+  // search device
   noble.on('discover', function (peripheral) {
     if (peripheral.id === cadenceAddress || peripheral.address === cadenceAddress) {
 
       console.log('ble:found:', [peripheral.id, peripheral.advertisement]);
       noble.stopScanning();
 
+      // connect to device
       peripheral.connect((err) => {
 
         if (err) return console.error('ble:connect().err!', err);
 
-        var previousSample, midSample, currentSample, bluetoothStats, hasWheel, hasCrank, startDistance;
-
+        // subscribe to services
         peripheral.discoverServices(['1816'], function (error, services) {
           var service = services[0];
           service.discoverCharacteristics([], function (error, characteristics) {
@@ -65,7 +67,8 @@ function init(observer, deviceAddresses) {
                 if(bluetoothStats) {
                   observer.next({ name: 'Cadence', value: {
                     cranks: bluetoothStats.cranks,
-                    cadence: bluetoothStats.cadence
+                    cadence: bluetoothStats.cadence,
+                    raw: currentSample
                   }});
                 }
 
@@ -99,8 +102,15 @@ function init(observer, deviceAddresses) {
 
         function calculateStats() {
 
+          if (!currentSample) {
+            return;
+          }
+
           if (!previousSample) {
-            startDistance = currentSample.wheel * wheelSize / 1000 / 1000; // km
+            if (hasWheel) {
+              startDistance = currentSample.wheel * wheelSize / 1000 / 1000; // km
+            }
+            
             return;
           }
 

@@ -28,7 +28,7 @@ var config = {
   ],
   dbFile:
   demoMode ? demoFile
-    : `./data/session-${Date.now()}.sqlite3`,
+    : `./data/current.sqlite3`,
   sensors: {
     // indiscreet: {
     //   wifi: 5000

@@ -121,7 +121,7 @@ function drawMap(driver, path) {
     x1 += 1;
     y1 += 1;
 
-    var filter = ScanlineFilter(driver, 2)
+    var filter = DottedFilter(driver)
     driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
     driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
     filter.dispose();
