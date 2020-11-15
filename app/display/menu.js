@@ -23,6 +23,7 @@ MenuDisplay.prototype.init = function (driver, stateStore) {
   // reset =)
   this.refreshDisplayDelay = false;
   state = { position: 0 };
+  driver.setRotation(1);
   drawMenu(driver, menu, state);
 }
 

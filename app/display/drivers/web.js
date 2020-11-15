@@ -24,6 +24,12 @@ WebDisplay.prototype.clear = function () {
   }
 }
 
+var rotation = 1;
+WebDisplay.prototype.setRotation = function (value) {
+  rotation = value;
+  this.io.sockets.emit('set_rotation', value);
+}
+
 // update single pixel in buffer
 WebDisplay.prototype.drawPixel = function (x, y, color) {
   if (!this.buffer) return;
@@ -33,7 +39,7 @@ WebDisplay.prototype.drawPixel = function (x, y, color) {
 
   // check rotation, move pixel around if necessary
   ////switch (getRotation()) {
-  switch (3) {
+  switch (rotation) {
     case 1:
       x = [y, y = x][0];//swap(x, y);
       x = this.bufferWidth - x - 1;

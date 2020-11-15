@@ -75,6 +75,7 @@ buffer = [
 
 var OLED = function () {
   var wire = null;
+  var rotation = 1;
 
   //Protected functions
   //----------------------------------------
@@ -193,11 +194,15 @@ var OLED = function () {
     ssd1306_command(contrast);
   }
 
+  OLED.prototype.setRotation = function(value) {
+    rotation = value;
+  }
+
   OLED.prototype.drawPixel = function (x, y, color) {
 
     // check rotation, move pixel around if necessary
     //switch (getRotation()) {
-    switch (1) {
+    switch (rotation) {
       case 1:
         x = [y, y = x][0];//swap(x, y);
         x = SSD1306.LCDWIDTH - x - 1;

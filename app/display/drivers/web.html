@@ -13,9 +13,11 @@
       /* TODO: Autosize! */
     }
 
-    #display {
+    /* #display { */
+    #display.canvas_r_1 {
       transform: translate(0px, 50px) rotate(90deg);
     }
+
 
     #controls {
       display: inline-block;
@@ -131,8 +133,12 @@
 
     socket.on('dim', function(dimmed) {
       canvas.style.opacity = dimmed ? '0.5' : '1';
-    })
+    });
 
+    socket.on('set_rotation', function(rotation) {
+      document.getElementById('canvas')
+        .setAttribute('class', 'canvas_r_' + rotation);
+    });
 
     // input
     var keyMappings =

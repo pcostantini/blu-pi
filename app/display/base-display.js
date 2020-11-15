@@ -1,6 +1,10 @@
 module.change_code = 1;
 var DottedFilter = require('./dotted-filter');
 
+var cpuThreshold = 1.5;
+var h = 64;
+var w = 128;
+
 function BaseDisplay(driver, events, stateStore) {
   var self = this;
 
@@ -19,6 +23,7 @@ function BaseDisplay(driver, events, stateStore) {
     }
   });
 
+  driver.rotation = 2;
   driver.clear();
 
   try {
@@ -73,29 +78,32 @@ BaseDisplay.prototype.dispose = function () {
 }
 
 BaseDisplay.prototype.refreshDisplayDelay = 1000;
-BaseDisplay.prototype.width = 64;
-BaseDisplay.prototype.height = 128;
+BaseDisplay.prototype.width = 128;
+BaseDisplay.prototype.height = 64;
 BaseDisplay.prototype.rerouteInput = false;
 
 module.exports = BaseDisplay;
 
 // helpers
 function drawBit(driver, bit) {
-  driver.fillRect(2, 0, 3, 3, 0)
-  driver.fillRect(1, 0, 3, 3, bit ? 1 : 0);
+  driver.fillRect(2, h - 2, 2, 2, 0)
+  driver.fillRect(1, h - 2, 1, 1, bit ? 1 : 0);
+
+  driver.fillRect(w - 5, h - 6, 5, 5, 0)
+  driver.fillRect(w - 5, h - 5, 5, 5, bit ? 1 : 0);
 }
 
-var cpuThreshold = 1.5;
 function drawCpu(driver, cpuState) {
-  var maxBarWidth = BaseDisplay.prototype.width - 2;
+  // portrait
+  var maxSize = h - 7;
   var cpu = cpuState[0] < cpuThreshold ? cpuState[0] : cpuThreshold;
-  var cpuWidth = Math.round((maxBarWidth / cpuThreshold) * (cpu));
+  var size = Math.round((maxSize / cpuThreshold) * (cpu));
 
   var filter = DottedFilter(driver);
-  driver.fillRect(0, 0, BaseDisplay.prototype.height, 5, true);
-  driver.fillRect(cpuWidth + 1, 0, maxBarWidth - cpuWidth + 1, 3, false);
+  driver.fillRect(w - 5, 0, 5, maxSize, true);
+  driver.fillRect(w - 5, size, 5, maxSize - size, false);
   filter.dispose();
 
-  driver.drawLine(0, 3, BaseDisplay.prototype.width, 3, 1);
-  driver.drawLine(0, 4, BaseDisplay.prototype.width, 4, 0);
+  driver.drawLine(w - 5, 0, w - 5, h, 1);
+  driver.drawLine(w - 4, 0, w - 4, h, 0);
 }

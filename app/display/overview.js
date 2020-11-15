@@ -8,9 +8,9 @@ var NoisyFilter = require('./noisy-filter');
 var ScanlineFilter = require('./scanlines-filter');
 var utils = require('../utils');
 
-var refreshDisplayDelay = 500;
-var width = 64;
-var height = 128;
+// var refreshDisplayDelay = 500;
+var width = 128;
+var height = 64;
 
 function OverviewDisplay(driver, events, stateStore) {
   BaseDisplay.call(this, driver, events, stateStore);
@@ -19,9 +19,9 @@ function OverviewDisplay(driver, events, stateStore) {
 inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
-  this.refreshDisplayDelay = refreshDisplayDelay;
+  // this.refreshDisplayDelay = refreshDisplayDelay;
   this.lastTimeString = '';
-
+  driver.setRotation(2);
   drawAll(driver, stateStore.getState());
 }
 
@@ -60,17 +60,11 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       drawTemp(driver, barometer.temperature, e.value);
       break;
 
-    // case 'Input:A':
-    //   zoom(driver, stateStore, -1);
-    //   break;
-
-    // case 'Input:B':
-    //   zoom(driver, stateStore);
-    //   break;
-
-    // case 'Input:C':
-    //   zoom(driver, stateStore);
-    //   break;
+    case 'Input:A':
+    case 'Input:B':
+    case 'Input:C':
+      drawAll(driver, stateStore.getState());
+      break;
 
   }
 };
@@ -83,19 +77,20 @@ function drawAll(driver, state) {
   currentSpeedLabel = -1;
   drawMap(driver, state.Path || { points: [] });
   // drawSpeed(driver, state.Gps ? state.Gps.speed : 0);
-  drawSpeed(driver, state.Odometer.speed);
+  drawSpeed(driver, state.Odometer ? state.Odometer.speed : 0);
   drawCadence(driver, state.Cadence ? state.Cadence.cadence : 0);
-  drawDistance(driver, state.Distance, 0);
   drawTime(driver, getTimeString(state.Ticks));
+  drawDistance(driver, state.Distance, 0);
 
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, state.CpuTemperature);
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
-var mapSize = [64, 70];
-var mapOffsets = [1, 32]
+var mapSize = [56, 60];
+var mapOffsets = [70, 3]
 var mapOffsetY = mapOffsets[1];
+var mapOffsetX = mapOffsets[0];
 var bounds = {
   width: mapSize[0] - 4,
   height: mapSize[1] - 4,
@@ -115,16 +110,18 @@ function drawMap(driver, path) {
     var x1 = Math.round(mapOffsets[0] + mapSize[0] / 2 - lineSize / 2 - 2);
     var y1 = Math.round(mapOffsets[1] + mapSize[1] / 2 - lineSize / 2 - 2);
 
-    driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
-    driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
-
-    x1 += 1;
-    y1 += 1;
-
-    var filter = DottedFilter(driver)
+    var filter = ScanlineFilter(driver, 2);
     driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
     driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
     filter.dispose();
+
+    // x1 += 1;
+    // y1 += 1;
+
+    // var filter = ScanlineFilter(driver, 2)
+    // driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
+    // driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
+    // filter.dispose();
 
     return;
   }
@@ -138,12 +135,12 @@ function drawMap(driver, path) {
 }
 
 function drawMapCanvas(driver) {
-  // var f2 = NoisyFilter(driver, 1);
-  driver.fillRect(0, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 0);
-  var f1 = DottedFilter(driver)
-  driver.drawRect(0, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 1);
-  f1.dispose();
-  // f2.dispose();
+  var f2 = NoisyFilter(driver, 1);
+  driver.fillRect(mapOffsetX - 2, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 0);
+  // var f1 = DottedFilter(driver)
+  driver.drawRect(mapOffsetX - 2, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 1);
+  // f1.dispose();
+  f2.dispose();
 }
 
 var outCounter = 0;
@@ -187,7 +184,7 @@ function drawSpeed(driver, speed) {
   var isValid = speed >= 1;
   var newLabel = isValid ? toFixed(speed, 1) : '0.0';
   newLabel = (newLabel.length === 3)
-    ? '0' + newLabel
+    ? ' ' + newLabel
     : newLabel;
 
   //.
@@ -195,11 +192,11 @@ function drawSpeed(driver, speed) {
   currentSpeedLabel = newLabel;
 
 
-  driver.setTextSize(3);
-  driver.setCursor(8, 6);
+  driver.setTextSize(4);
+  driver.setCursor(-5, 30);
   write(driver, newLabel.split('.')[0]);
   driver.setTextSize(2);
-  driver.setCursor(41, 8);
+  driver.setCursor(41, 34);
   write(driver, '.' + newLabel.split('.')[1]);
 }
 
@@ -213,23 +210,38 @@ function drawCadence(driver, cadence) {
 
   currentCadenceLabel = newLabel;
   driver.setTextSize(2);
-  driver.setCursor(41, 30);
+  driver.setCursor(41, height - 14);
   write(driver, newLabel);
+}
+
+var lastTimeText = "";
+function drawTime(driver, sTime) {
+  // .
+  if (lastTimeText === sTime) return;
+  lastTimeText = sTime;
+
+  driver.setTextColor(1, 0);
+  driver.setTextSize(2);
+  driver.setCursor(6, 1);
+  write(driver, sTime);
 }
 
 var lastDistance = "";
 function drawDistance(driver, distance, pos) {
-  var text = toFixed(distance || 0, 2);
-  if (lastDistance === text) return;
+  var text = toFixed(distance || 0, 1);
+  if (lastDistance === text) {
+    return;
+  }
+
   lastDistance = text;
 
   driver.setTextColor(1, 0);
   driver.setTextSize(1);
-  driver.setCursor(
-    1 + width - 6 * text.length,
-    height - 7);
+  driver.setCursor(48 - (6 * text.length), 15);
 
+  var filter = ScanlineFilter(driver, 2);
   write(driver, text);
+  filter.dispose();
 }
 
 function drawAltitude() {
@@ -244,7 +256,7 @@ function drawTemp(driver, temp, cpuTemp, ambientPressure) {
 
   currentTemp = newCurrentTemp;
   // var x = width - (newCurrentTemp.length * 6) + 2;
-  driver.setCursor(0, 30);
+  driver.setCursor(mapOffsetX, height - 4);
   driver.setTextSize(1)
   write(driver, newCurrentTemp);
 
@@ -255,21 +267,6 @@ function drawTemp(driver, temp, cpuTemp, ambientPressure) {
   // }
 }
 
-var lastTimeText = "";
-function drawTime(driver, sTime) {
-  // .
-  if (lastTimeText === sTime) return;
-  lastTimeText = sTime;
-
-  driver.setTextColor(1, 0);
-  driver.setTextSize(2);
-  driver.setCursor(6, height - 23);
-  var filter = ScanlineFilter(driver, 1);
-  write(driver, sTime);
-  filter.dispose();
-}
-
-var dot = '^';
 function write(driver, string) {
   var chars = string.split('');
   chars.forEach((c) => driver.write(c.charCodeAt(0)));

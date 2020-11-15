@@ -25,6 +25,7 @@ IntervalsDisplay.prototype.init = function (driver, stateStore) {
     y = startY;
     intervals = [];
 
+    driver.setRotation(1);
     driver.clear();
     driver.setTextColor(1, 0);
 
