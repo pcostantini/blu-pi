@@ -18,7 +18,7 @@ Follow instrutions from:
   ```bash
   arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/damellis/attiny/ide-1.6.x-boards-manager/package_damellis_attiny_index.json
   arduino-cli core install arduino:avr
-  arduino-cli core install avr:attiny
+  arduino-cli core install attiny:avr
   ```
 
 - Install TinyWireS lib:
