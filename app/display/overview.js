@@ -347,7 +347,7 @@ function renderWholePath(driver, path, offsets) {
 
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
-  var filter = NoisyFilter(driver, .5);
+  var filter = DottedFilter(driver);
   path.forEach((coord) => {
     var pixel = getPixelCoordinate(coord, bounds);
     var isOut = pixel.x > mapSize[0] || pixel.y > mapSize[1] ||
