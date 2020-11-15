@@ -8,9 +8,15 @@ var NoisyFilter = require('./noisy-filter');
 var ScanlineFilter = require('./scanlines-filter');
 var utils = require('../utils');
 
-// var refreshDisplayDelay = 500;
+var refreshDisplayDelay = 500;
 var width = 128;
 var height = 64;
+
+var currentSpeedLabel;
+var currentCadenceLabel;
+var lastTimeText;
+var lastDistance;
+var currentTemp;
 
 function OverviewDisplay(driver, events, stateStore) {
   BaseDisplay.call(this, driver, events, stateStore);
@@ -19,9 +25,15 @@ function OverviewDisplay(driver, events, stateStore) {
 inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
-  // this.refreshDisplayDelay = refreshDisplayDelay;
-  this.lastTimeString = '';
+  currentSpeedLabel = '';
+  currentCadenceLabel = '';
+  lastTimeText = '';
+  lastDistance = '';
+  currentTemp = '';
+
+  this.refreshDisplayDelay = refreshDisplayDelay;
   driver.setRotation(2);
+
   drawAll(driver, stateStore.getState());
 }
 
@@ -29,7 +41,7 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
   switch (e.name) {
     case 'Distance':
-      drawDistance(driver, e.value, 0);
+      drawDistance(driver, e.value);
       break;
 
     case 'Gps':
@@ -40,7 +52,7 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     case 'Odometer':
       drawSpeed(driver, e.value.speed);
-      drawDistance(driver, e.value.distance, 1);
+      drawDistance(driver, e.value.distance);
       break;
 
     case 'Cadence':
@@ -80,7 +92,7 @@ function drawAll(driver, state) {
   drawSpeed(driver, state.Odometer ? state.Odometer.speed : 0);
   drawCadence(driver, state.Cadence ? state.Cadence.cadence : 0);
   drawTime(driver, getTimeString(state.Ticks));
-  drawDistance(driver, state.Distance, 0);
+  drawDistance(driver, state.Distance);
 
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, state.CpuTemperature);
@@ -178,7 +190,6 @@ function drawMapPoint(driver, value, fullPath, lazyFocus) {
   filter.dispose();
 }
 
-var currentSpeedLabel = '';
 function drawSpeed(driver, speed) {
   speed = utils.mpsToKph(speed);
   var isValid = speed >= 1;
@@ -191,16 +202,18 @@ function drawSpeed(driver, speed) {
   if (newLabel === currentSpeedLabel) return;
   currentSpeedLabel = newLabel;
 
-
+  if (speed == 0) driver.fillRect(0, 30, mapOffsetX - 5, 28, 0);
+  var filter = (speed == 0) ? ScanlineFilter(driver, 2) : null;
+  driver.setTextColor(1, 0);
   driver.setTextSize(4);
   driver.setCursor(-5, 30);
   write(driver, newLabel.split('.')[0]);
   driver.setTextSize(2);
   driver.setCursor(41, 34);
   write(driver, '.' + newLabel.split('.')[1]);
+  if(filter) filter.dispose();
 }
 
-var currentCadenceLabel = '';
 function drawCadence(driver, cadence) {
   var newLabel = (cadence || 0).toString();
   if (newLabel.length === 1) newLabel = "0" + newLabel;
@@ -209,12 +222,16 @@ function drawCadence(driver, cadence) {
   }
 
   currentCadenceLabel = newLabel;
+  
+  if (cadence == 0) driver.fillRect(41, height - 14, mapOffsetX - 46, 14, 0);
+  var filter = (cadence == 0) ? DottedFilter(driver, 2) : null;
+  driver.setTextColor(1, 0);
   driver.setTextSize(2);
   driver.setCursor(41, height - 14);
   write(driver, newLabel);
+  if(filter) filter.dispose();
 }
 
-var lastTimeText = "";
 function drawTime(driver, sTime) {
   // .
   if (lastTimeText === sTime) return;
@@ -226,8 +243,7 @@ function drawTime(driver, sTime) {
   write(driver, sTime);
 }
 
-var lastDistance = "";
-function drawDistance(driver, distance, pos) {
+function drawDistance(driver, distance) {
   var text = toFixed(distance || 0, 1);
   if (lastDistance === text) {
     return;
@@ -235,20 +251,17 @@ function drawDistance(driver, distance, pos) {
 
   lastDistance = text;
 
-  driver.setTextColor(1, 0);
+  driver.fillRect(0, 18, 64, 9, 1)
+  driver.setTextColor(0, 1);
   driver.setTextSize(1);
-  driver.setCursor(48 - (6 * text.length), 15);
-
-  var filter = ScanlineFilter(driver, 2);
+  driver.setCursor(64 - (6 * text.length), 19);
   write(driver, text);
-  filter.dispose();
 }
 
 function drawAltitude() {
   // not implemented!
 }
 
-var currentTemp = '';
 function drawTemp(driver, temp, cpuTemp, ambientPressure) {
   temp = temp || cpuTemp || 0;
   var newCurrentTemp = getValue(cpuTemp);

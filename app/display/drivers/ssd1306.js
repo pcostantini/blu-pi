@@ -202,7 +202,7 @@ var OLED = function () {
 
     // check rotation, move pixel around if necessary
     //switch (getRotation()) {
-    switch (rotation) {
+    switch (4 - rotation) {
       case 1:
         x = [y, y = x][0];//swap(x, y);
         x = SSD1306.LCDWIDTH - x - 1;

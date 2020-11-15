@@ -27,6 +27,7 @@ WebDisplay.prototype.clear = function () {
 var rotation = 1;
 WebDisplay.prototype.setRotation = function (value) {
   rotation = value;
+  console.log('set_rotation:', rotation)
   this.io.sockets.emit('set_rotation', value);
 }
 
