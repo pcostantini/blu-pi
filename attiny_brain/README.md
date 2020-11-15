@@ -8,6 +8,8 @@ Follow instrutions from:
 
 ## Pre-requisites
 
+- Install **avrdude**: `sudo apt install avrdude`
+
 - Install **arduino-cli**:
 
   > https://arduino.github.io/arduino-cli/latest/installation/
