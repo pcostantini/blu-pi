@@ -46,13 +46,16 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     case 'Gps':
       drawMapPoint(driver, e.value, stateStore.getState().Path);
+      // TODO: If odometer sensor is not present, use GPS speed
       // drawSpeed(driver, e.value ? e.value.speed : 0);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
       break;
 
     case 'Odometer':
-      drawSpeed(driver, e.value.speed);
-      drawDistance(driver, e.value.distance);
+      if(e.value && (e.value.speed || e.value.distance)) {
+        drawSpeed(driver, e.value.speed);
+        drawDistance(driver, e.value.distance);
+      }
       break;
 
     case 'Cadence':
@@ -88,8 +91,8 @@ function drawAll(driver, state) {
 
   currentSpeedLabel = -1;
   drawMap(driver, state.Path || { points: [] });
-  // drawSpeed(driver, state.Gps ? state.Gps.speed : 0);
-  drawSpeed(driver, state.Odometer ? state.Odometer.speed : 0);
+  var speed = (state.Odometer ? state.Odometer.speed : 0) || (state.Gps ? state.Gps.speed : 0) || 0;
+  drawSpeed(driver, speed);
   drawCadence(driver, state.Cadence ? state.Cadence.cadence : 0);
   drawTime(driver, getTimeString(state.Ticks));
   drawDistance(driver, state.Distance);
@@ -99,8 +102,8 @@ function drawAll(driver, state) {
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
 }
 
-var mapSize = [56, 60];
-var mapOffsets = [70, 3]
+var mapSize = [57, 60];
+var mapOffsets = [68, 3]
 var mapOffsetY = mapOffsets[1];
 var mapOffsetX = mapOffsets[0];
 var bounds = {
@@ -206,10 +209,10 @@ function drawSpeed(driver, speed) {
   var filter = (speed == 0) ? ScanlineFilter(driver, 2) : null;
   driver.setTextColor(1, 0);
   driver.setTextSize(4);
-  driver.setCursor(-5, 30);
+  driver.setCursor(-1, 30);
   write(driver, newLabel.split('.')[0]);
   driver.setTextSize(2);
-  driver.setCursor(41, 34);
+  driver.setCursor(42, 34);
   write(driver, '.' + newLabel.split('.')[1]);
   if(filter) filter.dispose();
 }
@@ -227,7 +230,7 @@ function drawCadence(driver, cadence) {
   var filter = (cadence == 0) ? DottedFilter(driver, 2) : null;
   driver.setTextColor(1, 0);
   driver.setTextSize(2);
-  driver.setCursor(41, height - 14);
+  driver.setCursor(42, height - 14);
   write(driver, newLabel);
   if(filter) filter.dispose();
 }
