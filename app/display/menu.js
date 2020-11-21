@@ -28,16 +28,18 @@ MenuDisplay.prototype.init = function (driver, stateStore) {
 
 MenuDisplay.prototype.processEvent = function (driver, e, stateStore) {
   switch (e.name) {
-    case 'Input:B':
+    case 'Input:A':
+    case 'Input:C':
       // next
       clearSelection(driver, menu, state);
       state.executing = false;
-      state.position += 1
+      state.position += (e.name === 'Input:A') ? -1 : 1;
       if (state.position >= menu.length) state.position = 0;
+      if (state.position < 0) state.position = menu.length - 1;
       drawSelection(driver, menu, state);
       break;
 
-    case 'Input:LongB':
+    case 'Input:B':
 
       state.executing = true;
       // driver.invert(true);
@@ -105,9 +107,12 @@ function drawMenu(driver, menu, state) {
 
 function drawMenuItem(driver, item, state) {
 
-  var y = item.y === 10 ? 94 : item.y;
+  // var y = item.y === 10 ? 94 : item.y;
+  // var filter = DottedFilter(driver);
+  // driver.fillRect(0, y - lineHeight, 64, lineHeight + 32, state.selected);
+  // filter.dispose();
   var filter = DottedFilter(driver);
-  driver.fillRect(0, y - lineHeight, 64, lineHeight + 32, state.selected);
+  driver.fillRect(0, 0, 64, 128, false);
   filter.dispose();
 
   if (state.executing) {
