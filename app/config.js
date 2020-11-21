@@ -19,7 +19,7 @@ var config = {
   persist: persist,
   persistBuffer: 0,
   inputDrivers: [
-    './inputs_gpio',
+    './inputs_rotary_encoder',
     './inputs_console'
   ],
   displayDrivers: [
