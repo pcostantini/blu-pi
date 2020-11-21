@@ -14,7 +14,7 @@
     "i2c-bus": "^4.0.7",
     "kefir": "^3.2.0",
     "keypress": "^0.2.1",
-    "lodash": "^4.11.1",
+    "lodash": "^4.17.19",
     "lsm303-rx": "^2.0.0",
     "minimist": "^1.2.3",
     "node-wifiscanner": "^0.2.1",
