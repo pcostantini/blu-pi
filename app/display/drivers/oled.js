@@ -1,5 +1,5 @@
 // var resetPins = [4, 24];
-var resetPins = [4];
+var resetPins = [24];
 
 var exitHook = require('exit-hook');
 
