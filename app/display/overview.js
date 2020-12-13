@@ -230,13 +230,21 @@ function drawCadence(driver, cadence) {
 
   currentCadenceLabel = newLabel;
   
-  if (cadence == 0) driver.fillRect(41, height - 14, mapOffsetX - 46, 14, 0);
+  if (cadence === 0) driver.fillRect(41, height - 14, mapOffsetX - 46, 14, 0);
   var filter = (cadence == 0) ? DottedFilter(driver, 2) : null;
+
+  if (cadence > 99) {
+    newLabel = newLabel.substring(1);
+    driver.fillRect(34, height - 2, 8, 2, 1)
+    driver.fillRect(37, height - 4, 2, 4, 1)
+  }
+
   driver.setTextColor(1, 0);
   driver.setTextSize(2);
   driver.setCursor(42, height - 14);
   write(driver, newLabel);
-  if(filter) filter.dispose();
+
+  if (filter) filter.dispose();
 }
 
 function drawTime(driver, sTime) {
