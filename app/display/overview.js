@@ -46,14 +46,17 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     case 'Gps':
       drawMapPoint(driver, e.value, stateStore.getState().Path);
+      drawAltitude(driver, e.value ? e.value.altitude : NaN);
+
       // TODO: If odometer sensor is not present, use GPS speed
       // drawSpeed(driver, e.value ? e.value.speed : 0);
-      drawAltitude(driver, e.value ? e.value.altitude : NaN);
+      // drawCadence(driver, stateStore.getState().Cadence.cadence);
       break;
 
     case 'Odometer':
       if(e.value && (e.value.speed || e.value.distance)) {
         drawSpeed(driver, e.value.speed);
+        drawCadence(driver, stateStore.getState().Cadence.cadence);
         drawDistance(driver, e.value.distance);
       }
       break;
@@ -146,7 +149,8 @@ function drawMap(driver, path) {
   initBounds(bounds, initialCoord);
 
   setTimeout(
-    () => renderWholePath(driver, pathPoints, mapOffsets), 33);
+    () => renderWholePath(driver, pathPoints, mapOffsets),
+    33);
 }
 
 function drawMapCanvas(driver) {
@@ -209,7 +213,7 @@ function drawSpeed(driver, speed) {
   var filter = (speed == 0) ? ScanlineFilter(driver, 2) : null;
   driver.setTextColor(1, 0);
   driver.setTextSize(4);
-  driver.setCursor(-1, 30);
+  driver.setCursor(-2, 30);
   write(driver, newLabel.split('.')[0]);
   driver.setTextSize(2);
   driver.setCursor(42, 34);
