@@ -74,7 +74,7 @@ delay(333, function () {
   // continue previous session
   log('!6. reading previous session');
   var replay = db.readSensors();
-  var replayComplete = replay.count();
+  var replayComplete = replay.count().share();
 
   // load previous session
   // or load replay
@@ -183,6 +183,7 @@ function instantiateDriver(driverName) {
       display: () => true,
       drawPixel: (x, y, color) => true,
       invert: (invert) => false,
+      setRotation: (rotation) => true,
       dim: (dimmed) => true
     };
   }
@@ -201,6 +202,9 @@ function getUnifiedDriver(drivers) {
     invert: (invert) => drivers
       .filter((d => d.inited && !!d.invert))
       .map((d) => d.invert(invert)),
+    setRotation: (rotation) => drivers
+      .filter((d => d.inited && !!d.invert))
+      .map((d) => d.setRotation(rotation)),
     dim: (dimmed) => drivers.map((d) => d.dim(dimmed))
   };
 }

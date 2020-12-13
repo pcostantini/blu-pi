@@ -5,8 +5,8 @@ var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
 var noisyFilter = require('./noisy-filter');
 var DottedFilter = require('./dotted-filter');
-var width = 64;
-var height = 128;
+var width = 128;
+var height = 64;
 
 var bounds = {
   width: width,
@@ -16,6 +16,7 @@ var bounds = {
 
 function MapDisplay(driver, events, stateStore) {
   BaseDisplay.call(this, driver, events, stateStore);
+  driver.setRotation(1);
   this.outCounter = 0;
 }
 

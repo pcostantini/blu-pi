@@ -16,6 +16,7 @@ module.exports = [
     name: 'new',
     command: () => {
       global.displayDriver.invert(true);
+      // TODO: Rename "current" so on restart a new one is created
       setTimeout(() => process.exit(0), 333);
     }
   }, {

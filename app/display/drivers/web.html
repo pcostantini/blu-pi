@@ -14,8 +14,12 @@
     }
 
     #display {
+      border: 1px solid red;
+    }
+    #display {
       transform: translate(0px, 50px) rotate(90deg);
     }
+
 
     #controls {
       display: inline-block;
@@ -80,7 +84,7 @@
 
 <body>
 
-  <canvas id="display" width="128" height="64"></canvas>
+  <canvas id="display" width="128" height="128"></canvas>
   <br />
   <div id="controls">
     <div class="ctrl" id="A"><span>A</span></div>
@@ -97,6 +101,7 @@
     var canvasHeight = canvas.height;
     var ctx = canvas.getContext("2d");
     var canvasData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+    console.log([canvasWidth, canvasHeight])
 
     function drawBit(x, y, bit) {
       var c = !!bit ? 255 : 0;
@@ -131,8 +136,13 @@
 
     socket.on('dim', function(dimmed) {
       canvas.style.opacity = dimmed ? '0.5' : '1';
-    })
+    });
 
+    socket.on('set_rotation', function(rotation) {
+      console.log('set_rotation', rotation)
+      document.getElementById('canvas')
+        .setAttribute('class', 'canvas_r_' + rotation);
+    });
 
     // input
     var keyMappings =

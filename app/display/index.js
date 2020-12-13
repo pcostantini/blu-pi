@@ -8,10 +8,10 @@ var GFX = require('./adafruit-gfx');
 var DisplayTypes = [
 	require('./overview'),
 	require('./averages'),
-	require('./map'),
+	// require('./map'),
 	require('./intervals'),
-	require('./screensaver'),
-	// require('./off'),
+	// require('./screensaver'),
+	require('./off'),
 	require('./menu')
 ];
 

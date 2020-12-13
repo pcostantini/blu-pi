@@ -17,6 +17,8 @@ function RotaryEncoderInputs() {
   }
 
   var push = false;
+  var moving = false;
+  var lastPush = 0;
   var enc_prev_pos = 0;
   var enc_flags = 0;
 

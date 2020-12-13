@@ -40,6 +40,7 @@ var width = currentLayout.layoutWidth;
 
 function AveragesDisplay(driver, events, stateStore) {
   this.refreshDisplayDelay = 1000;
+  driver.setRotation(1);
   BaseDisplay.call(this, driver, events, stateStore);
 }
 
