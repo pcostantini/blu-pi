@@ -67,19 +67,22 @@ MapDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
       break;
 
-    case 'Input:B':
-    case 'Input:LongB':
-      this.cycle(driver, this.stateStore);
+    case 'Input:A':
+      this.cycle(driver, this.stateStore, 1);
+      break;
+    case 'Input:C':
+      this.cycle(driver, this.stateStore, -1);
       break;
   }
 }
 
-MapDisplay.prototype.cycle = function (driver, stateStore) {
+MapDisplay.prototype.cycle = function (driver, stateStore, step) {
   // abort/return false if path is unexistint
   var state = stateStore.getState();
   if (state && state.Path && state.Path.points) {
-    bounds.zoom += 1;
+    bounds.zoom += step;
     if (bounds.zoom > 8) bounds.zoom = 1;
+    if (bounds.zoom < 1) bounds.zoom = 8;
 
     driver.clear();
     renderWholePath(driver, state.Path.points, bounds.zoom);
