@@ -98,7 +98,7 @@ function drawAll(driver, state) {
   drawSpeed(driver, speed);
   drawCadence(driver, state.Cadence ? state.Cadence.cadence : 0);
   drawTime(driver, getTimeString(state.Ticks));
-  drawDistance(driver, state.Distance);
+  drawDistance(driver, state.Odometer ? state.Odometer.distance : state.Distance);
 
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, state.CpuTemperature);
