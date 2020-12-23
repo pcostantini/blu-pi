@@ -86,9 +86,6 @@ module.exports = BaseDisplay;
 
 // helpers
 function drawBit(driver, bit) {
-  driver.fillRect(2, h - 2, 2, 2, 0)
-  driver.fillRect(1, h - 2, 1, 1, bit ? 1 : 0);
-
   driver.fillRect(w - 5, h - 6, 5, 5, 0)
   driver.fillRect(w - 5, h - 5, 5, 5, bit ? 1 : 0);
 }
