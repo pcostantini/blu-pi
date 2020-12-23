@@ -17,7 +17,6 @@ var config = {
   demoMode: demoMode,
   demoScheduled: demoScheduled,
   persist: persist,
-  persistBuffer: 0,
   inputDrivers: [
     './inputs_rotary_encoder',
     './inputs_console'
