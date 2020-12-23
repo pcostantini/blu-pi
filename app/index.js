@@ -203,7 +203,7 @@ function getUnifiedDriver(drivers) {
       .filter((d => d.inited && !!d.invert))
       .map((d) => d.invert(invert)),
     setRotation: (rotation) => drivers
-      .filter((d => d.inited && !!d.invert))
+      .filter(d => d.inited)
       .map((d) => d.setRotation(rotation)),
     dim: (dimmed) => drivers.map((d) => d.dim(dimmed))
   };

@@ -10,6 +10,7 @@ function WebDisplay(width, height) {
 
   this.bufferWidth = width;
   this.bufferHeight = height;
+  this.rotation = 1;
   this.clear();
 
   this.init();
@@ -24,11 +25,11 @@ WebDisplay.prototype.clear = function () {
   }
 }
 
-var rotation = 1;
 WebDisplay.prototype.setRotation = function (value) {
-  rotation = value;
-  console.log('set_rotation:', rotation)
-  this.io.sockets.emit('set_rotation', value);
+  this.rotation = value;
+  console.log('set_rotation:', this.rotation)
+  this.io.sockets.emit('set_rotation', this.rotation);
+  this.io.sockets.emit('buffer', this.buffer);
 }
 
 // update single pixel in buffer
@@ -39,18 +40,17 @@ WebDisplay.prototype.drawPixel = function (x, y, color) {
   y = Math.floor(y);
 
   // check rotation, move pixel around if necessary
-  ////switch (getRotation()) {
-  switch (rotation) {
+  switch (this.rotation) {
     case 1:
       x = [y, y = x][0];//swap(x, y);
       x = this.bufferWidth - x - 1;
       break;
-    case 2:
-      x = this.bufferWidth - x - 1;
-      y = this.bufferHeight - y - 1;
-      break;
     case 3:
       x = [y, y = x][0];//swap(x, y);
+      y = this.bufferHeight - y - 1;
+      break;
+    case 4:
+      x = this.bufferWidth - x - 1;
       y = this.bufferHeight - y - 1;
       break;
   }
@@ -95,6 +95,7 @@ WebDisplay.prototype.init = function() {
     console.log('WebDisplay:connected', socket.handshake)
 
     // send buffer on connect
+    socket.emit('set_rotation', self.rotation);
     socket.emit('buffer', self.buffer);
 
     // recieve input events and broadcast them

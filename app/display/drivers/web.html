@@ -15,12 +15,8 @@
     }
 
     #display {
-      border: 1px solid red;
+      border: 1px solid #222;
     }
-    #display {
-      transform: translate(0px, 50px) rotate(90deg);
-    }
-
 
     #controls {
       display: inline-block;
@@ -85,7 +81,7 @@
 
 <body>
 
-  <canvas id="display" width="128" height="128"></canvas>
+  <canvas id="display" width="128" height="64"></canvas>
   <br />
   <div id="controls">
     <div class="ctrl" id="A"><span>A</span></div>
@@ -141,8 +137,7 @@
 
     socket.on('set_rotation', function(rotation) {
       console.log('set_rotation', rotation)
-      document.getElementById('canvas')
-        .setAttribute('class', 'canvas_r_' + rotation);
+      canvas.setAttribute('class', 'canvas_r_' + rotation);
     });
 
     // input

@@ -201,7 +201,6 @@ var OLED = function () {
   OLED.prototype.drawPixel = function (x, y, color) {
 
     // check rotation, move pixel around if necessary
-    //switch (getRotation()) {
     switch (4 - rotation) {
       case 1:
         x = [y, y = x][0];//swap(x, y);
