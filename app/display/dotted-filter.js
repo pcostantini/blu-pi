@@ -1,11 +1,12 @@
 module.change_code = 1;
 
-function Dotted(driver) {
+function Dotted(driver, modifier) {
+  if(!modifier) modifier = 0;
   // rewrite drivers draw pixel
   driver._drawPixelDotted = driver.drawPixel;
   driver.drawPixel = function (x, y, color) {
 
-    if ((x + y) % 2 === 1) {
+    if (((x + y) + modifier) % 2 === 1) {
       driver._drawPixelDotted(x, y, color);
     } /*else {
       driver._drawPixelDotted(x, y, false);
