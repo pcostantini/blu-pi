@@ -41,6 +41,10 @@ function BaseDisplay(driver, events, stateStore) {
     drawCpu(driver, state.CpuLoad);
   }
 
+  // vertical sep
+  driver.drawLine(w - 5, 0, w - 5, h, 1);
+  driver.drawLine(w - 4, 0, w - 4, h, 0);
+
   // refresh screen
   var bit = true;
   (function redraw(self) {
@@ -97,10 +101,7 @@ function drawCpu(driver, cpuState) {
   var size = Math.round((maxSize / cpuThreshold) * (cpu));
 
   var filter = DottedFilter(driver);
-  driver.fillRect(w - 5, 0, 5, maxSize, true);
-  driver.fillRect(w - 5, size, 5, maxSize - size, false);
+  driver.fillRect(w - 3, 0, 5, maxSize, true);
+  driver.fillRect(w - 3, size, 5, maxSize - size, false);
   filter.dispose();
-
-  driver.drawLine(w - 5, 0, w - 5, h, 1);
-  driver.drawLine(w - 4, 0, w - 4, h, 0);
 }
