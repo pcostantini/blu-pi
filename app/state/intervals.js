@@ -3,6 +3,10 @@ var distance = require('gps-distance');
 var utils = require('../utils');
 
 var minDistance = 0.025;
+const constants = {
+    START_GPS_REQUEST: 'Intervals.GpsStartRequest',
+    CLEAR: 'Intervals.Clear'
+};
 
 var lastKnownGps = null;
 var anchor = null;
@@ -13,7 +17,7 @@ var anchor = null;
 
 // HACK: Register for interval requests
 global.globalEvents
-    .filter(t => t.name === 'Interval.StartRequest')
+    .filter(t => t.name === constants.START_GPS_REQUEST)
     .subscribe(t => {
         console.log('Starting intervals @ ', lastKnownGps);
         if(!lastKnownGps) return;
