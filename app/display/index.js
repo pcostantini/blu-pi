@@ -19,7 +19,7 @@ function DisplayBootstrap(nativeDriver, size, events, stateStore) {
 
 	// to the driver, add GFX stuff for eas use
 	var driver = _.extend(
-		new GFX(size.height, size.width),     // rotate the 'glib' lib
+		new GFX(size.width, size.width),     // rotate the 'glib' lib
 		nativeDriver);
 
 	// disable text wrapping
