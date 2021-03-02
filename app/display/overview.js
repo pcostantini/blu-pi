@@ -8,8 +8,7 @@ var NoisyFilter = require('./noisy-filter');
 var ScanlineFilter = require('./scanlines-filter');
 var utils = require('../utils');
 
-var refreshDisplayDelay = 500;
-var width = 128;
+var refreshDisplayDelay = 1000;
 var height = 64;
 
 var currentSpeedLabel;
@@ -56,7 +55,7 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       break;
 
     case 'Odometer':
-      if(e.value && (e.value.speed || e.value.distance)) {
+      if (e.value && (e.value.speed || e.value.distance)) {
         drawSpeed(driver, e.value.speed);
         drawDistance(driver, e.value.distance);
         drawCadence(driver, (stateStore.getState().Cadence || { cadence: 0}).cadence);
@@ -223,7 +222,7 @@ function drawSpeed(driver, speed) {
   driver.setTextSize(2);
   driver.setCursor(42, 36);
   write(driver, '.' + newLabel.split('.')[1]);
-  if(filter) filter.dispose();
+  if (filter) filter.dispose();
 }
 
 function drawCadence(driver, cadence) {
@@ -234,7 +233,7 @@ function drawCadence(driver, cadence) {
   }
 
   currentCadenceLabel = newLabel;
-  
+
   // if (cadence === 0) driver.fillRect(41, height - 14, mapOffsetX - 46, 14, 0);
   var filter = (cadence == 0) ? DottedFilter(driver) : null;
 
