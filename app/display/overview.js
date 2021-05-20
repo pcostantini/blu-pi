@@ -92,6 +92,16 @@ module.exports = OverviewDisplay;
 function drawAll(driver, state) {
   state = state || {};
 
+  // static - distance bar
+  driver.fillRect(0, 18-1, 65, 9, 1)
+  var f = new DottedFilter(driver, 1);
+  driver.fillRect(0, 18+8+1-1, 65, 2, 1)
+  f.dispose();
+  driver.setTextColor(0, 1);
+  driver.setTextSize(1);
+  driver.setCursor(52, 18);
+  write(driver, 'km');
+
   currentSpeedLabel = -1;
   drawMap(driver, state.Path || { points: [] });
   var speed = (state.Odometer ? state.Odometer.speed : 0) || (state.Gps ? state.Gps.speed : 0) || 0;
@@ -164,6 +174,10 @@ function drawMapCanvas(driver) {
 
 var outCounter = 0;
 function drawMapPoint(driver, value, fullPath, lazyFocus) {
+
+  if(!value) {
+    return;
+  }
 
   var coord = [value.latitude, value.longitude];
   if (!coord[0]) return;
@@ -266,10 +280,9 @@ function drawDistance(driver, distance) {
 
   lastDistance = text;
 
-  driver.fillRect(0, 18, 64, 9, 1)
   driver.setTextColor(0, 1);
   driver.setTextSize(1);
-  driver.setCursor(64 - (6 * text.length), 19);
+  driver.setCursor(34, 18);
   write(driver, text);
 }
 
@@ -284,7 +297,8 @@ function drawTemp(driver, temp, cpuTemp, ambientPressure) {
 
   currentTemp = newCurrentTemp;
   // var x = width - (newCurrentTemp.length * 6) + 2;
-  driver.setCursor(mapOffsetX, height - 4);
+  driver.setTextColor(1)
+  driver.setCursor(mapOffsetX, height - 9);
   driver.setTextSize(1)
   write(driver, newCurrentTemp);
 
