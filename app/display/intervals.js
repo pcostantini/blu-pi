@@ -13,65 +13,66 @@ function IntervalsDisplay(driver, events, stateStore) {
 
 inherits(IntervalsDisplay, BaseDisplay);
 
+var lastTimestamp = 0;
 var currentMenuIx = 1;
 var menu = [
     {
         label: "GPS",
         callback: () => {
-            // global.globalEvents_generator.next({ name: constants.START_GPS_REQUEST })
+            global.globalEvents_generator.next({ name: constants.START_GPS_REQUEST })
         }
     },
     {
         label: "CLEAR",
         callback: () => {
-            intervalsMock.intervals = [];
-            intervalsMock.best = null;
-            intervalsMock.totalElapsed = 0;
-            // global.globalEvents_generator.next({ name: constants.START_GPS_REQUEST })
+            lastTimestamp = 0;
+            global.globalEvents_generator.next({ name: constants.CLEAR })
         }
     },
     {
-        label: "DST+",
+        label: "DST",
         callback: () => {
-            // global.globalEvents_generator.next({ name: constants.START_DIST_REQUEST })
+            lastTimestamp = Date.now()
+            global.globalEvents_generator.next({ name: constants.START_DIST_REQUEST })
         }
     },
 ];
 
-var intervalsMock = {
-    intervals: [
-        // { elapsed: 635, startTime: new Date(), lapNumber: 1, distance: 6066 },
-        // { elapsed: 611, startTime: new Date(), lapNumber: 2, distance: 6066 },
-        // { elapsed: 633, startTime: new Date(), lapNumber: 3, distance: 6066 },
-        // { elapsed: 999, startTime: new Date(), lapNumber: 4, distance: 6066 },
-        // { elapsed: 743, startTime: new Date(), lapNumber: 5, distance: 6066 },
-        // { elapsed: 612, startTime: new Date(), lapNumber: 6, distance: 6066 },
-        // { elapsed: 676, startTime: new Date(), lapNumber: 7, distance: 6066 },
-    ]
+function getIntervalsInfo(intervals) {
+    // console.log('getIntervalsInfo()', intervals);
+    var laps = (intervals || []).map((o, ix) => ({
+        elapsed: o.time,
+        startTime: o.timestamp,
+        lapNumber: ix + 1,
+        distance: o.distance
+    }));
+
+    var intervalsInfo = {
+        laps: laps
+    }
+    intervalsInfo.best = _.minBy(laps, (e) => e.elapsed);
+    intervalsInfo.totalElapsed = _.sum(laps.map(o => o.elapsed));
+
+    return intervalsInfo;
 }
-intervalsMock.best = _.minBy(intervalsMock.intervals, (e) => e.elapsed);
-intervalsMock.totalElapsed = _.sum(intervalsMock.intervals.map(o => o.elapsed));
-console.log(intervalsMock)
 
 IntervalsDisplay.prototype.init = function (driver, stateStore) {
     driver.setRotation(2);
+    var intervals = getIntervalsInfo(stateStore.getState().Intervals);
+    // console.log('intervals', intervals);
     drawMenu(driver, menu, currentMenuIx);
-    drawIntervals(driver, intervalsMock.intervals);
-    drawBest(driver, intervalsMock.best);
+    drawIntervals(driver, intervals.laps);
+    drawBest(driver, intervals.best);
 };
 
 IntervalsDisplay.prototype.processEvent = function (driver, e, stateStore) {
-    // // if (e.name === "Interval") {
-    // //     if (intervals.length >= maxSize) {
-    // //         y = startY;
-    driver.display();
-    // //         _.takeRight(intervals, maxSize - 1).forEach((i) =>
-    // //             pushInterval(driver, i)
-    // //         );
-    // //     }
-
-    // //     pushInterval(driver, e.value);
-    // // } else 
+    if (e.name === 'Intervals') {
+        var intervals = getIntervalsInfo(stateStore.getState().Intervals);
+        drawMenu(driver, menu, currentMenuIx);
+        drawIntervals(driver, intervals.laps);
+        drawBest(driver, intervals.best);
+        driver.display();
+    }
 
     if (e.name === "Input:A") {
         // PREV
@@ -100,17 +101,17 @@ IntervalsDisplay.prototype.processEvent = function (driver, e, stateStore) {
         driver.display();
 
         // invoke menu option
-        // menu[currentMenuIx].callback();
+        menu[currentMenuIx].callback();
     }
 };
 
 IntervalsDisplay.prototype.preFlush = function (driver, stateStore) {
-    // TODO: extract!
-    var last = _.last(intervalsMock.intervals) || { startTime: new Date() };
-    var elapsed = new Date() - last.startTime;
+    var intervals = getIntervalsInfo(stateStore.getState().Intervals);
+    // get last interval, last "started" timestamp, or default to now
+    var last = _.last(intervals.laps) || { startTime: lastTimestamp || Date.now() };
+    var elapsed = Date.now() - last.startTime;
 
-    // TODO: draw Interval?
-
+    // TODO: if not interval set, render empty?
     drawCurrentInterval(driver, {
         elapsed: elapsed
     })
@@ -118,63 +119,75 @@ IntervalsDisplay.prototype.preFlush = function (driver, stateStore) {
 
 function drawCurrentInterval(driver, current) {
     var elapsed = toMMSS(current.elapsed);
-    var label = `${elapsed}`.replace(/0/g, 'O',);
+    var label = elapsed !== '00:00' ? `${elapsed}`.replace(/0/g, 'O',) : '--:--';
 
     driver.setTextColor(1, 0);
     driver.setTextSize(2);
-
-    var filter = DottedFilter(driver, 1);
-    driver.setCursor(55, 1);
+    
+    var filter = DottedFilter(driver);
+    driver.setCursor(10 + 55, 0);
     write(driver, label);
-    driver.setCursor(54, 0);
+    driver.setCursor(10 + 54, 0);
     write(driver, label);
     filter.dispose();
 
-
+    driver.display();
 }
 
 function drawIntervals(driver, intervals) {
-    // vertical |
-    driver.drawLine(26, 0, 26, 64, 1);
 
+    var best = _.minBy(intervals, (e) => e.elapsed);
+    
     // last 4
     intervals = intervals.slice(-4).reverse();
 
     // best 4
     // intervals = _.orderBy(intervals, (e) => e.elapsed).slice(0, 4);
 
-    var best = _.minBy(intervals, (e) => e.elapsed);
-    intervals.forEach((interval, ix, t) => {
-        var offset = 17;
+    var offset = 17;
+    
+    // clear?
+    if(intervals.length === 0) {
+        driver.fillRect(28, offset, 94, 37, 0)
+        return;
+    }
+    intervals.reverse().forEach((interval, ix, t) => {
         var y = offset + (ix * 10);
 
         driver.setCursor(32, y);
         driver.setTextColor(1, 0);
         driver.setTextSize(1);
-        var time = toMMSS(interval.elapsed * 1000);
-        var diff = (interval.elapsed - best.elapsed);
+        console.log(interval.elapsed)
+        var elapsed = toMMSS(interval.elapsed * 1000);
+        var diff = Math.round(interval.elapsed - best.elapsed);
         if (diff) {
-            diff = `   ${diff}+`;
-            diff = diff.substring(diff.length - 4);
+            diff = `    ${diff}+`;
+            diff = diff.substring(diff.length - 6);
         } else {
-            diff = '   /';
+            diff = '     /';
         }
 
-        var string = ` ${diff} ${time}  ${interval.lapNumber}`;
+        var string = `${interval.lapNumber} ${diff} ${elapsed}`;
         write(driver, string);
+    });
 
-        var filter = DottedFilter(driver);
+    var filter = DottedFilter(driver);
+    intervals.slice(1).forEach((interval, ix) => {
+        var y = offset + ((ix) * 10);
         driver.drawLine(
-            68,
+            29,
             y + 10 - 2,
             121,
             y + 10 - 2,
             1);
-        filter.dispose();
-    })
+        })
+    filter.dispose();
 }
 
 function drawBest(driver, interval) {
+    // console.log('drawBest()', interval);
+    // vertical |
+    driver.drawLine(26, 0, 26, 64, 1);
     // #
     driver.fillRect(28, 55, 94, 9, 1);
     driver.setCursor(32, 56);
@@ -182,11 +195,14 @@ function drawBest(driver, interval) {
     driver.setTextSize(1);
     if (interval) {
         var time = toMMSS(interval.elapsed * 1000);
-        var kms = (Math.round(interval.distance / 100) / 10).toString();
-        write(driver, `${kms}km ${time} (${interval.lapNumber})`);
+        var km = interval.distance.toFixed(1);
+        var kms = ' ' + km.toString() + 'km    ';
+        if(kms.length > 7) kms = kms.slice(0, 7);
+        write(driver, `${interval.lapNumber} ${kms}${time}`);
     } else {
-        driver.setCursor(66, 56);
-        write(driver, `empty :(`);
+        // empty
+        driver.setCursor(84, 56);
+        write(driver, `// ...`);
     }
 }
 
@@ -207,7 +223,7 @@ function drawMenu(driver, menu, currentMenuIx) {
     driver.fillRect(0, 64 - 32, 23, 32, curr);
     driver.setTextSize(1);
     driver.setTextColor(!curr, curr);
-    driver.setCursor(1, 64 - textOffset - 6);
+    driver.setCursor(3, 64 - textOffset - 6);
     write(driver, menu[2].label);
 
     // CLEAR
@@ -276,7 +292,8 @@ function toMMSS(ticks) {
 
     if (minutes < 10) minutes = "0" + minutes;
     if (seconds < 10) seconds = "0" + seconds;
-    return minutes + ":" + seconds;
+    var s = minutes + ":" + seconds;
+    return s;
 }
 
 // export
