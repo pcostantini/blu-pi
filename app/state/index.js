@@ -1,6 +1,6 @@
 var _ = require('lodash');
 var Rx = require('rxjs');
-var DistanceReducer = require('./distance');
+var DistanceReducer = require('./distance').DistanceReducer;
 var PathReducer = require('./path');
 var IntervalsReduder = require('./intervals');
 var utils = require('../utils');
@@ -37,8 +37,8 @@ module.exports.FromStream = function FromStream(events) {
   // into new (reduced) values
   var reducers = Rx.Observable.merge(
     PathReducer(gpsEvents),
-    DistanceReducer(gpsEvents),
-    IntervalsReduder(gpsEvents)).share();
+    IntervalsReduder(gpsEvents),
+    DistanceReducer(events.filter(s => s.name === 'Odometer')));
 
   // state stream (merged all reducers and events)
   var state = {};
