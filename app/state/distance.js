@@ -18,7 +18,7 @@ function GpsDistanceReducer(gpsEvents) {
       }
       return curr;
     }, null)
-    .map(() => ({ name: 'Distance', value: distance }));
+    .map(() => ({ name: 'DistanceGps', value: distance }));
 };
 
 function DistanceReducer(odometerEvents) {

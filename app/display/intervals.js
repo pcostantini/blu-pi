@@ -126,10 +126,11 @@ function drawCurrentInterval(driver, current) {
     driver.setTextColor(1, 0);
     driver.setTextSize(2);
     
+    var x = 62;
     var filter = DottedFilter(driver);
-    driver.setCursor(10 + 55, 0);
+    driver.setCursor(x + 1, 0);
     write(driver, label);
-    driver.setCursor(10 + 54, 0);
+    driver.setCursor(x, 0);
     write(driver, label);
     filter.dispose();
 
@@ -159,17 +160,17 @@ function drawIntervals(driver, intervals) {
         driver.setCursor(32, y);
         driver.setTextColor(1, 0);
         driver.setTextSize(1);
-        console.log(interval.elapsed)
         var elapsed = toMMSS(interval.elapsed * 1000);
-        var diff = Math.round(interval.elapsed - best.elapsed);
+        var diff = interval.elapsed - best.elapsed;
         if (diff) {
-            diff = `    ${diff}+`;
-            diff = diff.substring(diff.length - 6);
+            diff = `     ${Math.round(diff)}+`;
+            diff = diff.slice(-6)
         } else {
-            diff = '     /';
+            diff = '//////';
         }
 
-        var string = `${interval.lapNumber} ${diff} ${elapsed}`;
+        var string = ` ${interval.lapNumber} ${diff} ${elapsed}`;
+        string = string.slice(-15)
         write(driver, string);
     });
 
@@ -197,10 +198,11 @@ function drawBest(driver, interval) {
     driver.setTextSize(1);
     if (interval) {
         var time = toMMSS(interval.elapsed * 1000);
-        var km = interval.distance.toFixed(1);
-        var kms = ' ' + km.toString() + 'km    ';
+        var km = interval.distance.toFixed(2);
+        var kms = km.toString() + 'km    ';
         if(kms.length > 7) kms = kms.slice(0, 7);
-        write(driver, `${interval.lapNumber} ${kms}${time}`);
+        var lap = interval.lapNumber > 9 ? interval.lapNumber : ` ${interval.lapNumber}`;
+        write(driver, `${lap} ${kms}${time}`);
     } else {
         // empty
         driver.setCursor(84, 56);

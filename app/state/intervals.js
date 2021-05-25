@@ -9,12 +9,14 @@ const constants = {
     CLEAR: 'Intervals.Clear'
 };
 
+var reset = false;
+
 // vars for gps anchor laps
 var lastKnownGps = null;
-var anchor = null;
+var anchorGps = null;
 
 // vars for distance laps
-//var distances = [];
+var lap = false;
 var anchorDistance = null;
 var currentDistance = null;
 var distance = 0;
@@ -25,7 +27,7 @@ global.globalEvents
     .subscribe(t => {
         console.log('Starting intervals @ ', lastKnownGps);
         if (!lastKnownGps) return;
-        anchor = [lastKnownGps.latitude, lastKnownGps.longitude]
+        anchorGps = [lastKnownGps.latitude, lastKnownGps.longitude]
     });
 
 // Start Distance
@@ -39,14 +41,16 @@ global.globalEvents
             lap = true;
         }
 
-        anchorDistance = currentDistance;
+        if(!anchorDistance) {
+            anchorDistance = currentDistance;
+        }
     });
 
 // Clear
 global.globalEvents
     .filter(t => t.name === constants.CLEAR)
     .subscribe(() => {
-        anchor = null;
+        anchorGps = null;
         lastKnownGps = null;
         distanceStart = { value: 0 };
         anchorDistance = null;
@@ -56,29 +60,26 @@ global.globalEvents
         console.log('Intervals.CLEAR!')
     });
 
-// ?
-var reset = false;
-var lap = false;
 function IntervalsFromDistance(events) {
     return events
         .filter(o => o.name === 'Distance')
         .map((d) => {
+            currentDistance = {
+                value: d.value,
+                time: Date.now()
+            };
+
+            var detection = null;
             if (anchorDistance) {
                 var diff = currentDistance.value - anchorDistance.value;
-
                 console.log('...', JSON.stringify({ 
                     diff: diff,
                     time: (currentDistance.time - anchorDistance.time) / 1000,
                 }));
                 if(lap || (distance && diff >= distance)) {
                     lap = false;
-                    // console.log('diff', {
-                    //     currentDistance,
-                    //     anchorDistance,
-                    //     diff, distance
-                    // });
                     // ...
-                    var o = {
+                    detection = {
                         name: 'Interval',
                         value: {
                             distance: distance,
@@ -90,20 +91,13 @@ function IntervalsFromDistance(events) {
 
                     anchorDistance = currentDistance;
 
-                    // console.log('!', o);
+                    // console.log('!', detection);
                     // ...
-                    return o;
                 }
             }
 
-            
-            currentDistance = {
-                value: d.value,
-                time: Date.now()
-            };
-
             // nothing detected
-            return null;
+            return detection;
         })
         .filter(o => !!o)
         .do(console.log)
@@ -111,14 +105,14 @@ function IntervalsFromDistance(events) {
 }
 
 // Gps Lap Detector
-function IntervalsFromGps(events) {
-    return events
+function IntervalsFromGps(gpsEvents) {
+    return gpsEvents
         .do(gps => lastKnownGps = gps)
-        .filter(o => anchor != null)
+        .filter(o => anchorGps != null)
         // distance to anchor point
         .map(gps => [
             gps,
-            gpsDistance(anchor[0], anchor[1], gps.latitude, gps.longitude)
+            gpsDistance(anchorGps[0], anchorGps[1], gps.latitude, gps.longitude)
         ])
         // get distasnce between last gps - dist
         // what is closer? - desc
@@ -164,7 +158,7 @@ function IntervalsFromGps(events) {
         .map(t => ({
             name: 'Interval',
             value: {
-                anchor: anchor,
+                anchor: anchorGps,
                 time: t,
                 timestamp: Date.now()
             }
@@ -172,10 +166,10 @@ function IntervalsFromGps(events) {
         .share();
 }
 
-module.exports = function (events) {
+module.exports = function (all, gpsEvents) {
     var intervalStream = Rx.Observable.merge(
-        IntervalsFromGps(events),
-        IntervalsFromDistance(events))
+        IntervalsFromGps(gpsEvents),
+        IntervalsFromDistance(all))
 
     var clearIntervals = global.globalEvents
         .filter(t => t.name === constants.CLEAR)
