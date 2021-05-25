@@ -32,20 +32,6 @@ global.globalEvents
 global.globalEvents
     .filter(t => t.name === constants.START_DIST_REQUEST)
     .subscribe((t) => {
-        // distance = currentDistance - distanceStart.value;
-        // distanceStart.value = currentDistance;
-        // distanceStart.time = Date.now();
-
-        // console.log(currentDistance);
-
-        // var currentDistance = { value: t.}
-
-        // keep only two last marked distances
-        // distances.push(currentDistance);
-        // if (distances.length === 3) {
-        //     distances.shift();
-        // }
-
         console.log('START_DIST_REQUEST!', [anchorDistance, currentDistance]);
         if (anchorDistance) {
             distance = currentDistance.value - anchorDistance.value;
@@ -102,16 +88,11 @@ function IntervalsFromDistance(events) {
                         }
                     };
 
-                    // distanceStart.value = currentDistance;
-                    // distanceStart.time = Date.now();
-                    // distances.shift();
-                    // distances.push(currentDistance);
-
                     anchorDistance = currentDistance;
 
                     // console.log('!', o);
-                    return o;
                     // ...
+                    return o;
                 }
             }
 
@@ -146,17 +127,15 @@ function IntervalsFromGps(events) {
         // lap indicates the anchor was JUST passed
         .startWith({ desc: false, distance: Number.MAX_VALUE })
         .scan((acc, o) => {
-            // compare distsances:
+            // compare distances:
             var gps = o[0];
             var dist = o[1];
             var nowDesc = dist < acc.dist
             if (acc.desc && !nowDesc && dist < minDistance) {
-                acc.lapDetected = true
+                acc.lap = true
             } else {
-                acc.lapDetected = false;
+                acc.lap = false;
             }
-
-            // TODO: 
 
             acc.prev = acc.last;
             acc.last = gps;
@@ -166,7 +145,7 @@ function IntervalsFromGps(events) {
             return acc;
         })
         // filter laps only
-        .filter(s => s.lapDetected)
+        .filter(s => s.lap)
         // accumulate to get lap time
         .map(s => s.prev.timestamp)
         .startWith([])

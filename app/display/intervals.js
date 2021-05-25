@@ -13,6 +13,7 @@ function IntervalsDisplay(driver, events, stateStore) {
 
 inherits(IntervalsDisplay, BaseDisplay);
 
+// Menu
 var lastTimestamp = 0;
 var currentMenuIx = 1;
 var menu = [
@@ -38,6 +39,7 @@ var menu = [
     },
 ];
 
+// helper
 function getIntervalsInfo(intervals) {
     // console.log('getIntervalsInfo()', intervals);
     var laps = (intervals || []).map((o, ix) => ({
@@ -286,7 +288,7 @@ function write(driver, string) {
 
 function toMMSS(ticks) {
     var sec_num = Math.round(ticks / 1000);
-    var hours = Math.floor(sec_num / 3600);
+    // var hours = Math.floor(sec_num / 3600);
     var minutes = Math.floor(sec_num / 60);
     var seconds = sec_num % 60;
 

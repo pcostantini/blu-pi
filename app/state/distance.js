@@ -27,7 +27,7 @@ function DistanceReducer(odometerEvents) {
     .filter(o => o.value.distance !== distance)
     .do(o => distance = o.value.distance)
     .map(o => ({ name: 'Distance', value: o.value.distance }))
-    .do(console.log);
+    // .do(console.log);
 }
 
 function getNewOffset(last, curr) {
