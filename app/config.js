@@ -25,8 +25,8 @@ var config = {
     './display/drivers/oled',
     './display/drivers/web'
   ],
-  dbFile:
-  demoMode ? demoFile
+  dbFile: demoMode
+    ? demoFile
     : `./data/current.sqlite3`,
   sensors: {
     // indiscreet: {

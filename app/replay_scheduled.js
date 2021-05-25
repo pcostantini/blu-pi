@@ -4,9 +4,13 @@ const { isValidGpsEvent } = require('./utils');
 
 module.exports = function ReplayWithSchedule(sensors) {
 
-    // start from a valid GPS events
+    // // start from a valid GPS events
     // sensors = sensors
-    //     .skipWhile(o => !isValidGpsEvent(o));
+    //     .filter(o => isValidGpsEvent(o));
+
+    // // start from a valid odometer read
+    // sensors = sensors.skipWhile(o => 
+    //     o.name !== 'Cadence');
 
     return Rx.Observable.create((observer) => {
         var firstEvent = null;
@@ -22,7 +26,6 @@ module.exports = function ReplayWithSchedule(sensors) {
 
                 var delay = o.timestamp - firstEvent.timestamp;
                 Rx.Scheduler.async.schedule(() => {
-                    // var o = _.assign({}, o, { timestamp: new Date().getTime() });
                     observer.next({
                         ...o,
                         sensor: o.name,
