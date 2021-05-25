@@ -1,30 +1,34 @@
 var Rx = require('rxjs');
-var _ = require('lodash');
+// var _ = require('lodash');
+const { isValidGpsEvent } = require('./utils');
 
 module.exports = function ReplayWithSchedule(sensors) {
 
+    // start from a valid GPS events
+    // sensors = sensors
+    //     .skipWhile(o => !isValidGpsEvent(o));
+
     return Rx.Observable.create((observer) => {
-        var offset = 0;
+        var firstEvent = null;
         sensors
             .first()
-            .subscribe(o => {
-                offset = o.timestamp;
-                console.log('scheduling with offset:', offset);
-            });
+            .subscribe(o => firstEvent = o);
 
         sensors
-            // .map(o => _.assign({ offset: o.timestamp - offset }, o))
             .subscribe(o => {
-                if(!offset) {
-                    console.log('skipping...?');
+                if (!firstEvent) {
+                    return;
                 }
 
-
-                var newDelay = o.timestamp - offset;
+                var delay = o.timestamp - firstEvent.timestamp;
                 Rx.Scheduler.async.schedule(() => {
-                    var delayedO = _.assign({}, o, { timestamp: new Date().getTime() });
-                    observer.next(delayedO);
-                }, newDelay);
+                    // var o = _.assign({}, o, { timestamp: new Date().getTime() });
+                    observer.next({
+                        ...o,
+                        sensor: o.name,
+                        timestamp: new Date().getTime()
+                    });
+                }, delay);
             });
 
     }).share();
