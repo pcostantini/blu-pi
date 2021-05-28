@@ -106,12 +106,11 @@ function drawAll(driver, state) {
   currentSpeedLabel = -1;
   drawMap(driver, state.Path || { points: [] });
   var speed = (state.Odometer || state.Gps || { speed: 0 }).speed;
-  // var speed = (state.Odometer ? state.Odometer.speed : 0) || (state.Gps ? state.Gps.speed : 0) || 0;
-  console.log(speed)
   drawSpeed(driver, speed);
   drawCadence(driver, state.Cadence ? state.Cadence.cadence : 0);
   drawTime(driver, getTimeString(state.Ticks));
   var distance = state.Distance || state.DistanceGps || 0;
+  lastDistance = -1;
   drawDistance(driver, distance);
 
   var barometer = state.Barometer || {};
@@ -168,8 +167,8 @@ function drawMap(driver, path) {
 }
 
 function drawMapCanvas(driver) {
-  var filter = NoisyFilter(driver, 1);
   driver.fillRect(mapOffsetX - 2, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 0);
+  var filter = NoisyFilter(driver, 1);
   driver.drawRect(mapOffsetX - 2, mapOffsetY - 3, mapSize[0] + 1, mapSize[1] + 4, 1);
   filter.dispose();
 }
@@ -415,7 +414,7 @@ function initBounds(bounds, initialCoord) {
   bounds.zoom = 1;
   bounds.lonLeft = initialCoord[1] - 0.01;
   bounds.lonDelta = 0.02;
-  bounds.latBottomDegree = (initialCoord[0] - 0.02) * Math.PI / 180;
+  bounds.latBottomDegree = initialCoord[0] * Math.PI / 180;
 }
 
 function convertGeoToPixel(latitude, longitude,
