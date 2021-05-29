@@ -1,9 +1,11 @@
 var _ = require('lodash');
 var Rx = require('rxjs');
-var DistanceReducer = require('./distance').DistanceReducer;
-var PathReducer = require('./path');
-var IntervalsReduder = require('./intervals');
 var utils = require('../utils');
+
+var PathReducer = require('./path');
+var DistanceReducer = require('./distance').DistanceReducer;
+var GpsDistanceReducer = require('./distance').GpsDistanceReducer;
+var IntervalsReduder = require('./intervals');
 
 // averages configuration
 var averageSensorSteps = [
@@ -28,21 +30,22 @@ module.exports.AverageSensorSteps = averageSensorSteps;
 module.exports.FromStream = function FromStream(events) {
   var gpsEvents = events
     .filter(utils.isValidGpsEvent)
-    .map(s => s.value)
-    .share();
-
-  // gpsEvents.subscribe(e =>  console.log(e.value));
+    .map(s => s.value);
 
   // calculate and reduce main stream of events
   // into new (reduced) values
-  var reducers = Rx.Observable.merge(
+  var all = Rx.Observable.merge(
     PathReducer(gpsEvents),
-    IntervalsReduder(gpsEvents),
-    DistanceReducer(events.filter(s => s.name === 'Odometer')));
+    GpsDistanceReducer(gpsEvents),
+    DistanceReducer(events.filter(s => s.name === 'Odometer'))).share();
+
+  all = Rx.Observable.merge(
+    IntervalsReduder(all, gpsEvents),
+    all);
 
   // state stream (merged all reducers and events)
   var state = {};
-  var stateStream = Rx.Observable.merge(events, reducers)
+  var stateStream = Rx.Observable.merge(events, all)
     .scan((state, e) => {
       state[e.name] = e.value;
       return state;
@@ -81,7 +84,7 @@ module.exports.FromStream = function FromStream(events) {
   });
 
   // combine all
-  return Rx.Observable.merge(stateStream, reducers, averages)
+  return Rx.Observable.merge(stateStream, all, averages)
     .share();
 
   // return stateStream.share();

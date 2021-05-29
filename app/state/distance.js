@@ -18,7 +18,7 @@ function GpsDistanceReducer(gpsEvents) {
       }
       return curr;
     }, null)
-    .map(() => ({ name: 'Distance', value: distance }));
+    .map(() => ({ name: 'DistanceGps', value: distance }));
 };
 
 function DistanceReducer(odometerEvents) {
@@ -27,7 +27,7 @@ function DistanceReducer(odometerEvents) {
     .filter(o => o.value.distance !== distance)
     .do(o => distance = o.value.distance)
     .map(o => ({ name: 'Distance', value: o.value.distance }))
-    .do(console.log);
+    // .do(console.log);
 }
 
 function getNewOffset(last, curr) {
