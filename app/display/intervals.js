@@ -125,7 +125,7 @@ function drawCurrentInterval(driver, current) {
 
     driver.setTextColor(1, 0);
     driver.setTextSize(2);
-    
+
     var x = 62;
     var filter = DottedFilter(driver);
     driver.setCursor(x + 1, 0);
@@ -140,7 +140,7 @@ function drawCurrentInterval(driver, current) {
 function drawIntervals(driver, intervals) {
 
     var best = _.minBy(intervals, (e) => e.elapsed);
-    
+
     // last 4
     intervals = intervals.slice(-4).reverse();
 
@@ -148,9 +148,9 @@ function drawIntervals(driver, intervals) {
     // intervals = _.orderBy(intervals, (e) => e.elapsed).slice(0, 4);
 
     var offset = 17;
-    
+
     // clear?
-    if(intervals.length === 0) {
+    if (intervals.length === 0) {
         driver.fillRect(28, offset, 94, 37, 0)
         return;
     }
@@ -183,14 +183,11 @@ function drawIntervals(driver, intervals) {
             121,
             y + 10 - 2,
             1);
-        })
+    })
     filter.dispose();
 }
 
 function drawBest(driver, interval) {
-    // console.log('drawBest()', interval);
-    // vertical |
-    driver.drawLine(26, 0, 26, 64, 1);
     // #
     driver.fillRect(28, 55, 94, 9, 1);
     driver.setCursor(32, 56);
@@ -200,7 +197,7 @@ function drawBest(driver, interval) {
         var time = toMMSS(interval.elapsed * 1000);
         var km = interval.distance.toFixed(2);
         var kms = km.toString() + 'km    ';
-        if(kms.length > 7) kms = kms.slice(0, 7);
+        if (kms.length > 7) kms = kms.slice(0, 7);
         var lap = interval.lapNumber > 9 ? interval.lapNumber : ` ${interval.lapNumber}`;
         write(driver, `${lap} ${kms}${time}`);
     } else {
@@ -273,11 +270,14 @@ function drawMenu(driver, menu, currentMenuIx) {
     }
 
 
-    // sep
-    driver.drawLine(23, 0, 23, 64, 0);
+    // vertical |
     var filter = ScanlinesFilter(driver, 2);
     driver.drawLine(24, 0, 24, 64, 1);
     filter.dispose();
+    // sep
+    driver.drawLine(23, 0, 23, 64, 0);
+    driver.drawLine(26, 0, 26, 64, 1);
+
 
     driver.display();
 }
