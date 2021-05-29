@@ -37,8 +37,8 @@ function Noisy(driver, mod) {
 function randOffset(x, y) {
   x = x || 0;
   y = y || 0;
-  var min = -3;
-  var max = 3;
+  var min = -2;
+  var max = 2;
   return {
     x: x + (Math.random() * (max - min) + min),
     y: y + (Math.random() * (max - min) + min)

@@ -80,7 +80,7 @@ delay(333, function () {
   // or load replay
   replay = !config.demoScheduled
     ? replay
-    : ReplayWithSchedule(replay);
+    : ReplayWithSchedule(replay.filter(s => s.name !== 'Error'));
 
   log('!6. sensors init');
   var sensors = config.demo
@@ -120,7 +120,7 @@ delay(333, function () {
   var allPlusState = Rx.Observable.merge(all, state);
   replayComplete.subscribe((cnt) => {
     log('!8. processed %s events', cnt);
-    log('!9. init displays. NOT!');
+    log('!9. init displays');
     ui = Display(displayDriver, config.displaySize, allPlusState, stateStore);
   });
 

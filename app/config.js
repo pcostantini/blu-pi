@@ -25,13 +25,14 @@ var config = {
     './display/drivers/oled',
     './display/drivers/web'
   ],
-  dbFile:
-  demoMode ? demoFile
+  dbFile: demoMode
+    ? demoFile
     : `./data/current.sqlite3`,
   sensors: {
     // indiscreet: {
     //   wifi: 5000
     // },
+    // temperature: 3000,
     bleSensors: {
       cadence: 'e7:5e:d5:4f:11:1d',
     },
@@ -42,7 +43,6 @@ var config = {
       temp: 3000
     },
     cpu: 3000,
-    // temperature: 3000,
     memory: 10000
   },
 };

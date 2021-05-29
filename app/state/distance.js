@@ -1,10 +1,10 @@
 var GpsDistance = require('gps-distance');
 var GpsNoiseFilter = require('./gps_noise_filter');
 
-// DISTANCE
+// GPS
 // takes a gps stream, applies a noise filter
 // returns a 'Distance' stream
-module.exports = function DistanceReducer(gpsEvents) {
+function GpsDistanceReducer(gpsEvents) {
 
   var distance = 0;
 
@@ -18,8 +18,17 @@ module.exports = function DistanceReducer(gpsEvents) {
       }
       return curr;
     }, null)
-    .map(() => ({ name: 'Distance', value: distance }));
+    .map(() => ({ name: 'DistanceGps', value: distance }));
 };
+
+function DistanceReducer(odometerEvents) {
+  var distance = 0;
+  return odometerEvents
+    .filter(o => o.value.distance !== distance)
+    .do(o => distance = o.value.distance)
+    .map(o => ({ name: 'Distance', value: o.value.distance }))
+    // .do(console.log);
+}
 
 function getNewOffset(last, curr) {
   try {
@@ -27,4 +36,9 @@ function getNewOffset(last, curr) {
   } catch(err) {
     return 0;
   }
+}
+
+module.exports = {
+  GpsDistanceReducer: GpsDistanceReducer,
+  DistanceReducer: DistanceReducer
 }
