@@ -41,7 +41,7 @@ global.globalEvents
             lap = true;
         }
 
-        if(!anchorDistance) {
+        if (!anchorDistance) {
             anchorDistance = currentDistance;
         }
     });
@@ -61,8 +61,14 @@ global.globalEvents
     });
 
 function IntervalsFromDistance(events) {
-    return events
+    var distanceSensorName = 'DistanceGps';
+    events
         .filter(o => o.name === 'Distance')
+        .first()
+        .subscribe(o => distanceSensorName = 'Distance');
+
+    return events
+        .filter(o => o.name === distanceSensorName)
         .map((d) => {
             currentDistance = {
                 value: d.value,
@@ -72,11 +78,11 @@ function IntervalsFromDistance(events) {
             var detection = null;
             if (anchorDistance) {
                 var diff = currentDistance.value - anchorDistance.value;
-                console.log('...', JSON.stringify({ 
+                console.log('...', JSON.stringify({
                     diff: diff,
                     time: (currentDistance.time - anchorDistance.time) / 1000,
                 }));
-                if(lap || (distance && diff >= distance)) {
+                if (lap || (distance && diff >= distance)) {
                     lap = false;
                     // ...
                     detection = {
