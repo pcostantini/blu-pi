@@ -33,6 +33,8 @@ OverviewDisplay.prototype.init = function (driver, stateStore) {
   this.refreshDisplayDelay = refreshDisplayDelay;
   driver.setRotation(2);
 
+  // ...
+  drawMapCanvas(driver);
   drawAll(driver, stateStore.getState());
 }
 
@@ -83,9 +85,9 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       // drawTemp(driver, e.value.temperature, 0, 0);
       break;
 
-    case 'Input:A':
+    // case 'Input:A':
     case 'Input:B':
-    case 'Input:C':
+      // case 'Input:C':
       drawAll(driver, stateStore.getState());
       break;
 
@@ -125,14 +127,13 @@ var mapOffsetX = mapOffsets[0];
 var bounds = {
   width: mapSize[0] - 4,
   height: mapSize[1] - 4,
-  zoom: 1
 };
 
 var drawMapDebounced = _.debounce(drawMap, 1333);
 
 function drawMap(driver, path) {
 
-  drawMapCanvas(driver);
+  driver.fillRect(mapOffsetX - 1, mapOffsetY - 2, mapSize[0] - 2, mapSize[1] + 2, 0);
 
   // empty ?
   if (!path || !path.points || path.points.length === 0) {
@@ -145,14 +146,6 @@ function drawMap(driver, path) {
     driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
     driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
     filter.dispose();
-
-    // x1 += 1;
-    // y1 += 1;
-
-    // var filter = ScanlineFilter(driver, 2)
-    // driver.drawCircle(x1 + lineSize / 2, y1 + lineSize / 2, lineSize / 2, 1);
-    // driver.drawLine(x1, y1, x1 + lineSize, y1 + lineSize, 1);
-    // filter.dispose();
 
     return;
   }
@@ -167,7 +160,6 @@ function drawMap(driver, path) {
 }
 
 function drawMapCanvas(driver) {
-  driver.fillRect(mapOffsetX - 2, mapOffsetY - 2, mapSize[0], mapSize[1] + 3, 0);
   var filter = NoisyFilter(driver, 1);
   driver.drawRect(mapOffsetX - 2, mapOffsetY - 3, mapSize[0] + 1, mapSize[1] + 4, 1);
   filter.dispose();
@@ -183,19 +175,17 @@ function drawMapPoint(driver, value, fullPath, lazyFocus) {
   var coord = [value.latitude, value.longitude];
   if (!coord[0]) return;
 
-  // console.log('drawMapPoint', coord)
   if (!bounds.lonLeft) {
     initBounds(bounds, coord);
   }
 
   var pixel = getPixelCoordinate(coord, bounds);
-  if (
-    pixel.x > mapSize[0] || pixel.y > mapSize[1] ||
-    pixel.x < 0 || pixel.y < 0) {
-    // relocate
-    // console.log('..out!')
-
+  var out =
+    (pixel.x > mapSize[0] || pixel.y > mapSize[1]) ||
+    (pixel.x < 0 || pixel.y < 0);
+  if (out) {
     if (!lazyFocus) {
+      // relocate
       outCounter++;
       if (outCounter > 5) {
         outCounter = 0;
@@ -220,7 +210,6 @@ function drawSpeed(driver, speed) {
     ? ' ' + newLabel
     : newLabel;
 
-  //.
   if (newLabel === currentSpeedLabel) return;
   currentSpeedLabel = newLabel;
 
@@ -256,7 +245,6 @@ function drawCadence(driver, cadence) {
 }
 
 function drawTime(driver, sTime) {
-  // .
   if (lastTimeText === sTime) return;
   lastTimeText = sTime;
 
@@ -280,7 +268,7 @@ function drawDistance(driver, distance) {
   write(driver, ('  ' + text + '\km').slice(-7));
 }
 
-function drawAltitude() {
+function drawAltitude(driver, altitude) {
   // not implemented!
 }
 
@@ -306,17 +294,6 @@ function drawTemp(driver, temp, cpuTemp, ambientPressure) {
 function write(driver, string) {
   var chars = string.split('');
   chars.forEach((c) => driver.write(c.charCodeAt(0)));
-  // chars.forEach((c) => {
-  //   var f = c === dot;// ? DottedFilter(driver) : null;
-  //   if (f) {
-  //     driver.setTextSize(2)
-  //   }
-  //   driver.write(c.charCodeAt(0));
-  //   if (f) {
-  //     driver.setTextSize(3)
-  //     // f.dispose();
-  //   }
-  // });
 }
 
 function toFixed(value, precision) {
@@ -358,17 +335,9 @@ function renderWholePath(driver, path, offsets) {
 
   offsets = offsets || [0, 0];
 
-  var lowLongitude = _.minBy(path, (s) => s[1])[1];
-  var maxLongitude = _.maxBy(path, (s) => s[1])[1];
+  var lowLongitude = _.minBy(path, (s) => s[1])[1] - 0.0014;
+  var maxLongitude = _.maxBy(path, (s) => s[1])[1] + 0.0014;
   var latitude = _.minBy(path, (s) => s[0])[0];
-
-  // zoom on last point only
-  if (bounds.zoom > 1) {
-    var last = _.last(path);
-    lowLongitude = last[1] - 0.01 / bounds.zoom;
-    maxLongitude = last[1] + 0.01 / bounds.zoom;
-    latitude = last[0] - 0.02 / bounds.zoom;
-  }
 
   var lonDelta = maxLongitude - lowLongitude;
 
@@ -376,7 +345,7 @@ function renderWholePath(driver, path, offsets) {
   bounds.lonDelta = lonDelta;
   bounds.latBottomDegree = latitude * Math.PI / 180;
 
-  drawMapCanvas(driver);
+  // drawMapCanvas(driver);
 
   // TODO: prioritize and delay rendering of each point
   // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
@@ -411,17 +380,16 @@ function getPixelCoordinate(coord, bounds) {
 }
 
 function initBounds(bounds, initialCoord) {
-  bounds.zoom = 1;
   bounds.lonLeft = initialCoord[1] - 0.01;
   bounds.lonDelta = 0.02;
   bounds.latBottomDegree = initialCoord[0] * Math.PI / 180;
 }
 
 function convertGeoToPixel(latitude, longitude,
-  mapWidth, // in pixels
-  mapHeight, // in pixels
-  mapLonLeft, // in degrees
-  mapLonDelta, // in degrees (mapLonRight - mapLonLeft);
+  mapWidth,           // in pixels
+  mapHeight,          // in pixels
+  mapLonLeft,         // in degrees
+  mapLonDelta,        // in degrees (mapLonRight - mapLonLeft);
   mapLatBottomDegree) // in Radians
 {
   var x = (longitude - mapLonLeft) * (mapWidth / mapLonDelta);
@@ -434,20 +402,5 @@ function convertGeoToPixel(latitude, longitude,
   return { x: x, y: y };
 }
 
-function zoom(driver, stateStore, modif) {
-  modif = modif === -1 ? -1 : 1;
-  // abort/return false if path is unexistint
-  console.log('zoom', bounds);
-  var state = stateStore.getState();
-  if (state && state.Path && state.Path.points) {
-    bounds.zoom += 1// * modif;
-
-    if (bounds.zoom > 6) bounds.zoom = 1;
-    // if (bounds.zoom == 0) bounds.zoom = 5;
-
-    drawMapCanvas(driver);
-    renderWholePath(driver, state.Path.points, mapOffsets);
-  }
-}
 
 const getValue = (t) => t ? Math.floor(t) + 'c' : '';

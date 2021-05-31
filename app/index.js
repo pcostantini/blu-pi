@@ -128,26 +128,21 @@ delay(333, function () {
     .filter((e) => e.name === 'Input:Space')
     .subscribe(() => {
 
-      // var stateCopy = Object.assign({}, stateStore.getState());
       const state = stateStore.getState();
+
+      // compact averages and path
       const averagesJson = JSON.stringify(state.Averages);
       const averagesTrunk = averagesJson.substring(averagesJson.length - 330)
       const stateCopy = {
         ...state,
-        // overwrite with length
         Path: (state.Path || []).length,
-        // 
         Averages: averagesTrunk
       };
 
-      // console.log('State.Path', { length: stateCopy.Path ? stateCopy.Path.length : 0 });
-      // console.log('State.Averages', stateCopy.Averages);
-      // delete stateCopy.Averages;
-      // delete stateCopy.Path;
-      console.log(stateCopy);
+      console.log(JSON.stringify(stateCopy, null, '  '));
     });
 
-  log('!0. =)');
+  log('!0. Ready');
 });
 
 // Helpers

@@ -42,7 +42,6 @@ var menu = [
 
 // helper
 function getIntervalsInfo(intervals) {
-    // console.log('getIntervalsInfo()', intervals);
     var laps = (intervals || []).map((o, ix) => ({
         elapsed: o.time,
         startTime: o.timestamp,
@@ -189,16 +188,15 @@ function drawIntervals(driver, intervals) {
 }
 
 function drawBest(driver, interval) {
-    // #
     driver.fillRect(28, 55, 94, 9, 1);
     driver.setCursor(32, 56);
     driver.setTextColor(0, 1);
     driver.setTextSize(1);
     if (interval) {
         var time = toMMSS(interval.elapsed);
-        var km = interval.distance.toFixed(2);
-        var kms = km.toString() + 'km    ';
-        if (kms.length > 7) kms = kms.slice(0, 7);
+        var km = (interval.distance || 0).toFixed(2);
+        var kms = '       ' + km.toString() + 'km ';
+        if (kms.length > 7) kms = kms.slice(-7);
         var lap = interval.lapNumber > 9 ? interval.lapNumber : ` ${interval.lapNumber}`;
         write(driver, `${lap} ${kms}${time}`);
     } else {
@@ -270,15 +268,13 @@ function drawMenu(driver, menu, currentMenuIx) {
             !curr);
     }
 
-
     // vertical |
-    var filter = ScanlinesFilter(driver, 2);
-    driver.drawLine(24, 0, 24, 64, 1);
+    var filter = DottedFilter(driver);
+    driver.drawLine(26, 0, 26, 64, 1);
     filter.dispose();
     // sep
     driver.drawLine(23, 0, 23, 64, 0);
-    driver.drawLine(26, 0, 26, 64, 1);
-
+    driver.drawLine(24, 0, 24, 64, 1);
 
     driver.display();
 }
