@@ -20,6 +20,7 @@ var menu = [
     {
         label: "GPS",
         callback: () => {
+            lastTimestamp = Date.now()
             global.globalEvents_generator.next({ name: constants.START_GPS_REQUEST })
         }
     },
@@ -160,10 +161,10 @@ function drawIntervals(driver, intervals) {
         driver.setCursor(32, y);
         driver.setTextColor(1, 0);
         driver.setTextSize(1);
-        var elapsed = toMMSS(interval.elapsed * 1000);
-        var diff = interval.elapsed - best.elapsed;
+        var elapsed = toMMSS(interval.elapsed);
+        var diff = (interval.elapsed - best.elapsed) / 1000;
         if (diff) {
-            diff = `     ${Math.round(diff)}+`;
+            diff = `     ${Math.ceil(diff)}+`;
             diff = diff.slice(-6)
         } else {
             diff = '//////';
@@ -194,7 +195,7 @@ function drawBest(driver, interval) {
     driver.setTextColor(0, 1);
     driver.setTextSize(1);
     if (interval) {
-        var time = toMMSS(interval.elapsed * 1000);
+        var time = toMMSS(interval.elapsed);
         var km = interval.distance.toFixed(2);
         var kms = km.toString() + 'km    ';
         if (kms.length > 7) kms = kms.slice(0, 7);

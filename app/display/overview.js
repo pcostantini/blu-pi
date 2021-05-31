@@ -277,7 +277,7 @@ function drawDistance(driver, distance) {
   driver.setTextColor(0, 1);
   driver.setTextSize(1);
   driver.setCursor(22, 18);
-  write(driver, ('  ' + text + '\'km').slice(-7));
+  write(driver, ('  ' + text + '\km').slice(-7));
 }
 
 function drawAltitude() {

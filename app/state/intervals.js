@@ -25,7 +25,7 @@ var distance = 0;
 global.globalEvents
     .filter(t => t.name === constants.START_GPS_REQUEST)
     .subscribe(t => {
-        console.log('Starting intervals @ ', lastKnownGps);
+        console.log('START_GPS_REQUEST @', lastKnownGps);
         if (!lastKnownGps) return;
         anchorGps = [lastKnownGps.latitude, lastKnownGps.longitude]
     });
@@ -34,10 +34,10 @@ global.globalEvents
 global.globalEvents
     .filter(t => t.name === constants.START_DIST_REQUEST)
     .subscribe((t) => {
-        console.log('START_DIST_REQUEST!', [anchorDistance, currentDistance]);
+        console.log('START_DIST_REQUEST @', [anchorDistance, currentDistance]);
         if (anchorDistance) {
             distance = currentDistance.value - anchorDistance.value;
-            console.log('\t...new distance!', distance);
+            console.log('\t...new distance:', distance);
             lap = true;
         }
 
@@ -80,7 +80,7 @@ function IntervalsFromDistance(events) {
                 var diff = currentDistance.value - anchorDistance.value;
                 console.log('...', JSON.stringify({
                     diff: diff,
-                    time: (currentDistance.time - anchorDistance.time) / 1000,
+                    time: (currentDistance.time - anchorDistance.time),
                 }));
                 if (lap || (distance && diff >= distance)) {
                     lap = false;
@@ -90,7 +90,7 @@ function IntervalsFromDistance(events) {
                         value: {
                             distance: distance,
                             totalDistance: d.value * 1000,
-                            time: (currentDistance.time - anchorDistance.time) / 1000,
+                            time: (currentDistance.time - anchorDistance.time),
                             timestamp: currentDistance.time
                         }
                     };

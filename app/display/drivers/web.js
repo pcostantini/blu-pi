@@ -72,7 +72,7 @@ WebDisplay.prototype.dim = function (dimmed) {
   this.io.sockets.emit('dim', dimmed);
 }
 
-WebDisplay.prototype.init = function() {
+WebDisplay.prototype.init = function () {
   // web server to host page with canvas
   var server = http.createServer(function (req, res) {
     // index.html
@@ -92,7 +92,7 @@ WebDisplay.prototype.init = function() {
   var self = this;
   self.io = SocketIo.listen(server);
   self.io.sockets.on('connection', function (socket) {
-    console.log('WebDisplay:connected', socket.handshake)
+    // console.log('WebDisplay:connected', socket.handshake)
 
     // send buffer on connect
     socket.emit('set_rotation', self.rotation);
@@ -104,7 +104,7 @@ WebDisplay.prototype.init = function() {
     });
 
   });
-  
+
   server.listen(httpPort);
   this.inited = true;
 }
