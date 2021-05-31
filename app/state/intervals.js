@@ -11,10 +11,6 @@ const constants = {
 
 var reset = false;
 
-// vars for gps anchor laps
-var lastKnownGps = null;
-var anchorGps = null;
-
 // vars for distance laps
 var lap = false;
 var anchorDistance = null;
@@ -89,16 +85,13 @@ function IntervalsFromDistance(events) {
                         name: 'Interval',
                         value: {
                             distance: distance,
-                            totalDistance: d.value * 1000,
+                            // totalDistance: d.value * 1000,
                             time: (currentDistance.time - anchorDistance.time),
                             timestamp: currentDistance.time
                         }
                     };
 
                     anchorDistance = currentDistance;
-
-                    // console.log('!', detection);
-                    // ...
                 }
             }
 
@@ -111,7 +104,79 @@ function IntervalsFromDistance(events) {
 }
 
 // Gps Lap Detector
+var EMPTY_GPS_INTERVAL = { desc: false, dist: Number.MIN_VALUE }
+
+var anchorGps = null;
+var lastKnownGps = null;
+var intervalGpsAcc = { ...EMPTY_GPS_INTERVAL };
+var intervalGpsPoints = [];
 function IntervalsFromGps(gpsEvents) {
+    return gpsEvents
+        .do(gps => lastKnownGps = gps)
+        .filter(o => !!anchorGps)
+        .do(o => intervalGpsPoints.push(o))
+        // distance to anchor point
+        .map(gps => [
+            gps,
+            gpsDistance(anchorGps[0], anchorGps[1], gps.latitude, gps.longitude)
+        ])
+        // remember point
+        // get distasnce between last gps - dist
+        // what is closer? - desc
+        // last gps - last
+        // previous gps - prev
+        // lap indicates the anchor was JUST passed
+        .map(o => {
+            var gps = o[0];
+            var dist = o[1];
+            var nowDesc = dist < intervalGpsAcc.dist;
+            var lap = intervalGpsAcc.desc && !nowDesc && dist < minDistance;
+
+            intervalGpsAcc.prev = intervalGpsAcc.last;
+            intervalGpsAcc.last = gps;
+            intervalGpsAcc.desc = nowDesc;
+            intervalGpsAcc.dist = dist;
+
+            if (lap) {
+                // lap detected
+                console.log('detected lap:', {
+                    ...intervalGpsAcc,
+                    lap: lap,
+                    distance: gpsDistance(
+                        intervalGpsPoints.map(g => [g.latitude, g.longitude]))
+                });
+                // intervalGpsPoints = [];
+            }
+
+            return {
+                lap: lap,
+                time: (gps.timestamp - intervalGpsPoints[0].timestamp),
+                timestamp: gps.timestamp,
+                lastPointDistance: dist
+            };
+        })
+        .filter(i => i.lap)
+        .do(console.log)
+        .do(() => intervalGpsPoints = []) // reset interval history
+        .map(i => ({
+            name: 'Interval',
+            value: {
+                ...i,
+                distance: gpsDistance(intervalGpsPoints.map(g => [g.latitude, g.longitude]))
+            }
+            // {
+            //     // anchor: anchorGps,
+            //     // totalDistance: 
+            //     // time: (Date.now() - i.last.timestamp) / 1000,
+            //     distance: e.distance,  // TODO: calc distance using gps points
+            //     time: i.time,
+            //     timestamp: Date.now(),
+            // }
+        }))
+        .share();
+}
+
+function IntervalsFromGpsv1(gpsEvents) {
     return gpsEvents
         .do(gps => lastKnownGps = gps)
         .filter(o => anchorGps != null)
@@ -166,7 +231,8 @@ function IntervalsFromGps(gpsEvents) {
             value: {
                 anchor: anchorGps,
                 time: t,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                // distance: d 
             }
         }))
         .share();
@@ -186,13 +252,18 @@ module.exports = function (all, gpsEvents) {
         }));
 
     return Rx.Observable.merge(
-        intervalStream,
+        // reset event(s)
         clearIntervals,
+        // detected intervals
+        intervalStream,
+        // accumulated detected intervals
         intervalStream
             .startWith([])
             .scan((acc, o) => {
                 if (reset) {
                     acc = [];
+                    intervalGpsPoints = [];
+                    intervalGpsAcc = { ...EMPTY_GPS_INTERVAL };
                     reset = false;
                 };
                 acc = acc.concat(o.value);
