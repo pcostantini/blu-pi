@@ -15,7 +15,7 @@ module.exports = function bootstrap(sensorsConfig) {
     safeRequire('./sensors/ble_sensors')(sensorsConfig.bleSensors),
 
     // LSM303 - 3X Accelerometer & Magnometer
-    // safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
+    safeRequire('./sensors/lsm303')(sensorsConfig.lsm303),
 
     // BMP085 - Temp and Pressure
     // (sensorsConfig.temperature)
