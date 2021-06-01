@@ -155,7 +155,7 @@ function IntervalsFromGps(gpsEvents) {
                 lastPointDistance: dist
             };
         })
-        .filter(i => i.lap)
+        .filter(i => i.lap && i.distance > 0)
         .do(console.log)
         .do(() => intervalGpsPoints = []) // reset interval history
         .map(i => ({
@@ -163,76 +163,6 @@ function IntervalsFromGps(gpsEvents) {
             value: {
                 ...i,
                 distance: gpsDistance(intervalGpsPoints.map(g => [g.latitude, g.longitude]))
-            }
-            // {
-            //     // anchor: anchorGps,
-            //     // totalDistance: 
-            //     // time: (Date.now() - i.last.timestamp) / 1000,
-            //     distance: e.distance,  // TODO: calc distance using gps points
-            //     time: i.time,
-            //     timestamp: Date.now(),
-            // }
-        }))
-        .share();
-}
-
-function IntervalsFromGpsv1(gpsEvents) {
-    return gpsEvents
-        .do(gps => lastKnownGps = gps)
-        .filter(o => anchorGps != null)
-        // distance to anchor point
-        .map(gps => [
-            gps,
-            gpsDistance(anchorGps[0], anchorGps[1], gps.latitude, gps.longitude)
-        ])
-        // get distasnce between last gps - dist
-        // what is closer? - desc
-        // last gps - last
-        // previous gps - prev
-        // lap indicates the anchor was JUST passed
-        .startWith({ desc: false, distance: Number.MAX_VALUE })
-        .scan((acc, o) => {
-            // compare distances:
-            var gps = o[0];
-            var dist = o[1];
-            var nowDesc = dist < acc.dist
-            if (acc.desc && !nowDesc && dist < minDistance) {
-                acc.lap = true
-            } else {
-                acc.lap = false;
-            }
-
-            acc.prev = acc.last;
-            acc.last = gps;
-            acc.desc = nowDesc;
-            acc.dist = dist;
-
-            return acc;
-        })
-        // filter laps only
-        .filter(s => s.lap)
-        // accumulate to get lap time
-        .map(s => s.prev.timestamp)
-        .startWith([])
-        .scan((acc, ts) => {
-            if (acc.length === 2) {
-                return [acc[1], ts];
-            }
-
-            acc.push(ts);
-            return acc;
-        })
-        .filter(acc => acc.length === 2)
-        // done, map time
-        .map(acc => acc[1] - acc[0])
-        // .do(ts => console.log(toHHMMSS(ts)))
-        .map(t => ({
-            name: 'Interval',
-            value: {
-                anchor: anchorGps,
-                time: t,
-                timestamp: Date.now(),
-                // distance: d 
             }
         }))
         .share();
