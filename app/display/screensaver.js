@@ -46,7 +46,7 @@ ScreenSaverDisplay.prototype.processEvent = function (driver, e, stateStore) {
       }
 
       speedAccumulator.push(speed);
-      if(speedAccumulator.length > keepN) {
+      if (speedAccumulator.length > keepN) {
         speedAccumulator = speedAccumulator.slice(speedAccumulator.length - keepN);
       }
 
@@ -82,8 +82,8 @@ function drawBackground(driver, state) {
   var lastN = a.slice(a.length - takeN);
   var previous = a.slice(0, a.length - takeN);
 
-  var previousSpeedAvg = utils.mpsToKph(average(previous));
-  var currentSpeedAvg = utils.mpsToKph(average(lastN));
+  // var previousSpeedAvg = utils.mpsToKph(average(previous));
+  // var currentSpeedAvg = utils.mpsToKph(average(lastN));
 
   // console.log({
   //   prev: previous.join(','),
@@ -103,8 +103,9 @@ function drawSpeed(driver, speed, force) {
   if (!force && speed === currentSpeed) return;
   currentSpeed = speed;
 
-  var kmPh = !isNaN(speed) ? utils.mpsToKph(speed) : NaN;
-  var isNan =!isNaN(kmPh)
+  // var kmPh = !isNaN(speed) ? utils.mpsToKph(speed) : NaN;
+  var kmPh = speed;
+  var isNan = !isNaN(kmPh);
   var sKmPh = isNan ? toFixed(kmPh, 1).split('.')[0] : '-.-';
 
   driver.setTextSize(4);
