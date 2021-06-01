@@ -23,7 +23,7 @@ var layouts = [
       ['Cadence', 100, 40],
       ['SpeedOdometer', 40, 0]
     ],
-    layoutWidth: 30
+    layoutWidth: 30 // *2=60
   }, {
     label: 'tmp + cpu ',
     layout: [
@@ -31,7 +31,7 @@ var layouts = [
       ['MagnometerTemperature', 30, 24],
       ['CpuLoad', 1.5, 0]
     ],
-    layoutWidth: 20
+    layoutWidth: 20 // *3=60
   }
 ]
 var currentLayout = _.first(layouts);
