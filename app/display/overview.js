@@ -8,7 +8,7 @@ var NoisyFilter = require('./noisy-filter');
 var ScanlineFilter = require('./scanlines-filter');
 var utils = require('../utils');
 
-var refreshDisplayDelay = 1000;
+var refreshDisplayDelay = 2000;
 var height = 64;
 
 var currentSpeedLabel;

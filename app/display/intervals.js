@@ -54,6 +54,7 @@ function getIntervalsInfo(intervals) {
     }
     intervalsInfo.best = _.minBy(laps, (e) => e.elapsed);
     intervalsInfo.totalElapsed = _.sum(laps.map(o => o.elapsed));
+    intervalsInfo.totalDistance = _.sum(laps.map(o => o.distance));
 
     return intervalsInfo;
 }
