@@ -9,16 +9,15 @@ var inherits = require('util').inherits;
 var BaseDisplay = require('./base-display');
 var DottedFilter = require('./dotted-filter');
 var ScanlinesFilter = require('./scanlines-filter');
-var NoiseFilter = require('./noisy-filter');
 
-var offsetY = 5;
+var offsetY = 0;
 var y = offsetY;
 var steps = require('../state').AverageSensorSteps;
 var currentAverageStep = steps[0];
 var currentAverageSet = 'Average_' + currentAverageStep;
 var layouts = [
   {
-    label: 'SPD',
+    label: 'spd +  cdn',
     layout: [
       // ['SpeedGps', 40, 0],
       ['Cadence', 100, 40],
@@ -26,10 +25,10 @@ var layouts = [
     ],
     layoutWidth: 30
   }, {
-    label: 'SYS.CORE',
+    label: 'tmp + cpu ',
     layout: [
       ['MagnometerTemperature', 50, 24],
-      ['CpuTemperature', 77, 33],
+      ['CpuTemperature', 45, 33],
       ['CpuLoad', 1.5, 0]
     ],
     layoutWidth: 19
@@ -167,7 +166,7 @@ AveragesDisplay.prototype.processEvent = function (driver, e, stateStore) {
       currentLayout = currentLayout ? currentLayout : layouts[0];
       width = currentLayout.layoutWidth;
 
-      // CONTINUE TO REDRAW
+    // CONTINUE TO REDRAW
     case 'Input:B':
 
       // Redraw set
