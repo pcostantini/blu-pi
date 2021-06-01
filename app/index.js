@@ -136,7 +136,8 @@ delay(333, function () {
       const stateCopy = {
         ...state,
         Path: (state.Path || []).length,
-        Averages: averagesTrunk
+        Averages: averagesTrunk,
+        IntervalsCount: (state.Intervals || []).length
       };
 
       console.log(JSON.stringify(stateCopy, null, '  '));
