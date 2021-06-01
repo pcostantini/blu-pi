@@ -55,7 +55,7 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       drawMapPoint(driver, e.value, stateStore.getState().Path);
       drawAltitude(driver, e.value ? e.value.altitude : NaN);
       if (!odometerPresent && e.value) {
-        drawSpeed(driver, e.value.speed);
+        drawSpeed(driver, utils.mpsToKph(e.value.speed));
       }
 
       break;
@@ -107,7 +107,11 @@ function drawAll(driver, state) {
 
   currentSpeedLabel = -1;
   drawMap(driver, state.Path || { points: [] });
-  var speed = (state.Odometer || state.Gps || { speed: 0 }).speed;
+  // var speed = (state.Odometer || state.Gps || { speed: 0 }).speed;
+  // var speed = state.Odometer
+  // ? state.Odometer.speed      // Odometer: km/h
+  // : state.Gps ? utils.mpsToKph(state.Gps.speed) : 0; // Gps.Speed: miles/h
+  var speed = getSpeed(state.Odometer) || utils.mpsToKph(getSpeed(state.Gps)) || 0;
   drawSpeed(driver, speed);
   drawCadence(driver, state.Cadence ? state.Cadence.cadence : 0);
   drawTime(driver, getTimeString(state.Ticks));
@@ -203,7 +207,7 @@ function drawMapPoint(driver, value, fullPath, lazyFocus) {
 }
 
 function drawSpeed(driver, speed) {
-  speed = utils.mpsToKph(speed);
+  // speed = utils.mpsToKph(speed);
   var isValid = speed >= 1;
   var newLabel = isValid ? toFixed(speed, 1) : '0.0';
   newLabel = (newLabel.length === 3)
@@ -404,3 +408,4 @@ function convertGeoToPixel(latitude, longitude,
 
 
 const getValue = (t) => t ? Math.floor(t) + 'c' : '';
+const getSpeed = (o) => !!o ? o.speed : 0;
