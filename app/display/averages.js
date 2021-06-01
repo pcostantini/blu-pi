@@ -27,11 +27,11 @@ var layouts = [
   }, {
     label: 'tmp + cpu ',
     layout: [
-      ['MagnometerTemperature', 50, 24],
-      ['CpuTemperature', 45, 33],
+      ['CpuTemperature', 55, 33],
+      ['MagnometerTemperature', 30, 24],
       ['CpuLoad', 1.5, 0]
     ],
-    layoutWidth: 19
+    layoutWidth: 20
   }
 ]
 var currentLayout = _.first(layouts);
