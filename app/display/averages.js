@@ -17,7 +17,7 @@ var currentAverageStep = steps[0];
 var currentAverageSet = 'Average_' + currentAverageStep;
 var layouts = [
   {
-    label: 'spd +  cdn',
+    label: 'cdn + spd ',
     layout: [
       // ['SpeedGps', 40, 0],
       ['Cadence', 100, 40],
