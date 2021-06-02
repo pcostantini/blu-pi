@@ -46,11 +46,9 @@ delay(333, function () {
   var Display = require('./display');
   var StateReducer = require('./state');
   var ReplayWithSchedule = require('./replay_scheduled');
-  // var utils = require('./utils');
 
-  // input with ts
+  // input
   log('!4. input(s) init');
-
   var inputDrivers = config.inputDrivers.map((driverName) => {
     console.log('..initing input: ' + driverName);
     try {
@@ -60,12 +58,10 @@ delay(333, function () {
       return Rx.Observable.empty();
     }
   });
-
+  // add timestamp to input events
   var input = Rx.Observable.from(inputDrivers)
     .mergeAll()
     .map((s) => ({ name: s.name, value: Date.now() }));
-
-  // .input.subscribe(console.log);
 
   // storage
   log('!5. persistence', config.persist);
@@ -84,7 +80,9 @@ delay(333, function () {
 
   log('!6. sensors init');
   var sensors = config.demo
-    ? Rx.Observable.empty()             // no sensors on demo mode
+    // no sensors on demo mode
+    ? Rx.Observable.empty()
+    // init sensors and skip until previous session read is complete
     : SensorsBootstrap(config.sensors).skipUntil(replayComplete).share()
 
   // persistence
@@ -93,16 +91,17 @@ delay(333, function () {
     sensors.subscribe(e => db.insert(e));
   }
 
-  // clock, ticks and input
+  // clock and ticks
   var clock = Clock();
   var ticks = Ticks(clock);
 
-  // state store or snapshot of latest events // defeats the purpose!
-  log('!7. state reducers');
+  // merge all events
   var all = Rx.Observable
     .merge(errors, clock, ticks, input, replay, sensors, globalEvents)
     .share();
 
+  // state + averages
+  log('!7. state reducers');
   var state = StateReducer.FromStream(all);
 
   // state store
@@ -117,13 +116,14 @@ delay(333, function () {
   })();
 
   // DISPLAY
-  var allPlusState = Rx.Observable.merge(all, state);
+  var allPlusState = Rx.Observable.merge(all, state).share();
   replayComplete.subscribe((cnt) => {
     log('!8. processed %s events', cnt);
     log('!9. init displays');
     ui = Display(displayDriver, config.displaySize, allPlusState, stateStore);
   });
 
+  // Preview State
   input
     .filter((e) => e.name === 'Input:Space')
     .subscribe(() => {

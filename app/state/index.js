@@ -34,18 +34,18 @@ module.exports.FromStream = function FromStream(events) {
 
   // calculate and reduce main stream of events
   // into new (reduced) values
-  var all = Rx.Observable.merge(
+  var accumulated = Rx.Observable.merge(
     PathReducer(gpsEvents),
     GpsDistanceReducer(gpsEvents),
     DistanceReducer(events.filter(s => s.name === 'Odometer'))).share();
 
-  all = Rx.Observable.merge(
-    IntervalsReduder(all, gpsEvents),
-    all);
+  accumulated = Rx.Observable.merge(
+    IntervalsReduder(accumulated, gpsEvents),
+    accumulated);
 
   // state stream (merged all reducers and events)
   var state = {};
-  var stateStream = Rx.Observable.merge(events, all)
+  var stateStream = Rx.Observable.merge(events, accumulated)
     .scan((state, e) => {
       state[e.name] = e.value;
       return state;
@@ -54,7 +54,7 @@ module.exports.FromStream = function FromStream(events) {
     .share();
 
   // every 1 snapshot capture (?)
-  var averageSensorNames = _.values(averageSensorConfig).map( g => g[0]);
+  var averageSensorNames = _.values(averageSensorConfig).map(g => g[0]);
   var oneSecSnapshot = Rx.Observable.timer(0, 1000)
     .map(() => _.pick(state, averageSensorNames))
     .map((snapshotUnnormalized) =>
@@ -71,7 +71,7 @@ module.exports.FromStream = function FromStream(events) {
   state.Averages = {};
   averages.subscribe((avg) => {
     var history = state.Averages[avg.name];
-    if(!history) {
+    if (!history) {
       history = [];
     }
 
@@ -84,10 +84,8 @@ module.exports.FromStream = function FromStream(events) {
   });
 
   // combine all
-  return Rx.Observable.merge(stateStream, all, averages)
+  return Rx.Observable.merge(stateStream, accumulated, averages)
     .share();
-
-  // return stateStream.share();
 }
 
 // AVERAGE
