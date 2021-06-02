@@ -14,13 +14,11 @@ function IntervalsDisplay(driver, events, stateStore) {
 inherits(IntervalsDisplay, BaseDisplay);
 
 // Menu
-var lastTimestamp = 0;
 var currentMenuIx = 1;
 var menu = [
     {
         label: "GPS",
         callback: () => {
-            lastTimestamp = Date.now()
             global.globalEvents_generator.next({ name: constants.START_GPS_REQUEST })
         }
     },
@@ -34,7 +32,6 @@ var menu = [
     {
         label: "DST",
         callback: () => {
-            lastTimestamp = Date.now()
             global.globalEvents_generator.next({ name: constants.START_DIST_REQUEST })
         }
     },
@@ -61,17 +58,27 @@ function getIntervalsInfo(intervals) {
 
 IntervalsDisplay.prototype.init = function (driver, stateStore) {
     driver.setRotation(2);
-    var intervals = getIntervalsInfo(stateStore.getState().Intervals);
-    // console.log('intervals', intervals);
+
+    var state = stateStore.getState();
+    var intervals = getIntervalsInfo(state.Intervals);
     drawMenu(driver, menu, currentMenuIx);
     drawIntervals(driver, intervals.laps);
     drawBest(driver, intervals.best);
+
+    // relocate menu
+    if (state.IntervalLapStart) {
+        currentMenuIx = state.IntervalLapStart.type === 'GPS' ? 0 : 2;
+        drawMenu(driver, menu, currentMenuIx);
+        disableMenu(driver);
+    } else {
+        drawMenu(driver, menu, currentMenuIx);
+    }
 };
 
 IntervalsDisplay.prototype.processEvent = function (driver, e, stateStore) {
     if (e.name === 'Intervals') {
-        var intervals = getIntervalsInfo(stateStore.getState().Intervals);
-        drawMenu(driver, menu, currentMenuIx);
+        var state = stateStore.getState();
+        var intervals = getIntervalsInfo(state.Intervals);
         drawIntervals(driver, intervals.laps);
         drawBest(driver, intervals.best);
         driver.display();
@@ -97,10 +104,7 @@ IntervalsDisplay.prototype.processEvent = function (driver, e, stateStore) {
 
     } else if (e.name === "Input:B") {
         // SELECT
-        var filter = DottedFilter(driver);
-        driver.fillRect(0, 0, 23, 64, 1);
-        filter.dispose();
-
+        disableMenu(driver);
         driver.display();
 
         // invoke menu option
@@ -109,15 +113,13 @@ IntervalsDisplay.prototype.processEvent = function (driver, e, stateStore) {
 };
 
 IntervalsDisplay.prototype.preFlush = function (driver, stateStore) {
-    var intervals = getIntervalsInfo(stateStore.getState().Intervals);
-    // get last interval, last "started" timestamp, or default to now
-    var last = _.last(intervals.laps) || { startTime: lastTimestamp || Date.now() };
-    var elapsed = Date.now() - last.startTime;
+    var elapsed = 0;
+    var start = stateStore.getState().IntervalLapStart;
+    if (start && start.time) {
+        elapsed = Date.now() - start.time;
+    }
 
-    // TODO: if not interval set, render empty?
-    drawCurrentInterval(driver, {
-        elapsed: elapsed
-    })
+    drawCurrentInterval(driver, { elapsed: elapsed })
 }
 
 function drawCurrentInterval(driver, current) {
@@ -211,7 +213,7 @@ function drawMenu(driver, menu, currentMenuIx) {
     const textOffset = 7;
 
     // GPS
-    curr = currentMenuIx === 0;
+    var curr = currentMenuIx === 0;
     driver.fillRect(0, 0, 23, 32, curr);
 
     driver.setTextSize(1);
@@ -278,6 +280,12 @@ function drawMenu(driver, menu, currentMenuIx) {
     driver.drawLine(24, 0, 24, 64, 1);
 
     driver.display();
+}
+
+function disableMenu(driver) {
+    var filter = DottedFilter(driver);
+    driver.fillRect(0, 0, 23, 64, 1);
+    filter.dispose();
 }
 
 // draw text
