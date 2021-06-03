@@ -6,6 +6,7 @@ var BaseDisplay = require('./base-display');
 var DottedFilter = require('./dotted-filter');
 var NoisyFilter = require('./noisy-filter');
 var ScanlineFilter = require('./scanlines-filter');
+var convertGeoToPixel = require('./map').convertGeoToPixel;
 var utils = require('../utils');
 
 var refreshDisplayDelay = 2000;
@@ -133,7 +134,7 @@ var bounds = {
   height: mapSize[1] - 4,
 };
 
-var drawMapDebounced = _.debounce(drawMap, 1333);
+var drawMapDebounced = _.throttle(drawMap, 1333);
 
 function drawMap(driver, path) {
 
@@ -349,10 +350,6 @@ function renderWholePath(driver, path, offsets) {
   bounds.lonDelta = lonDelta;
   bounds.latBottomDegree = latitude * Math.PI / 180;
 
-  // drawMapCanvas(driver);
-
-  // TODO: prioritize and delay rendering of each point
-  // TODO: save in 'buffer' each pixel and dont 'redraw' existing pixels
   var filter = DottedFilter(driver);
   path.forEach((coord) => {
     var pixel = getPixelCoordinate(coord, bounds);
@@ -388,24 +385,6 @@ function initBounds(bounds, initialCoord) {
   bounds.lonDelta = 0.02;
   bounds.latBottomDegree = initialCoord[0] * Math.PI / 180;
 }
-
-function convertGeoToPixel(latitude, longitude,
-  mapWidth,           // in pixels
-  mapHeight,          // in pixels
-  mapLonLeft,         // in degrees
-  mapLonDelta,        // in degrees (mapLonRight - mapLonLeft);
-  mapLatBottomDegree) // in Radians
-{
-  var x = (longitude - mapLonLeft) * (mapWidth / mapLonDelta);
-
-  latitude = latitude * Math.PI / 180;
-  var worldMapWidth = ((mapWidth / mapLonDelta) * 360) / (2 * Math.PI);
-  var mapOffsetY = (worldMapWidth / 2 * Math.log((1 + Math.sin(mapLatBottomDegree)) / (1 - Math.sin(mapLatBottomDegree))));
-  var y = mapHeight - ((worldMapWidth / 2 * Math.log((1 + Math.sin(latitude)) / (1 - Math.sin(latitude)))) - mapOffsetY);
-
-  return { x: x, y: y };
-}
-
 
 const getValue = (t) => t ? Math.floor(t) + 'c' : '';
 const getSpeed = (o) => !!o ? o.speed : 0;
