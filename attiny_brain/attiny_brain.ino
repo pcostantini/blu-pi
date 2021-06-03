@@ -2,8 +2,8 @@
 #include <math.h>
 
 // Config
-#define SWITCH 4
-#define LED 1 // 1-Trinket 4-ATTIny85
+#define SWITCH 3 // 4-Triket 3-ATTiny85
+#define LED 4 // 1-Trinket 4-ATTiny85
 
 // README
 // read speed, report current speed to i2c
