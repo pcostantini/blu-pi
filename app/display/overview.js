@@ -25,6 +25,8 @@ function OverviewDisplay(driver, events, stateStore) {
 inherits(OverviewDisplay, BaseDisplay);
 
 OverviewDisplay.prototype.init = function (driver, stateStore) {
+
+  var state = stateStore.getState();
   currentSpeedLabel = '';
   currentCadenceLabel = '';
   lastTimeText = '';
@@ -36,7 +38,13 @@ OverviewDisplay.prototype.init = function (driver, stateStore) {
 
   // ...
   drawMapCanvas(driver);
-  drawAll(driver, stateStore.getState());
+  drawAll(driver, state);
+}
+
+function dim(driver) {
+  var f = new DottedFilter(driver, 1);
+  driver.fillRect(0, 0, 128, 64, 0);
+  f.dispose();
 }
 
 var odometerPresent = false;
@@ -86,10 +94,15 @@ OverviewDisplay.prototype.processEvent = function (driver, e, stateStore) {
       // drawTemp(driver, e.value.temperature, 0, 0);
       break;
 
-    // case 'Input:A':
     case 'Input:B':
-      // case 'Input:C':
-      drawAll(driver, stateStore.getState());
+      var state = stateStore.getState();
+
+      // var distance = state.Distance || state.DistanceGps || 0;
+      // drawDistance(driver, distance, true);
+      drawMap(driver, state.Path || { points: [] });
+      // dim(driver);
+      // this.dimmed = true;
+
       break;
 
   }
@@ -101,13 +114,11 @@ function drawAll(driver, state) {
   state = state || {};
 
   // static - distance bar
-  driver.fillRect(0, 18 - 1, 65, 9, 1)
-  var f = new DottedFilter(driver, 1);
-  driver.fillRect(0, 18 + 8 + 1 - 1, 65, 2, 1)
+  var f = new DottedFilter(driver, 0);
+  driver.fillRect(0, 27, 65, 2, 1)
   f.dispose();
 
   currentSpeedLabel = -1;
-  drawMap(driver, state.Path || { points: [] });
   // var speed = (state.Odometer || state.Gps || { speed: 0 }).speed;
   // var speed = state.Odometer
   // ? state.Odometer.speed      // Odometer: km/h
@@ -116,13 +127,15 @@ function drawAll(driver, state) {
   drawSpeed(driver, speed);
   drawCadence(driver, state.Cadence ? state.Cadence.cadence : 0);
   drawTime(driver, getTimeString(state.Ticks));
-  var distance = state.Distance || state.DistanceGps || 0;
   lastDistance = -1;
+  var distance = state.Distance || state.DistanceGps || 0;
   drawDistance(driver, distance);
 
   var barometer = state.Barometer || {};
   drawTemp(driver, barometer.temperature, 0);
   drawAltitude(driver, state.Gps ? state.Gps.altitude : NaN);
+
+  drawMap(driver, state.Path)
 }
 
 var mapSize = [57, 60];
@@ -134,7 +147,7 @@ var bounds = {
   height: mapSize[1] - 4,
 };
 
-var drawMapDebounced = _.throttle(drawMap, 1333);
+var drawMapDebounced = _.throttle(drawMap, 333);
 
 function drawMap(driver, path) {
 
@@ -259,17 +272,18 @@ function drawTime(driver, sTime) {
   write(driver, sTime);
 }
 
-function drawDistance(driver, distance) {
+function drawDistance(driver, distance, redraw) {
   var text = toFixed(distance || 0, 1);
-  if (lastDistance === text) {
+  if (!redraw && lastDistance === text) {
     return;
   }
 
   lastDistance = text;
 
+  driver.fillRect(0, 18, 65, 9, 1)
   driver.setTextColor(0, 1);
   driver.setTextSize(1);
-  driver.setCursor(22, 18);
+  driver.setCursor(22, 19);
   write(driver, ('  ' + text + '\km').slice(-7));
 }
 

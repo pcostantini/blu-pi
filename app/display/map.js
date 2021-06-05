@@ -59,7 +59,7 @@ MapDisplay.prototype.processEvent = function (driver, e, stateStore) {
 }
 
 function refreshZoom(driver, path) {
-  driver.clear();
+  // driver.clear();
   driver.setTextColor(1, 0);
   driver.setTextSize(1);
   driver.setCursor(0, 0);
@@ -100,6 +100,8 @@ function drawMap(driver, path) {
 var renderWholePathDebounced = _.debounce(renderWholePath, 333);
 function renderWholePath(driver, path) {
 
+  driver.clear();
+
   // vertical sep
   driver.drawLine(width - 5, 0, width - 5, height, 1);
   driver.drawLine(width - 4, 0, width - 4, height, 0);
@@ -109,9 +111,17 @@ function renderWholePath(driver, path) {
   var zoomModifier = (bounds.zoom * -1) + 1;
   var lowLongitude = _.minBy(path, (s) => s[1])[1] - (0.0014 * zoomModifier);
   var maxLongitude = _.maxBy(path, (s) => s[1])[1] + (0.0014 * zoomModifier);
-  // var latitude = _.minBy(path, (s) => s[0])[0] + (0.0014 * zoomModifier);
-  var latitude = _.meanBy(path, (s) => s[0]) - (0.0007 * zoomModifier);    // mean
   var lonDelta = maxLongitude - lowLongitude;
+
+  // first
+  // var latitude = _.minBy(path, (s) => s[0])[0] + (0.0014 * zoomModifier);
+
+  // center map
+  var latitude = _.meanBy(path, (s) => s[0]) - (0.0007 * zoomModifier);    // mean
+
+  // focus on last point
+  // var latitude = _.last(path, (s) => s[0])[0] - (0.0007 * zoomModifier);
+
 
   bounds.lonLeft = lowLongitude;
   bounds.lonDelta = lonDelta;

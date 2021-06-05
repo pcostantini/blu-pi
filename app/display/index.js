@@ -11,7 +11,7 @@ var DisplayTypes = [
 	require('./map'),
 	require('./intervals'),
 	// require('./screensaver'),
-	// require('./off'),
+	require('./off'),
 	require('./menu')
 ];
 
