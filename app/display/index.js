@@ -12,6 +12,7 @@ var DisplayTypes = [
 	require('./intervals'),
 	// require('./screensaver'),
 	require('./off'),
+	require('./ip'),
 	require('./menu')
 ];
 

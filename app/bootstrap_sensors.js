@@ -28,6 +28,7 @@ module.exports = function bootstrap(sensorsConfig) {
     //   : Rx.Observable.empty(),
 
     // sys
+    require('./sensors/ip')(),
     require('./sensors/cpu_temperature')(sensorsConfig.temperature),
     require('./sensors/cpu_load')(sensorsConfig.cpu),
     require('./sensors/memory')(sensorsConfig.memory)
