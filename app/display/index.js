@@ -6,13 +6,13 @@ var hotswap = require('hotswap');
 var GFX = require('./adafruit-gfx');
 
 var DisplayTypes = [
+	require('./ip'),
 	require('./overview'),
 	require('./averages'),
 	require('./map'),
 	require('./intervals'),
 	// require('./screensaver'),
 	require('./off'),
-	require('./ip'),
 	require('./menu')
 ];
 
