@@ -1,3 +1,4 @@
+var path = require('path');
 var minimist = require('minimist');
 var argv = minimist(process.argv.slice(2));
 
@@ -12,22 +13,24 @@ if (!demoFile) {
   demoFile = './data/sensors-1456895867978-TestRideParqueSarmiento.sqlite3'
 }
 
+var dbFile = demoMode
+  ? demoFile
+  : path.join('data', new Date().toISOString().replace(/\:/g, '').substring(0, 15) + '.sqlite3')
+
 var config = {
   displaySize: displaySize,
   demoMode: demoMode,
   demoScheduled: demoScheduled,
   persist: persist,
   inputDrivers: [
-    './inputs_rotary_encoder',
+    // './inputs_rotary_encoder',
     './inputs_console'
   ],
   displayDrivers: [
-    './display/drivers/oled',
+    // './display/drivers/oled',
     './display/drivers/web'
   ],
-  dbFile: demoMode
-    ? demoFile
-    : `./data/current.sqlite3`,
+  dbFile: dbFile,
   sensors: {
     // indiscreet: {
     //   wifi: 5000
