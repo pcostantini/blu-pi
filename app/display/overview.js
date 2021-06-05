@@ -315,6 +315,63 @@ function write(driver, string) {
   chars.forEach((c) => driver.write(c.charCodeAt(0)));
 }
 
+// maps stuff
+function renderWholePath(driver, path, offsets) {
+  if (!path || path.length == 0) return;
+
+  offsets = offsets || [0, 0];
+
+  var lowLongitude = _.minBy(path, (s) => s[1])[1] - 0.0014;
+  var maxLongitude = _.maxBy(path, (s) => s[1])[1] + 0.0014;
+  var latitude = _.minBy(path, (s) => s[0])[0];
+
+  var lonDelta = maxLongitude - lowLongitude;
+
+  bounds.lonLeft = lowLongitude;
+  bounds.lonDelta = lonDelta;
+  bounds.latBottomDegree = latitude * Math.PI / 180;
+
+  var filter = DottedFilter(driver);
+  path.forEach((coord) => {
+    var pixel = getPixelCoordinate(coord, bounds);
+    var isOut = pixel.x > mapSize[0] || pixel.y > mapSize[1] ||
+      pixel.x < 0 || pixel.y < 0;
+
+    if (isOut) return;
+    driver.drawPixel(pixel.x + offsets[0], pixel.y + offsets[1], 1);
+  });
+
+  filter.dispose();
+}
+
+function getPixelCoordinate(coord, bounds) {
+
+  var point = convertGeoToPixel(
+    coord[0], coord[1],
+    bounds.width,
+    bounds.height,
+    bounds.lonLeft,
+    bounds.lonDelta,
+    bounds.latBottomDegree);
+
+  var x = Math.round(point.x);
+  var y = Math.round(point.y);
+
+  return { x: x, y: y };
+}
+
+function initBounds(bounds, initialCoord) {
+  bounds.lonLeft = initialCoord[1] - 0.01;
+  bounds.lonDelta = 0.02;
+  bounds.latBottomDegree = initialCoord[0] * Math.PI / 180;
+}
+
+const getValue = (t) => t ? Math.floor(t) + 'c' : '';
+const getSpeed = (o) => !!o ? o.speed : 0;
+
+// helpers
+
+
 function toFixed(value, precision) {
   var precision = precision || 0,
     power = Math.pow(10, precision),
@@ -347,58 +404,3 @@ function pad(n, width) {
   var n = n + '';
   return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
 }
-
-// maps stuff
-function renderWholePath(driver, path, offsets) {
-  if (!path || path.length == 0) return;
-
-  offsets = offsets || [0, 0];
-
-  var lowLongitude = _.minBy(path, (s) => s[1])[1] - 0.0014;
-  var maxLongitude = _.maxBy(path, (s) => s[1])[1] + 0.0014;
-  var latitude = _.minBy(path, (s) => s[0])[0];
-
-  var lonDelta = maxLongitude - lowLongitude;
-
-  bounds.lonLeft = lowLongitude;
-  bounds.lonDelta = lonDelta;
-  bounds.latBottomDegree = latitude * Math.PI / 180;
-
-  var filter = DottedFilter(driver);
-  path.forEach((coord) => {
-    var pixel = getPixelCoordinate(coord, bounds);
-    var isOut = pixel.x > mapSize[0] || pixel.y > mapSize[1] ||
-      pixel.x < 0 || pixel.y < 0;
-
-    if (isOut) return;
-    driver.drawPixel(pixel.x + offsets[0], pixel.y + offsets[1], 1);
-  });
-
-  filter.dispose();
-}
-
-// graph functions
-function getPixelCoordinate(coord, bounds) {
-
-  var point = convertGeoToPixel(
-    coord[0], coord[1],
-    bounds.width,
-    bounds.height,
-    bounds.lonLeft,
-    bounds.lonDelta,
-    bounds.latBottomDegree);
-
-  var x = Math.round(point.x);
-  var y = Math.round(point.y);
-
-  return { x: x, y: y };
-}
-
-function initBounds(bounds, initialCoord) {
-  bounds.lonLeft = initialCoord[1] - 0.01;
-  bounds.lonDelta = 0.02;
-  bounds.latBottomDegree = initialCoord[0] * Math.PI / 180;
-}
-
-const getValue = (t) => t ? Math.floor(t) + 'c' : '';
-const getSpeed = (o) => !!o ? o.speed : 0;
