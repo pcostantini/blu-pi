@@ -23,11 +23,11 @@ var config = {
   demoScheduled: demoScheduled,
   persist: persist,
   inputDrivers: [
-    // './inputs_rotary_encoder',
+    './inputs_rotary_encoder',
     './inputs_console'
   ],
   displayDrivers: [
-    // './display/drivers/oled',
+    './display/drivers/oled',
     './display/drivers/web'
   ],
   dbFile: dbFile,
