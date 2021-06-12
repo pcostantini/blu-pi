@@ -47,6 +47,14 @@ sudo systemctl start blu-pi.service
     - Reset pi
     - Turn OFF
 
+### Web Display
+
+Open `http://[PI-IP-ADDRESS]:8080/` for a mirror of the display.
+
+Use `ASD` keys to mimic Rotary Encoder. Use long press `A` and `D` to switch screens.
+
+![Web Display](./img/web-display.png)
+
 ## Hardware
 
 ### Wiring
