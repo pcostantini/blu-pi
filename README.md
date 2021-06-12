@@ -9,19 +9,19 @@ GPS Cycling Computer |  Raspberry Pi + GPS + ATTiny Odometer | Node.JS
 
 ## Install & Running
 
-install dependencies:
+Install dependencies:
 
 $ `npm i`
 
-running:
+Running:
 
 $ `node app`
 
-start on background (under screen):
+Start on background (under screen):
 
 $ `./start_and_watch_for_cycle.sh`
 
-install as service on Pi:
+Install as service on Pi:
 
 ```sh
 sudo cp blu-pi.service /etc/systemd/system/blu-pi.service
@@ -32,7 +32,7 @@ sudo systemctl start blu-pi.service
 ## Usage
 
 - **Rotating (the Rotary Encoder)** provides input within the current screen
-- **Push button** to trigger actions
+- **Push button** to trigger an action within screen
 - **Press Push button + rotate Encoder** to change displays:
   - **Overview**: Session elapsed time, distance, current speed and cadence.
   - **Averages**: Display Speed/Cadence and CPU/Temperature/RAM (on different scales)
@@ -92,12 +92,12 @@ Use `ASD` keys to mimic Rotary Encoder. Use long press `A` and `D` to switch scr
 
 ### Libraries
 
-(Alo see [package.json](package.json))
+> (Alo see [package.json](package.json))
 
 Adafruit GFX port to JavaScript ([display/adafruit-gfx](app/display/adafruit-gfx/index.js))
 > https://communities.intel.com/message/237095#237095
 
-Distance (from GPS):
+Distance (using GPS):
 > https://github.com/Maciek416/gps-distance
 
 GPX parsing:
