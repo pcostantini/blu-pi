@@ -50,8 +50,8 @@ function LSM303_Observable(waitTimes) {
         })();
       }
 
-    } catch(err) {
-      console.log('lsm303.initErr!', err);
+    } catch (err) {
+      console.log('lsm303.initErr!', err.toString().substring(0, 120));
     }
 
   });

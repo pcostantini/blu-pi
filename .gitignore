@@ -1,8 +1,9 @@
 node_modules*/
 npm-debug.log
-#_temp
 *.sqlite3
 *.sqlite3-journal
 data/
 /cycle.forced
 *.hex
+.vscode
+_temp
