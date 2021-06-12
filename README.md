@@ -6,6 +6,10 @@ GPS Cycling Computer |  Raspberry Pi + GPS + ATTiny Odometer | Node.JS
 | -------- | --------- | ------------- | --- | ---- | 
 | ![Overview Display](./img/display-overview.png) | ![Intervals Display](./img/display-intervals.png) | ![Sys. Averages Display](./img/display-averages-cpu.png) | ![Map Display](./img/display-map.png) | ![Menu Display](./img/display-menu.png) |
 
+| Setup | Cockpit | Prototype |
+| ----- | ------- | --------- |
+| ![BLU-PI Setup](./img/blu-pi-1.jpg) | ![BLU-PI Setup](./img/blu-pi-2.jpg) | ![BLU-PI PROTO](./img/blu-pi-proto-1.jpg) |
+
 
 ## Install & Running
 
