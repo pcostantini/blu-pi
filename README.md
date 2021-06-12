@@ -44,16 +44,18 @@ sudo systemctl start blu-pi.service
 
 ### Wiring
 
-- 3xGPIOs for input + 2 gnds
+- 3xGPIOs for input + 2 GNDs
   - rotary.pinA = pi:16
   - rotary.pinB = pi:26
   - rotary.push = pi:21
-- using i2c + vi + gnd
+- using i2c + vi + GND
   - attiny odometer (see [more details](./attiny_brain/READNE.md))
     - odometer.pin = attiny:pin1
     - odometer.ground = (any) ground pin
   - oled display
   - lsm303
+  
+  ![i2cdetect -y 1](./img/i2cdetect.png)
 
 ### Parts
 
