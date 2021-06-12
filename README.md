@@ -72,7 +72,7 @@ Use `ASD` keys to mimic Rotary Encoder. Use long press `A` and `D` to switch scr
     - odometer.pin = attiny:pin1
     - odometer.ground = (any) ground pin
   - oled display
-  - lsm303
+  - lsm303 (currently not in use - should be used to normalize GPS path along with other enhancements)
   
   ![i2cdetect -y 1](./img/i2cdetect.png)
 
@@ -96,7 +96,7 @@ Use `ASD` keys to mimic Rotary Encoder. Use long press `A` and `D` to switch scr
 
 ### Libraries
 
-> (Alo see [package.json](package.json))
+> (See [package.json](package.json) for all depedencies)
 
 Adafruit GFX port to JavaScript ([display/adafruit-gfx](app/display/adafruit-gfx/index.js))
 > https://communities.intel.com/message/237095#237095
@@ -106,6 +106,11 @@ Distance (using GPS):
 
 GPX parsing:
 > https://www.npmjs.com/package/gpx-parse
+
+BLE Sensor reading (sources):
+> https://github.com/amcolash/BikeVR/blob/master/public/js/bluetooth.js
+> https://github.com/amcolash/oled-bike-computer/blob/master/bluetooth.js
+> https://github.com/kdevware-andre/kdevware-andre.github.io/blob/master/bluetooth.js
 
 ### References
 
@@ -117,3 +122,4 @@ Map lat/long to pixel:
 
 Kalman filter:
 > https://wouterbulten.nl/blog/tech/lightweight-javascript-library-for-noise-filtering/
+> https://hackaday.com/2019/05/14/the-kalman-filter-exposed/
