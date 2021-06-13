@@ -61,36 +61,46 @@ Use `ASD` keys to mimic Rotary Encoder. Use long press `A` and `D` to switch scr
 
 ## Hardware
 
-### Wiring
+### Build & Wiring
 
 - 3xGPIOs for input + 2 GNDs
-  - rotary.pinA = pi:16
-  - rotary.pinB = pi:26
-  - rotary.push = pi:21
-- using i2c + vi + GND
-  - attiny odometer (see [more details](./attiny_brain/READNE.md))
-    - odometer.pin = attiny:pin1
-    - odometer.ground = (any) ground pin
+  - rotary.pinA -> pi.gpio16
+  - rotary.pinB -> pi.gpio26
+  - rotary.push -> pi.gpio21
+- using i2c (+ VI + GND)
   - oled display
-  - lsm303 (currently not in use - should be used to normalize GPS path along with other enhancements)
+    - \+ reset pin on pi.gpio4
+  - attiny odometer (see [more details](./attiny_brain/READNE.md))
+    - attiny.vi -> 10k resistor -> attiny.gpio3
+    - attiny.ground -> reed switch -> attiny.gpio3
+  - lsm303 (currently not in use - should be used to normalize GPS path along with other enhancements) ([adafruit](https://www.adafruit.com/product/1120))
+
+![Wiring](./img/wiring.png)
   
-  ![i2cdetect -y 1](./img/i2cdetect.png)
+I2C Device Addresses:
+
+![i2cdetect -y 1](./img/i2cdetect.png)
+
+- `0x3D`: OLED
+- `0x13`: ATTiny Odometer
+- `0x1E`: LSM303 Magnetometer
+- `0x19`: LSM303 Accelerometer
 
 ### Parts
 
 - pi a+ (or zero)
 - wifi dongle (or zero+w)
-- adafruit's gps hat
+- adafruit's gps hat ([adafruit](https://www.adafruit.com/product/2324))
   - or gps module + permaboard for wiring (5cm~ x 8cm~))
-- oled 128x64 (configured with i2c)
-- input: rotary encoder + push button
+- oled 128x64 (configured with i2c) ([adafruit](https://www.adafruit.com/product/326))
+- input: rotary encoder + push button ([adafruit](https://www.adafruit.com/product/377))
 - cadence:
   - lblue(tooth) cadence or speed meter
-- odometer-attiny:
-  - ATTiny 85
-  - running software:
-    - as i2c slave - // TODO: link to reference
-    - odometer software - // TODO: describe output!
+- odometer:
+  - [attiny 85](https://www.microchip.com/wwwproducts/en/ATtiny85)
+  - reed switch
+  - 10k resistor
+- RJ45 (jack + connector) to connect the Rotary Encoder + Odometer pins to the Pi and ATTiny
 
 ## CREDITS
 
@@ -100,6 +110,9 @@ Use `ASD` keys to mimic Rotary Encoder. Use long press `A` and `D` to switch scr
 
 Adafruit GFX port to JavaScript ([display/adafruit-gfx](app/display/adafruit-gfx/index.js))
 > https://communities.intel.com/message/237095#237095
+
+TinyWire - ATTiny I2C library:
+> https://github.com/rambo/TinyWire/tree/master
 
 Distance (using GPS):
 > https://github.com/Maciek416/gps-distance
