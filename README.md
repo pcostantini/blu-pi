@@ -55,7 +55,7 @@ sudo systemctl start blu-pi.service
 
 Open `http://[PI-IP-ADDRESS]:8080/` for a mirror of the display.
 
-Use `ASD` keys to mimic Rotary Encoder. Use long press `A` and `D` to switch screens.
+Use `ASD` keys to mimic Rotary Encoder. Long press `A` and `D` to switch screens.
 
 ![Web Display](./img/web-display.png)
 
@@ -73,7 +73,7 @@ Use `ASD` keys to mimic Rotary Encoder. Use long press `A` and `D` to switch scr
   - attiny odometer (see [more details](./attiny_brain/READNE.md))
     - attiny.vi -> 10k resistor -> attiny.gpio3
     - attiny.ground -> reed switch -> attiny.gpio3
-  - lsm303 (currently not in use - should be used to normalize GPS path along with other enhancements) ([adafruit](https://www.adafruit.com/product/1120))
+  - lsm303 (currently not in use - can be used to normalize GPS) ([adafruit](https://www.adafruit.com/product/1120))
 
 ![Wiring](./img/wiring.png)
   
@@ -91,7 +91,7 @@ I2C Device Addresses:
 - pi a+ (or zero)
 - wifi dongle (or zero+w)
 - adafruit's gps hat ([adafruit](https://www.adafruit.com/product/2324))
-  - or gps module + permaboard for wiring (5cm~ x 8cm~))
+  - or gps module + permaboard for wiring everything (5cm~ x 8cm~)
 - oled 128x64 (configured with i2c) ([adafruit](https://www.adafruit.com/product/326))
 - input: rotary encoder + push button ([adafruit](https://www.adafruit.com/product/377))
 - cadence:
