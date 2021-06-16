@@ -25,7 +25,7 @@ module.exports = function IpAddress() {
             observer.next({ name: SensorName, value: results });
 
             // requeue
-            setTimeout(() => broadcastIp(), 1000);
+            setTimeout(() => broadcastIp(), RequeueDelay);
         })();
 
     }).share();
