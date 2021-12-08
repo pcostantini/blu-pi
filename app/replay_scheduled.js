@@ -1,12 +1,11 @@
 var Rx = require('rxjs');
-// var _ = require('lodash');
-const { isValidGpsEvent } = require('./utils');
+var isValidGpsEvent = require('./utils').isValidGpsEvent;
 
 module.exports = function ReplayWithSchedule(sensors) {
 
     // // start from a valid GPS events
-    // sensors = sensors
-    //     .filter(o => isValidGpsEvent(o));
+    sensors = sensors
+        .filter(o => isValidGpsEvent(o));
 
     // // start from a valid odometer read
     // sensors = sensors.skipWhile(o => 

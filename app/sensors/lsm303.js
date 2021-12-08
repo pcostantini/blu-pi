@@ -7,7 +7,7 @@ function LSM303_Observable(waitTimes) {
   return Rx.Observable.create(function (observer) {
 
     function handleRead(callback, sensorName, wait) {
-      return function(err, sensorData) {
+      return function (err, sensorData) {
         var value = sensorData || err;
         observer.next({ name: sensorName, value: value });
         setTimeout(callback, wait);
@@ -21,31 +21,31 @@ function LSM303_Observable(waitTimes) {
       var accelerometer = ls.accelerometer();
       var magnetometer = ls.magnetometer();
 
-      if(waitTimes.acceleration) {
+      if (waitTimes.acceleration) {
         (function accel() {
-          accelerometer.readAxes(handleRead(accel, 
+          accelerometer.readAxes(handleRead(accel,
             'Acceleration', waitTimes.acceleration));
         })();
       }
 
-      if(waitTimes.axes) {
+      if (waitTimes.axes) {
         (function axis() {
-          magnetometer.readAxes(handleRead(axis, 
+          magnetometer.readAxes(handleRead(axis,
             'MagnometerAxis', waitTimes.axes));
         })();
       }
 
-      if(waitTimes.heading) {
+      if (waitTimes.heading) {
         (function heading() {
-          magnetometer.readHeading(handleRead(heading, 
+          magnetometer.readHeading(handleRead(heaing(),
             'MagnometerHeading', waitTimes.heading));
         })();
       }
 
       // useless... due to lsm303 being inside box. temperature will be highier
-      if(waitTimes.temp) {
+      if (waitTimes.temp) {
         (function temp() {
-          magnetometer.readTemp(handleRead(temp, 
+          magnetometer.readTemp(handleRead(temp,
             'MagnometerTemperature', waitTimes.temp));
         })();
       }
