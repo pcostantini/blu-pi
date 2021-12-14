@@ -67,7 +67,6 @@ WebDisplay.prototype.display = function () {
   this.io.sockets.emit('buffer', this.buffer);
 }
 
-// not implemented
 WebDisplay.prototype.dim = function (dimmed) {
   this.io.sockets.emit('dim', dimmed);
 }
