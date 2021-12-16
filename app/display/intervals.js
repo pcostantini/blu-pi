@@ -65,6 +65,11 @@ IntervalsDisplay.prototype.init = function (driver, stateStore) {
     drawIntervals(driver, intervals.laps);
     drawBest(driver, intervals.best);
 
+    driver.fillRect(30, 0, 28, 14, 1)
+    var f = DottedFilter(driver, 2);
+    driver.fillRect(30, 11, 28, 3, 0)
+    f.dispose();
+
     // relocate menu
     if (state.IntervalLapStart) {
         currentMenuIx = state.IntervalLapStart.type === 'GPS' ? 0 : 2;
@@ -82,9 +87,11 @@ IntervalsDisplay.prototype.processEvent = function (driver, e, stateStore) {
         drawIntervals(driver, intervals.laps);
         drawBest(driver, intervals.best);
         driver.display();
-    }
+    } else if (e.name === 'IntervalProgress') {
+        // console.log(e.value);
+        drawProgressDistance(driver, e.value.distance);
 
-    if (e.name === "Input:A") {
+    } else if (e.name === "Input:A") {
         // PREV
         currentMenuIx -= 1;
         if (currentMenuIx < 0) {
@@ -209,6 +216,18 @@ function drawBest(driver, interval) {
     }
 }
 
+function drawProgressDistance(driver, distance) {
+    var s = distance.toFixed(2);
+    driver.setCursor(32, 2);
+    driver.setTextSize(1);
+    driver.setTextColor(0, 1);
+    write(driver, s);
+    
+    // driver.setCursor(32, 8);
+    // write(driver, 'km ~');
+    // console.log(s);
+}
+
 function drawMenu(driver, menu, currentMenuIx) {
     const textOffset = 7;
 
@@ -284,7 +303,7 @@ function drawMenu(driver, menu, currentMenuIx) {
 
 function disableMenu(driver) {
     var filter = DottedFilter(driver);
-    driver.fillRect(0, 0, 23, 64, 1);
+    driver.fillRect(0, 0, 23, 64, 0);
     filter.dispose();
 }
 
