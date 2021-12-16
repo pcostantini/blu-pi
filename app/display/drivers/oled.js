@@ -1,6 +1,7 @@
-var resetPins = [4, 24];
-
 var exitHook = require('exit-hook');
+var GPIO = require('onoff').Gpio;
+
+var resetPins = [4, 24];
 
 function Oled(width, height) {
   console.log('.OledDriver:initing')
@@ -8,16 +9,9 @@ function Oled(width, height) {
   try {
 
     var SSD1306 = require('./ssd1306.js');
-    var GPIO = require('onoff').Gpio;
 
     // Reset oled through pin
-    resetPins.forEach((resetPin) => {
-      console.log('..reseting oled @ pin ' + resetPin);
-      var reset = new GPIO(resetPin, 'out');
-      reset.setDirection('high');
-      setTimeout(() => reset.setDirection('low'), 14);
-      setTimeout(() => reset.setDirection('high'), 33);
-    });
+    reset(resetPins);
 
     var oled = new SSD1306();
     setTimeout(() => {
@@ -29,9 +23,7 @@ function Oled(width, height) {
     }, 55);
 
     exitHook(function () {
-      oled.clear();
-      oled.display();
-      console.log('.OledDriver:Cleanup');
+      reset(resetPins);
     });
 
     return oled;
@@ -39,6 +31,17 @@ function Oled(width, height) {
   } catch (err) {
     console.error('oled.err', err);
   }
+}
+
+function reset(resetPins) {
+  console.log('.OledDriver:Cleanup');
+  resetPins.forEach((resetPin) => {
+    console.log('..reseting oled @ pin ' + resetPin);
+    var reset = new GPIO(resetPin, 'out');
+    reset.setDirection('high');
+    setTimeout(() => reset.setDirection('low'), 14);
+    setTimeout(() => reset.setDirection('high'), 33);
+  });
 }
 
 module.exports = Oled;
