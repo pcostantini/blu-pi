@@ -90,14 +90,16 @@ function runQuery(dbPromise, query, parameters) {
     var stream = new Rx.Subject();
 
     dbPromise.then(db => {
-        // TODO: handle errors
         db.each(query, parameters,
             (err, r) => stream.next({
                 name: r.sensor,
                 value: parse(r.data),
                 timestamp: r.timestamp
             }),
-            (err) => stream.complete());
+            (err) => {
+                console.error('persist err!', err);
+                stream.complete();
+            });
 
     });
 
