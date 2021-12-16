@@ -10,6 +10,7 @@ var CONSTANTS = {
 
 var reset = false;
 var lapStartEvents = new Rx.Subject();
+var lapProgressEvents = new Rx.Subject();
 
 // Start GPS
 global.globalEvents
@@ -105,17 +106,26 @@ function IntervalsFromDistance(events) {
                 time: Date.now()
             };
 
-            var detection = null;
             if (anchorDistance) {
                 var diff = currentDistance.value - anchorDistance.value;
                 console.log('...', JSON.stringify({
                     diff: diff,
                     time: (currentDistance.time - anchorDistance.time),
                 }));
+
+                // trigger interval "in progress" distance event
+                lapProgressEvents.next({
+                    name: 'IntervalProgress',
+                    value: {
+                        distance: diff
+                    }
+                });
+
                 if (lap || (distance && diff >= distance)) {
                     lap = false;
+                    anchorDistance = currentDistance;
                     // ...
-                    detection = {
+                    return {
                         name: 'Interval',
                         value: {
                             type: 'Distance',
@@ -125,12 +135,11 @@ function IntervalsFromDistance(events) {
                         }
                     };
 
-                    anchorDistance = currentDistance;
                 }
             }
 
             // nothing detected
-            return detection;
+            return null;
         })
         .filter(o => !!o)
         .do(console.log)
@@ -201,6 +210,7 @@ function IntervalsFromGps(gpsEvents) {
 }
 
 module.exports = function (all, gpsEvents) {
+
     var clearStream = global.globalEvents
         .filter(t => t.name === CONSTANTS.CLEAR)
         .share();
@@ -214,8 +224,7 @@ module.exports = function (all, gpsEvents) {
         value: {
             time: Date.now(),
             type: o.value.type
-        }
-    })));
+        }})));
 
     return Rx.Observable.merge(
         // reset events
@@ -231,8 +240,10 @@ module.exports = function (all, gpsEvents) {
             name: 'IntervalLapStart',
             value: null
         })),
-        // lap start events,
+        // lap start events
         lapStartEvents.share(),
+        // lap progress events
+        lapProgressEvents.share(),
         // detected intervals
         intervalStream,
         // accumulated intervals
