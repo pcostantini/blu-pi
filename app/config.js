@@ -15,7 +15,7 @@ if (!demoFile) {
 
 var dbFile = demoMode
   ? demoFile
-  : path.join('data', new Date().toISOString().replace(/\:/g, '').substring(0, 15) + '.sqlite3')
+  : path.join('data', new Date().toISOString().replace(/\:/g, '').substring(0, 15) + '.sqlite3');
 
 var config = {
   displaySize: displaySize,
@@ -36,6 +36,7 @@ var config = {
     //   wifi: 5000
     // },
     // temperature: 3000,
+    odometerAddress: 0x14,
     bleSensors: {
       cadence: 'e7:5e:d5:4f:11:1d',
     },

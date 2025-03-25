@@ -16,23 +16,29 @@ module.exports = [
     command: () => {
       global.displayDriver.invert(true);
       bash('touch cycle.forced')()
-      setTimeout(() => process.exit(0), 333);
+      setTimeout(() => {
+        shutdownDisplays();
+        process.exit(0)
+      }, 333);
     }
   }, {
     name: 'wif-r',
     command: () => {
-      bash(['sudo ifdown wlan0',
+      bash([
+        'sudo ifdown wlan0',
         'sleep 1',
         'sudo ifup wlan0'].join('\n'));
     }
   }, {
     name: 'rebut!',
     command: () => {
+      shutdownDisplays();
       bash('sudo reboot')();
     }
   }, {
     name: 'OFF!',
     command: () => {
+      shutdownDisplays();
       bash('sudo shutdown -h -H -t 0 0')();
     }
   }

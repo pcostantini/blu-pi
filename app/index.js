@@ -10,8 +10,65 @@ var displayDriver = global.displayDriver = getUnifiedDriver(displayDrivers);
 displayDriver.invert();
 displayDriver.display();
 
+// Helpers
+var x = 6;
+var y = 6;
+function log(msg, arg) {
+
+  if (typeof arg !== 'undefined') {
+    console.log(msg, arg);
+  } else {
+    console.log(msg);
+  }
+
+  if (displayDriver) {
+    y = y + 6;
+    displayDriver.drawPixel(x, y, 1);
+    displayDriver.drawPixel(x + 1, y + 1, 1);
+    displayDriver.drawPixel(x, y + 1, 1);
+    displayDriver.drawPixel(x + 1, y, 1);
+    displayDriver.display();
+  }
+}
+
+function instantiateDriver(driverName) {
+  console.log('..initing: ' + driverName);
+  var DriverType = require(driverName);
+  try {
+    var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
+  } catch (e) {
+    console.log('instantiateDriver:error!', e)
+    return {
+      inited: () => true,
+      clear: () => true,
+      display: () => true,
+      drawPixel: (x, y, color) => true,
+      invert: (invert) => false,
+      setRotation: (rotation) => true,
+      dim: (dimmed) => true
+    };
+  }
+
+  return driverInstance;
+}
+
+function getUnifiedDriver(drivers) {
+  return {
+    inited: () => (drivers.filter((d) => d.inited).length) === drivers.length,
+    clear: () => drivers.forEach((d) => d.clear()),
+    display: () => drivers.forEach((d) => d.display()),
+    drawPixel: (x, y, color) => drivers.forEach((d) => d.drawPixel(x, y, color)),
+    invert: (invert) => drivers.filter((d => !!d.invert))
+      .forEach((d) => d.invert(invert)),
+    setRotation: (rotation) => drivers.forEach((d) => d.setRotation(rotation)),
+    dim: (dimmed) => drivers.forEach((d) => d.dim(dimmed))
+  };
+}
+
+const delay = (ms, f) => setTimeout(f, ms);
+
 // continue app init after display drivers are started
-delay(333, function () {
+delay(1000, function () {
 
   log('!3. importing stuff...');
 
@@ -145,67 +202,3 @@ delay(333, function () {
 
   log('!0. Ready');
 });
-
-// Helpers
-var x = 6;
-var y = 6;
-function log(msg, arg) {
-
-  if (typeof arg !== 'undefined') {
-    console.log(msg, arg);
-  } else {
-    console.log(msg);
-  }
-
-  if (displayDriver && displayDriver.inited()) {
-    y = y + 6;
-    displayDriver.drawPixel(x, y, 1);
-    displayDriver.drawPixel(x + 1, y + 1, 1);
-    displayDriver.drawPixel(x, y + 1, 1);
-    displayDriver.drawPixel(x + 1, y, 1);
-    displayDriver.display();
-  }
-}
-
-function delay(time, func) {
-  setTimeout(func, time);
-}
-
-function instantiateDriver(driverName) {
-  console.log('..initing: ' + driverName);
-  var DriverType = require(driverName);
-  try {
-    var driverInstance = new DriverType(config.displaySize.width, config.displaySize.height);
-  } catch (e) {
-    console.log('instantiateDriver:error!', e)
-    return {
-      inited: () => true,
-      clear: () => true,
-      display: () => true,
-      drawPixel: (x, y, color) => true,
-      invert: (invert) => false,
-      setRotation: (rotation) => true,
-      dim: (dimmed) => true
-    };
-  }
-
-  return driverInstance;
-}
-
-function getUnifiedDriver(drivers) {
-  return {
-    inited: () => (drivers.filter((d, ix) => d.inited).length) === drivers.length,
-    clear: () => drivers.map((d) => d.clear()),
-    display: () => drivers
-      .filter((d => d.inited))
-      .map((d) => d.display()),
-    drawPixel: (x, y, color) => drivers.map((d) => d.drawPixel(x, y, color)),
-    invert: (invert) => drivers
-      .filter((d => d.inited && !!d.invert))
-      .map((d) => d.invert(invert)),
-    setRotation: (rotation) => drivers
-      .filter(d => d.inited)
-      .map((d) => d.setRotation(rotation)),
-    dim: (dimmed) => drivers.map((d) => d.dim(dimmed))
-  };
-}

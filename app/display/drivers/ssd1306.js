@@ -75,21 +75,23 @@ buffer = [
 
 var OLED = function () {
   var wire = null;
-  var rotation = 1;
 
   //Protected functions
   //----------------------------------------
   var ssd1306_command = function (c) {
     var control = 0x00;   // Co = 0, D/C = 0
-    wire.write(0x3D, control, Buffer.from([c]), function () { });
+    if (wire) wire.write(0x3D, control, Buffer.from([c]), function () { });
   }
 
   var ssd1306_data = function (c) {
     var control = 0x40;   // Co = 0, D/C = 1
-    wire.write(0x3D, control, Buffer.from([c]), function () { });
+    if (wire) wire.write(0x3D, control, Buffer.from([c]), function () { });
   }
 
   OLED.prototype.init = function () {
+    
+    this.rotation = 3;
+    
     //wire = new i2c(SSD1306.I2C_ADDRESS, {device: i2cDevice, debug: false}); // point to your i2c address, debug provides REPL interface
     wire = i2c;
     var vccstate = SSD1306.SWITCHCAPVCC;
@@ -152,7 +154,7 @@ var OLED = function () {
 
     // upgrade to 400KHz! I2C
     for (var i = 0; i < (SSD1306.LCDWIDTH * SSD1306.LCDHEIGHT / 8); i += 16) {
-      wire.write(0x3D, 0x40, Buffer.from(buffer.slice(i, i + 16)), function () { });// send a bunch of data in one xmission (128-bit chunks)
+      if (wire) wire.write(0x3D, 0x40, Buffer.from(buffer.slice(i, i + 16)), function () { });// send a bunch of data in one xmission (128-bit chunks)
     }
   }
 
@@ -195,13 +197,13 @@ var OLED = function () {
   }
 
   OLED.prototype.setRotation = function(value) {
-    rotation = value;
+    this.rotation = value;
   }
 
   OLED.prototype.drawPixel = function (x, y, color) {
 
     // check rotation, move pixel around if necessary
-    switch (4 - rotation) {
+    switch (this.rotation) {
       case 1:
         x = [y, y = x][0];//swap(x, y);
         x = SSD1306.LCDWIDTH - x - 1;

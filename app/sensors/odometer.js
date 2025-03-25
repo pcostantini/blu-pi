@@ -30,6 +30,7 @@ function OdometerObservable() {
     wire.scan((err, data) => {
       if(data && data.indexOf(address) > -1) {
         // address lookup found something!
+	console.log([address, data])
         internalInit(wire, status => observer.next({ name: 'Odometer', value: status }));
       } else {
         // emit null
@@ -51,12 +52,14 @@ function internalInit(wire, callback) {
         return setTimeout(() => continuousRead(callback), errorRefreshDelay);
       }
 
+      console.log(byte);
       buffer.push(byte);
 
       // buffer complete?
       var last = buffer.slice(-2);
       if(last[0] === 0x11 && last[1] === 0x22 && buffer.length >= 6) {
         var data = buffer.slice(0, -2);
+	console.log('slice!', data);
         buffer = [];
 
         // emit

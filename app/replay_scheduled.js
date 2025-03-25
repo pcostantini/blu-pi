@@ -24,13 +24,13 @@ module.exports = function ReplayWithSchedule(sensors) {
                 }
 
                 var delay = o.timestamp - firstEvent.timestamp;
-                Rx.Scheduler.async.schedule(() => {
-                    observer.next({
+                Rx.Scheduler.async.schedule(
+                    () => observer.next({
                         ...o,
                         sensor: o.name,
                         timestamp: new Date().getTime()
-                    });
-                }, delay);
+                    }),
+                    delay);
             });
 
     }).share();

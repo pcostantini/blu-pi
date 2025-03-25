@@ -1,6 +1,7 @@
 var exitHook = require('exit-hook');
 var GPIO = require('onoff').Gpio;
 
+// TODO: extract to config
 var resetPins = [4, 24];
 
 function Oled(width, height) {
@@ -19,11 +20,12 @@ function Oled(width, height) {
       oled.dim();
       oled.clear();
       oled.display();
+      oled.setRotation(2);
       oled.inited = true;
     }, 55);
 
     exitHook(function () {
-      reset(resetPins);
+      oled.invert();
     });
 
     return oled;
@@ -34,7 +36,7 @@ function Oled(width, height) {
 }
 
 function reset(resetPins) {
-  console.log('.OledDriver:Cleanup');
+  console.log('.OledDriver:reset');
   resetPins.forEach((resetPin) => {
     console.log('..reseting oled @ pin ' + resetPin);
     var reset = new GPIO(resetPin, 'out');

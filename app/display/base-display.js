@@ -23,7 +23,7 @@ function BaseDisplay(driver, events, stateStore) {
     }
   });
 
-  driver.rotation = 2;
+  driver.setRotation(2)
   driver.clear();
 
   try {
